@@ -18,7 +18,10 @@ class Handler(BaseHTTPRequestHandler):
         self.reply(status, json.dumps({"error": message}).encode())
 
     def do_GET(self):
-        if self.path == "/health":
+        if self.path == "/":
+            self.reply(200, Path(__file__).with_name("index.html").read_bytes(),
+                       "text/html; charset=utf-8")
+        elif self.path == "/health":
             self.reply(200, b'{"status":"ok","voice":"Natia"}')
         else:
             self.error(404, "Not found")

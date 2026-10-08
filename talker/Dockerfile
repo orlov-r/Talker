@@ -45,6 +45,7 @@ RUN printf 'გამარჯობა! როგორ ხარ?\n' \
 
 WORKDIR /app
 COPY server.py /app/server.py
+COPY index.html /app/index.html
 ENV PYTHONUNBUFFERED=1 PYTHONDONTWRITEBYTECODE=1
 USER 65534:65534
 EXPOSE 8080

@@ -26,6 +26,7 @@ Place these files together in the project directory:
 - Dockerfile — multi-stage image build and synthesis check.
 - .dockerignore — excludes unnecessary build-context files.
 - server.py — HTTP API using Python's standard library.
+- index.html — browser testing page with text entry and audio playback.
 - build.ps1 — Windows image-build script.
 - run.ps1 — Windows container-start script.
 - build.sh — Linux image-build script.
@@ -37,8 +38,8 @@ These files must exist before running the steps below.
 Generated files include hello.wav and rhvoice-natia.tar.
 The build scripts only build the image; export it with `docker save`
 as shown below. Scripts resolve the build context from their own directory.
-Run scripts do not remove existing containers; remove one explicitly
-before starting a replacement.
+On Windows, use `run.ps1 -Replace` to remove an existing container before
+starting a replacement. The Linux run script requires manual removal.
 
 ## Build on Windows
 
@@ -61,6 +62,26 @@ The Dockerfile's build check synthesizes a Georgian phrase with Natia
 and verifies that the resulting WAV contains audio.
 
 ## Run and test on Windows
+
+After starting the container, open http://127.0.0.1:8071/ in a browser.
+The testing page starts with the sample Georgian text. Edit it and click
+**Read aloud** to synthesize and play it with Natia. Audio controls allow
+replay, including when the browser requires a separate click to play.
+The page uses the existing `/synthesize` API and needs no internet access.
+Rebuild the image and recreate the container to include project changes.
+
+To update an existing Windows installation, run these commands in order
+(continue only if the build succeeds):
+
+```powershell
+.\build.ps1
+.\run.ps1 -Replace -Port 8071
+```
+
+`-Replace` removes the existing container (running or stopped) and starts
+a new one using `rhvoice-natia:local`. The script checks that the image
+exists before removal. Replacement interrupts current requests and removes
+the old container's logs. Images are retained; no image deletion is needed.
 
 ```powershell
 .\run.ps1 -Port 8071
@@ -154,7 +175,7 @@ Change the host port without rebuilding:
 Windows:
 
 ```powershell
-.\run.ps1 -Port 8072
+.\run.ps1 -Replace -Port 8072
 ```
 
 Linux:
@@ -163,8 +184,8 @@ Linux:
 sudo env PORT=8072 sh run.sh
 ```
 
-If the container already exists, stop and remove it before starting
-with the new mapping:
+On Linux, if the container already exists, stop and remove it before
+starting with the new mapping:
 
 ```sh
 sudo docker stop rhvoice-natia
