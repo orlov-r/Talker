@@ -1,0 +1,4 @@
+# Only these local files are needed by the image build.
+*
+!Dockerfile
+!server.py
