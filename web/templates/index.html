@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="csrf-token" content="{{ csrf }}">
+  <title>Talker · Georgian listening practice</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <script defer src="{{ url_for('static', filename='app.js') }}"></script>
+</head>
+<body>
+  <header><a href="/" class="brand">Talker<span>ქართული</span></a><span>Listen. Learn. Repeat.</span></header>
+  <main>
+    <p class="eyebrow">GEORGIAN LISTENING PRACTICE</p>
+    <section id="start">
+      <h1>A little listening.<br>A little progress.</h1>
+      <p class="intro">Meet Georgian greetings and numbers. Pick your pace to begin.</p>
+      <form id="start-form">
+        <fieldset><legend>Your skill level</legend><div class="levels">
+        {% for id, level in levels.items() %}
+          <label><input type="radio" name="level" value="{{ id }}" {% if loop.first %}checked{% endif %}>
+          <span><strong>{{ level.label }}</strong><small>{{ level.questionCount }} questions · {{ level.rate }}% speech rate</small></span></label>
+        {% endfor %}
+        </div></fieldset>
+        <div class="lesson"><span class="lesson-number">01</span><div><h2>{{ lesson.title }}</h2>
+          <p>A greeting and a freshly generated number, alternating throughout your quiz.</p></div></div>
+        <button type="submit" id="begin">Start lesson <span aria-hidden="true">→</span></button>
+      </form>
+      <p class="note">No account needed. Quizzes expire after one hour; refreshing starts over.</p>
+    </section>
+    <section id="quiz" hidden>
+      <p id="progress" class="eyebrow"></p><progress id="meter" aria-label="Quiz progress"></progress>
+      <h1>What did you hear?</h1><p class="intro">Listen, then choose the matching answer.</p>
+      <div class="player"><button id="replay" type="button">Play / replay audio</button><audio id="audio" controls aria-label="Question audio"></audio></div>
+      <p id="audio-status" role="status"></p>
+      <div id="choices" aria-label="Answer choices"></div>
+      <p id="feedback" role="status"></p>
+      <button id="next" type="button" disabled>Next question →</button>
+      <button class="secondary" id="leave" type="button">Return to selection</button>
+    </section>
+    <section id="result" hidden><p class="eyebrow">LESSON COMPLETE</p><h1>Nice practice.</h1>
+      <p id="score" class="score"></p><p class="intro">Correct answers. Come back for another listen.</p>
+      <button id="ok" type="button">OK · back to lessons</button></section>
+    <p id="error" role="alert"></p>
+  </main>
+  <footer>One lesson. Your pace. <span>Powered by the Natia voice.</span></footer>
+</body>
+</html>

@@ -6,10 +6,11 @@ multiple-choice questions, and see a final score.
 
 ## Current status
 
-The speech service is implemented. It accepts Georgian text and returns WAV
-audio, and includes a browser page for manually testing speech. The lesson web
-app, lesson content, scoring, and Docker Compose setup are
-planned; they are not implemented yet.
+The speech service and minimal lesson app are implemented, with Docker Compose
+configuration. The lesson has two sources: a static greeting and a generated
+number. Sessions alternate these sources: Easy gives 7 questions at speech rate
+80, Medium gives 10 at 100, and Hard gives 15 at 120. The app checks answers and
+calculates scores on the server.
 
 The basic app has three screens: skill level and lesson selection, a listening
 question with five answer choices and feedback, and a final score. Accounts,
@@ -20,9 +21,9 @@ statistics, and persistent attempts/results are outside the basic scope.
 | Path | Purpose |
 |---|---|
 | [talker/](talker/README.md) | Existing RHVoice/Natia service, Docker image, and build/run scripts |
-| [web/](web/README.md) | Placeholder for the lesson web app and its API |
-| [lessons/](lessons/README.md) | Placeholder for server-side lesson JSON and question generators |
-| [docs/architecture.md](docs/architecture.md) | Proposed container boundaries, API, storage, and quiz flow |
+| [web/](web/README.md) | Flask lesson app, UI, API, Dockerfile, and tests |
+| [lessons/](lessons/README.md) | Private lesson JSON and trusted number generator |
+| [docs/architecture.md](docs/architecture.md) | Container boundaries, API, storage, and quiz flow |
 | [docs/web-framework.md](docs/web-framework.md) | Chosen web stack and framework comparison |
 | [docs/development.md](docs/development.md) | Development workflow and implementation sequence |
 | [AGENTS.md](AGENTS.md) | Repository guidance for coding agents |
@@ -62,17 +63,28 @@ On Linux, use `curl` instead of `curl.exe`. Listen to `hello.wav` to assess
 pronunciation. See the [service README](talker/README.md) for API limits,
 container replacement, image transfer, source pinning, and voice license notes.
 
-## Planned deployment
+## Run the lesson app
 
-Start with two containers: the web app and RHVoice/Natia. Only the web app is
-exposed to users; it calls `http://rhvoice:8080/synthesize` over the internal
-Docker network. Questions come from server-side JSON or trusted generators.
-Active attempts and reusable audio need only temporary storage for the basic
-version; no database is required. Reuse the server's HTTPS proxy, or add a third
-container for one if needed.
+Follow [web setup](web/README.md#local-setup) for Python/Flask on Windows or Linux,
+then open [the lesson app](http://127.0.0.1:8070/). It uses the standalone speech
+service above by default. The speech test page remains separate on port 8071.
 
-Docker Compose will be added when the web app has a runnable entry point.
-Flask with Jinja templates and plain JavaScript is the
-[chosen web stack](docs/web-framework.md). No framework
-or dependencies have been added. The [architecture document](docs/architecture.md)
-describes the proposed behavior and boundaries for that implementation.
+Alternatively, set a random `SECRET_KEY` in an ignored `.env` file following
+[Compose setup](web/README.md#compose), then run from the root:
+
+```sh
+docker compose up --build -d
+```
+
+Compose exposes only the web app on loopback port 8070 and keeps RHVoice internal.
+Attempts and audio use bounded process memory. No database or saved results are
+used; restart loses quizzes and attempts expire after one hour. Use an HTTPS
+proxy for remote deployment. See [architecture](docs/architecture.md).
+
+With web dependencies installed, run quiz checks from the root:
+
+```sh
+python -m unittest discover -s web -p test_app.py -v
+```
+
+Tests use simulated audio; they do not validate the real Natia voice.

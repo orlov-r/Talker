@@ -1,0 +1,7 @@
+__pycache__/
+*.pyc
+.venv/
+*.wav
+*.sqlite*
+*.tar
+.env

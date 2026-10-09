@@ -1,0 +1,18 @@
+{
+  "id": "basics",
+  "title": "Greetings and numbers",
+  "revision": 1,
+  "sources": [
+    {
+      "speechText": "გამარჯობა",
+      "choices": [
+        {"id": "hello", "label": "გამარჯობა"},
+        {"id": "thanks", "label": "მადლობა"},
+        {"id": "bye", "label": "ნახვამდის"},
+        {"id": "yes", "label": "დიახ"},
+        {"id": "no", "label": "არა"}
+      ]
+    },
+    {"generator": "number"}
+  ]
+}

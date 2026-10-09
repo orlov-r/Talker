@@ -1,8 +1,8 @@
 # Web framework choice
 
 Flask with Jinja templates and plain JavaScript is the chosen stack for the
-initial lesson app, agreed on 2026-10-10. The app is not implemented yet; no
-framework or dependencies have been installed.
+initial lesson app, agreed on 2026-10-10. The minimal app is implemented;
+dependencies are recorded in `web/requirements.txt`.
 
 ## Chosen stack: Flask, Jinja, and plain JavaScript
 
@@ -17,11 +17,11 @@ framework with [Jinja templates](https://flask.palletsprojects.com/en/stable/tut
 It fits this small page-oriented app and keeps generators in the same language
 as the speech service.
 
-Quiz validation, temporary server-side state, synchronization, and request
-protection still require implementation. Flask's
+The app implements quiz validation, temporary state, synchronization, and CSRF
+protection. Flask's
 [default session stores values in a browser cookie](https://flask.palletsprojects.com/en/stable/quickstart/#sessions);
 use it only for an opaque session identifier, never hidden answers or scores.
-Choose a production WSGI server during implementation; the
+Waitress runs production as one process with four threads; the
 [development server is not for production](https://flask.palletsprojects.com/en/stable/deploying/).
 
 ## Alternatives
@@ -37,5 +37,5 @@ Serialized RHVoice synthesis and audio reuse matter more to quiz latency than
 choosing among these frameworks. Future extensions do not justify a database,
 account system, or separate frontend now.
 
-Add actual dependencies, entry point, setup, and validation commands in
-[`web/README.md`](../web/README.md) when implementation begins.
+Actual dependencies, entry point, setup, and validation commands are in
+[`web/README.md`](../web/README.md).

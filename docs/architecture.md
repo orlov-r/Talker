@@ -1,181 +1,90 @@
-# Proposed lesson architecture
+# Lesson architecture
 
-This is a design document. Only RHVoice/Natia is implemented; the lesson app,
-API, and Compose deployment remain planned.
+RHVoice/Natia and the minimal Flask lesson app are implemented. Compose defines
+their deployment. Accounts, statistics, saved progress/results, picture choices,
+and additional lessons remain future work.
 
-## Basic scope and interface
-
-The basic app is anonymous listening practice with three screens matching the
-supplied sketch. Accounts, statistics, saved progress, and persistent attempts
-or results are outside scope. Future extensions are not an initial priority.
-
-1. **Start page:** Select skill level (Easy, Medium, Hard) and a lesson
-   available at that level. Selecting a lesson starts the quiz.
-2. **Question page:** Play the sound and wait for an answer. Provide replay and
-   exactly five answer buttons displaying text or pictures. After submission,
-   show correctness and the correct answer text, lock choices, and enable
-   **Next question**. Keep feedback visible until that button is clicked. On
-   the last question, the button opens the results.
-3. **Result page:** Show correct answers out of total questions (e.g. 14/15).
-   **OK** returns to the start page.
-
-Try playback when each question opens, with a manual play/replay fallback for
-browser autoplay restrictions. Replay never answers or advances the quiz.
-Provide accessible labels for pictures and descriptive labels for replay and
-next controls; the sketch's icons can remain visual cues.
-
-Correct answers and speech text stay on the server until feedback is returned
-following submission. Before answering, expose only the current question ID,
-audio URL, and choice IDs with their display text or pictures. Calculate scores
-on the server.
-
-## Containers and responsibilities
-
-Start with two application containers managed by Docker Compose.
+## Boundaries
 
 ```mermaid
 flowchart LR
-    B["Browser: selection, question, result"] --> W["Web app: quiz state, scoring, audio"]
-    W --> R["RHVoice / Natia: internal HTTP service"]
-    W --> L["Server-side JSON and question generators"]
-    W --> S["Temporary attempts and audio"]
+    B[Browser] --> W[Flask web app]
+    W --> R[RHVoice / Natia]
+    W --> L[Private lesson JSON and generators]
+    W --> S[In-memory attempts and WAV cache]
 ```
 
-The web app serves the interface and API, loads or generates questions, tracks
-active attempts, checks answers, calculates scores, and serves audio. Frontend
-and backend share one container. Flask with Jinja templates and plain JavaScript
-is the [chosen stack](web-framework.md); no framework is installed yet.
+`web/` owns the interface, API, content validation, attempts, answer checking,
+scoring, and audio retrieval. `lessons/` owns private content and generators.
+`talker/` remains the independent speech image and manual test page. Flask/Jinja
+and plain JavaScript run in one Waitress process with four threads. See
+[the stack decision](web-framework.md).
 
-The existing `talker/` service generates WAVs and serves a manual synthesis test
-page. That page remains a service development tool. The lesson UI, API, and
-answer checking belong in `web/`; content and generators belong in `lessons/`.
+Compose exposes only the web app on `127.0.0.1:8070`; speech is internal at
+`http://rhvoice:8080`. Standalone speech scripts still publish loopback port
+8071 for manual testing. Containers run non-root with read-only filesystems and
+temporary `/tmp` mounts. Use an HTTPS proxy for remote access and secure cookies
+for HTTPS. See [web setup/configuration](../web/README.md).
 
-Only the web app is exposed to users. In Compose, name the speech service
-`rhvoice` and call `http://rhvoice:8080/synthesize` internally without publishing
-its host port. Existing standalone scripts publish `127.0.0.1:8071` for testing.
-Reuse the server's HTTPS proxy, or add a third container if needed. Add Compose
-once the web app has a runnable entry point.
+## Lesson flow and content
 
-## Question sources and defaults
+Three screens provide selection, listening questions with feedback, and final
+score. Easy uses 7 questions at rate 80, Medium 10 at 100, and Hard 15 at 120.
+One lesson alternates two sources: a static greeting and a generated number
+from 1 to 20. Repetition reaches the selected count; generated values may recur.
 
-Each resolved question includes:
+Each occurrence is resolved once into an attempt snapshot. Playback tries
+autoplay with manual fallback and unlimited replay. Five text choices lock on
+submission; correctness and correct answer text remain until Next is clicked.
+The final Next returns the score and OK returns to selection. Audio failure
+leaves the current question open and blocks answers until audio retrieval succeeds.
 
-- Text to read aloud (`speechText`).
-- Correct answer text (`correctAnswerText`), shown after the user's answer.
-- Exactly five choices, each with a stable ID and text or a picture.
-- The correct answer choice (`correctChoiceId`), referring to one of those IDs.
+Resolved questions include speech text, five distinct choices, correct choice
+ID, feedback text, attempt-local ID, and level rate. Feedback defaults to speech
+text; missing correct IDs require a unique exact text-label match after trimming
+whitespace. Number questions define IDs explicitly because choices display
+digits. Picture choices and source rates remain future work. See
+[lesson authoring](../lessons/README.md).
 
-These answer fields may differ: speech and feedback can spell out a Georgian
-number while the correct choice displays its digits. Supply the answer fields
-explicitly when they differ from the defaults.
+## Implemented web API and security
 
-If `correctAnswerText` is missing, default it to `speechText`. If
-`correctChoiceId` is missing, infer it from the unique text choice whose label
-matches `speechText`. Proposed matching trims surrounding whitespace and is
-otherwise exact. If zero or multiple choices match, reject the definition and
-require an explicit ID. Picture choices require an explicit correct choice ID;
-do not infer correctness from an image or its alternative text. Numeric or
-linguistic conversions are not automatic.
+See [the API reference](../web/README.md#api) for complete envelopes and statuses.
+Endpoints provide lesson listing, attempt creation/current state, answers,
+explicit progression, final results, and authorized current-question audio.
 
-A question source may be static JSON or a trusted server-side script, such as a
-generator for a random number from 100 to 999. Both produce the same resolved
-structure. Validate five distinct choices, the correct ID, speech text, and
-optional synthesis rate before use. Generators are registered server code, not
-browser-supplied scripts or executable paths supplied through JSON.
+Before answering, the browser gets only the current question ID, choices, and
+audio URL. Speech text, answer keys, and scores remain in memory. Feedback
+reveals only the submitted question's correct answer. Signed session cookies
+hold only opaque owner and CSRF IDs. Every POST checks `X-CSRF-Token`; requests
+have a 4096-byte bound. Cookies are HttpOnly, SameSite=Lax, and optionally Secure.
 
-Keep source content and generators in `lessons/`, and their loading, validation,
-and execution integration in `web/`. Resolve and retain each question once for
-its attempt so replay, retries, and feedback refer to the same generated number.
-Snapshot question data/order so content edits cannot alter an active score.
-See [lesson authoring](../lessons/README.md).
+Every attempt operation checks ownership and expiry. A lock synchronizes
+answer/progression mutations. The first valid answer is final; repeats return
+original feedback without increasing scores. Next requires the answered current
+ID; duplicate/out-of-order requests return 409. Current-state retrieval recovers
+lost transition responses. Audio checks ownership and the active cache key.
 
-## Proposed web API
+## Speech contract
 
-These routes and examples are proposals, not implemented endpoints. An attempt
-is one active quiz, not an account or a stored history record.
-
-| Endpoint | Purpose |
-|---|---|
-| `GET /api/lessons` | List levels and lesson IDs, titles, levels, and question counts |
-| `POST /api/attempts` | Accept level and lesson IDs, validate their pairing, and return the first question |
-| `POST /api/attempts/{id}/answers` | Accept current question and choice IDs; return feedback without advancing |
-| `POST /api/attempts/{id}/next` | Accept the answered question ID; return the next question or completion |
-| `GET /audio/{id}.wav` | Serve question audio |
-| `GET /api/attempts/{id}/result` | Return score and total for a completed, unexpired attempt |
-
-An illustrative question response:
-
-```json
-{
-  "id": "q1",
-  "audioUrl": "/audio/example-cache-key.wav",
-  "choices": [
-    {"id": "a", "label": "123"},
-    {"id": "b", "label": "132"},
-    {"id": "c", "label": "213"},
-    {"id": "d", "label": "231"},
-    {"id": "e", "label": "312"}
-  ]
-}
-```
-
-A picture choice instead includes `imageUrl` and `alt`. Serve approved display
-assets, never raw lesson files or generator source. Answer feedback includes
-`isCorrect` and `correctAnswerText`; it does not reveal future answers.
-
-Define complete envelopes and error statuses before implementation. Bind
-attempts to an anonymous browser session; an attempt ID alone must not grant
-access to another browser's quiz. Keep hidden answers and scoring state on the
-server, never in client-readable session cookies. Validate ownership, current
-question, and permitted choice IDs. Record the first answer once; retries cannot
-change it or increment the score. Require an answered question and its ID to
-advance, preventing duplicate or out-of-order next requests from skipping
-questions. Protect state-changing requests against cross-site submission.
-
-## Existing speech API
-
-The web app sends `POST /synthesize` with JSON such as:
-
-```json
-{"text": "გამარჯობა! როგორ ხარ?", "rate": 100}
-```
-
-The service returns `audio/wav`. Natia is fixed; voice and version are not
-request fields. Text is limited to 3000 characters, and optional `rate` is an
-integer from 50 to 200, default 100. See [the service README](../talker/README.md)
-for all limits and errors.
-
-Synthesis is serialized with a 60-second timeout. Prepare static audio when
-practical and reuse generated audio during a quiz. `/health` checks HTTP health,
-not fresh synthesis. Surface audio failures without recording an answer or
-advancing a quiz.
+The existing speech API is unchanged: POST /synthesize accepts text and optional
+integer rate (50 to 200, default 100), returning audio/wav. Natia is fixed by the
+service; voice/version are not request fields. Text is limited to 3000 characters,
+synthesis is serialized, and its timeout is 60 seconds. The web app allows 65
+seconds for upstream synthesis. Neither health endpoint proves fresh synthesis.
+See [the service README](../talker/README.md) for full operational instructions.
 
 ## Temporary state and audio
 
-No database is required for the basic version. The proposed initial deployment
-uses bounded, expiring in-memory attempts in one web process, with synchronized
-answer/progression updates. Expiry or restart ends an attempt; explain this and
-return the user to selection. Multiple workers require shared state and are
-outside the initial deployment.
+At most 256 attempts live in one web process, expiring one hour after creation.
+Expiry cleanup is lazy on creation/access. A browser has one active attempt;
+a new attempt replaces its previous one. Refresh returns to selection. Restart
+loses attempts. Multiple workers/replicas require shared state and remain outside
+minimal scope. No database or persistent results are used.
 
-Audio can use a bounded temporary cache with cleanup. Derive cache IDs from a
-deterministic encoding of text, Natia, rate, and a configured synthesis version
-identifying the RHVoice and voice data build. The deployment must supply and
-update this version; the service does not report it. Hash the values instead of
-using raw text as filenames, write WAVs atomically, and coordinate concurrent
-misses to avoid partial files or duplicate synthesis. Keep audio available while
-its question is active.
-
-Persistent storage, accounts, statistics, saved results, and a persistent audio
-cache are optional later extensions. If introduced, SQLite and cached audio
-must use persistent volumes rather than the container writable layer. Never
-commit generated WAVs, databases, or runtime caches.
-
-## Initial implementation order
-
-1. Set up the chosen Flask stack and define/validate the lesson and generator schema.
-2. Implement a static lesson and number generator with audio through RHVoice.
-3. Implement temporary attempts, answer checking, feedback, explicit advancement,
-   and tests for ownership, retries, ordering, and final scoring.
-4. Build the three screens, text/picture choices, playback fallback, and errors.
-5. Add Compose with internal RHVoice networking and HTTPS deployment guidance.
+The in-memory LRU audio cache holds at most 128 WAVs, each capped at 4 MiB. Keys
+hash deterministic JSON containing text, Natia, rate, and SYNTHESIS_VERSION.
+Update that configured version whenever RHVoice/voice data changes. Misses are
+serialized and only complete validated WAVs are cached. Evicted audio can be
+regenerated from the retained snapshot. Failure does not cache an error, score
+an answer, or advance. No cache files are written or committed. Future persistent
+audio or SQLite storage must use volumes.

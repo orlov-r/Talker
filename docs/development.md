@@ -1,7 +1,7 @@
 # Development workflow
 
 Start with the [root README](../README.md) for repository status and commands,
-and the [architecture](architecture.md) for the planned lesson application.
+and the [architecture](architecture.md) for the lesson application.
 Agent-specific instructions live in [AGENTS.md](../AGENTS.md).
 
 ## Existing speech service
@@ -19,28 +19,26 @@ request, and listen to the audio to verify the actual voice.
 
 For HTTP logic changes, cover invalid inputs and synthesis failures/timeouts
 as well as successful WAV responses. A simulated synthesizer can verify API
-behavior locally, but does not verify RHVoice or pronunciation. The repository
-currently has no committed automated test suite; add focused tests as behavior
-is implemented or changed.
+behavior locally, but does not verify RHVoice or pronunciation. The speech
+service has no committed test suite; quiz checks are in `web/test_app.py`.
 
-## Future lesson app
+## Lesson app
 
 Implement in `web/`, with lesson JSON and trusted generators in `lessons/`.
-These directories contain documentation only. Use the
-[chosen Flask, Jinja, and plain JavaScript stack](web-framework.md), and record
-actual install, run, and test commands in `web/README.md` when implementation
-begins.
+The minimal app and private content are implemented. Use the
+[chosen Flask, Jinja, and plain JavaScript stack](web-framework.md), and keep
+install, run, and test commands current in `web/README.md`.
 
-Develop a small complete lesson first: schema validation, prepared audio,
-temporary attempt creation, answer checking, feedback, explicit next-question
-advancement, and score display across the three screens. Add a generated number
-question and a picture-choice example. Test defaults and invalid definitions,
+The single lesson has static greeting and generated number sources, temporary
+attempts, feedback, explicit progression, and scores. Picture choices remain
+future work. Run `python -m unittest discover -s web -p test_app.py -v` from the
+root. Tests cover defaults and invalid definitions,
 server-side scoring, duplicate/out-of-order answer and next requests, attempt
 ownership/expiry, stable generated questions on replay, and audio cache
 invalidation. No database or saved results are required for the basic version.
 The synthesis service should remain independently buildable.
 
-Add Docker Compose once the web app is runnable. Document volume paths,
+Compose is defined in `compose.yaml`, with internal RHVoice networking. Document volume paths,
 configuration, temporary-state limits/cleanup, and HTTPS routing with the
 deployment configuration. If persistent storage is added later, document its
 volumes, migrations, and backup/restore then. Keep runtime SQLite, WAV caches,

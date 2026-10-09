@@ -1,0 +1,28 @@
+services:
+  web:
+    build:
+      context: .
+      dockerfile: web/Dockerfile
+    ports:
+      - "127.0.0.1:8070:8080"
+    environment:
+      SYNTHESIS_URL: http://rhvoice:8080
+      SYNTHESIS_VERSION: ${SYNTHESIS_VERSION:-local-v1}
+      SECRET_KEY: ${SECRET_KEY:?Set SECRET_KEY in your environment or .env}
+      COOKIE_SECURE: ${COOKIE_SECURE:-0}
+    depends_on:
+      - rhvoice
+    read_only: true
+    tmpfs:
+      - /tmp:size=16m,mode=1777
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+  rhvoice:
+    build:
+      context: ./talker
+    platform: linux/amd64
+    read_only: true
+    tmpfs:
+      - /tmp:size=16m,mode=1777
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]

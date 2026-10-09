@@ -1,45 +1,35 @@
-# Lesson content placeholder
+# Server-side lesson content
 
-This directory is reserved for server-side lesson JSON and trusted question
-generator scripts. No lessons, generators, or final schema exist yet. The web
-app will load and validate this content. Never serve these files directly to
-browsers because they contain correct answers or their generation logic.
+`basics.json` defines the single lesson, Greetings and numbers, revision 1.
+Its two ordered sources are a static greeting and the trusted `number`
+generator registered in `generators.py`. Never serve this directory to browsers.
 
-## Proposed authoring model
+The app alternates sources to produce the selected level's 7, 10, or 15
+questions. Each generator occurrence is resolved once and retained for its
+attempt; replay does not change the number. The generator samples five distinct
+numbers from 1 to 20, picks one as correct, speaks its Georgian name, and displays
+digits as choices. Generated values may recur across questions.
 
-A lesson has a stable ID, title, skill level (Easy, Medium, Hard), revision, and
-an ordered list of question sources. A source is static JSON or a registered
-server-side generator, such as a script selecting a random number from 100 to
-999 and constructing five number choices.
+## Implemented schema
 
-Each resolved question has a stable ID within its attempt and these fields:
+A lesson defines `id`, `title`, `revision`, and ordered `sources`. A source is a
+question object or `{ "generator": "number" }`. Generators are trusted registry
+entries, never arbitrary paths or browser-provided code. The app loads the one
+lesson at startup.
 
-| Field | Meaning |
+| Question field | Requirement |
 |---|---|
-| `speechText` | Text sent to RHVoice to read aloud |
-| `rate` | Optional synthesis rate, integer 50–200, default 100 |
-| `correctAnswerText` | Feedback text; defaults to `speechText` |
-| `choices` | Exactly five distinct choices with stable IDs, displaying text or pictures with accessible labels |
-| `correctChoiceId` | Correct choice ID; may be inferred from a unique text label matching `speechText` |
+| `speechText` | Nonempty string, at most 3000 characters |
+| `choices` | Exactly five distinct `{id, label}` text choices |
+| `correctChoiceId` | Choice ID, or inferred from a unique label matching speech |
+| `correctAnswerText` | Nonempty feedback text; defaults to speech text |
 
-Proposed default matching trims surrounding whitespace and otherwise uses exact
-text equality. Missing or ambiguous matches require an explicit
-`correctChoiceId`. Picture answers require an explicit ID. Validate the ID
-against the five choices; do not guess numeric or linguistic conversions.
+Matching trims whitespace and otherwise uses exact equality. Explicit correct
+IDs are required when speech differs from the choice label (number names versus
+digits). Duplicate IDs or labels are rejected. The app adds attempt-local IDs
+and level-derived rates. Picture choices and source rate overrides are future
+extensions.
 
-For number questions, speech and feedback can spell the number in Georgian while
-choices display digits. Supply the answer fields explicitly when they differ
-from the defaults. Field names distinguish feedback text from the choice ID.
-
-Generators return the same resolved structure as static questions. Invoke only
-registered, trusted server code, never browser-provided scripts or arbitrary
-paths from JSON. Validate output and retain it for the active attempt; replay
-and submission retries must use the same question and choices.
-
-The browser receives display assets through the web app, not source content.
-Keep generated WAVs in temporary audio storage for the basic version, outside
-this directory and Git. A persistent audio cache may be added later.
-
-See [the architecture](../docs/architecture.md) for feedback timing, attempt
-snapshots, cache keys, and the proposed browser-facing question contract. Add
-the final schema and executable authoring examples when lessons are implemented.
+Validation/integration belongs in [`web/content.py`](../web/content.py); source
+content and generators remain here. Runtime audio is never written here.
+See [web setup](../web/README.md) and [architecture](../docs/architecture.md).
