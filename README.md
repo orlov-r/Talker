@@ -8,8 +8,12 @@ multiple-choice questions, and see a final score.
 
 The speech service is implemented. It accepts Georgian text and returns WAV
 audio, and includes a browser page for manually testing speech. The lesson web
-app, lesson content, scoring, persistent storage, and Docker Compose setup are
+app, lesson content, scoring, and Docker Compose setup are
 planned; they are not implemented yet.
+
+The basic app has three screens: skill level and lesson selection, a listening
+question with five answer choices and feedback, and a final score. Accounts,
+statistics, and persistent attempts/results are outside the basic scope.
 
 ## Repository layout
 
@@ -17,8 +21,9 @@ planned; they are not implemented yet.
 |---|---|
 | [talker/](talker/README.md) | Existing RHVoice/Natia service, Docker image, and build/run scripts |
 | [web/](web/README.md) | Placeholder for the lesson web app and its API |
-| [lessons/](lessons/README.md) | Placeholder for server-side lesson JSON files |
+| [lessons/](lessons/README.md) | Placeholder for server-side lesson JSON and question generators |
 | [docs/architecture.md](docs/architecture.md) | Proposed container boundaries, API, storage, and quiz flow |
+| [docs/web-framework.md](docs/web-framework.md) | Chosen web stack and framework comparison |
 | [docs/development.md](docs/development.md) | Development workflow and implementation sequence |
 | [AGENTS.md](AGENTS.md) | Repository guidance for coding agents |
 
@@ -61,10 +66,13 @@ container replacement, image transfer, source pinning, and voice license notes.
 
 Start with two containers: the web app and RHVoice/Natia. Only the web app is
 exposed to users; it calls `http://rhvoice:8080/synthesize` over the internal
-Docker network. Lessons start as JSON files, attempts/results use SQLite, and
-generated WAV files use a persistent audio cache. Reuse the server's HTTPS
-proxy, or add a third container for one if needed.
+Docker network. Questions come from server-side JSON or trusted generators.
+Active attempts and reusable audio need only temporary storage for the basic
+version; no database is required. Reuse the server's HTTPS proxy, or add a third
+container for one if needed.
 
 Docker Compose will be added when the web app has a runnable entry point.
-The web framework is still undecided. The [architecture document](docs/architecture.md)
+Flask with Jinja templates and plain JavaScript is the
+[chosen web stack](docs/web-framework.md). No framework
+or dependencies have been added. The [architecture document](docs/architecture.md)
 describes the proposed behavior and boundaries for that implementation.

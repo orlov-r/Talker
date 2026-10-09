@@ -25,18 +25,26 @@ is implemented or changed.
 
 ## Future lesson app
 
-Implement in `web/`, with lesson JSON in `lessons/`. These directories contain
-documentation only. Select a framework when implementation begins and record
-its install, run, and test commands in `web/README.md`.
+Implement in `web/`, with lesson JSON and trusted generators in `lessons/`.
+These directories contain documentation only. Use the
+[chosen Flask, Jinja, and plain JavaScript stack](web-framework.md), and record
+actual install, run, and test commands in `web/README.md` when implementation
+begins.
 
 Develop a small complete lesson first: schema validation, prepared audio,
-attempt creation, answer checking, and score display. Test server-side scoring,
-duplicate submissions, out-of-order answers, attempt ownership, and cache
-invalidation. The synthesis service should remain independently buildable.
+temporary attempt creation, answer checking, feedback, explicit next-question
+advancement, and score display across the three screens. Add a generated number
+question and a picture-choice example. Test defaults and invalid definitions,
+server-side scoring, duplicate/out-of-order answer and next requests, attempt
+ownership/expiry, stable generated questions on replay, and audio cache
+invalidation. No database or saved results are required for the basic version.
+The synthesis service should remain independently buildable.
 
 Add Docker Compose once the web app is runnable. Document volume paths,
-configuration, migrations, backup/restore, and HTTPS routing with the deployment
-configuration. Keep runtime SQLite, WAV caches, and image archives out of Git.
+configuration, temporary-state limits/cleanup, and HTTPS routing with the
+deployment configuration. If persistent storage is added later, document its
+volumes, migrations, and backup/restore then. Keep runtime SQLite, WAV caches,
+and image archives out of Git.
 
 ## Documentation changes
 
