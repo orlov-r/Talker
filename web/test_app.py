@@ -4,12 +4,13 @@ import json
 import re
 import unittest
 import wave
+from pathlib import Path
 from unittest.mock import patch
 from lessons.generators import number, number_to_text
 from concurrent.futures import ThreadPoolExecutor
 from web.app import create_app
 from web.audio import AudioCache, cache_key
-from web.content import validate, questions
+from web.content import LESSONS, validate, questions
 
 
 def wav_bytes(*args):
@@ -39,8 +40,8 @@ class QuizTests(unittest.TestCase):
     def post(self, path, data):
         return self.client.post(path, json=data, headers={'X-CSRF-Token': self.token})
 
-    def start(self, level='easy'):
-        response = self.post('/api/attempts', {'lessonId': 'basics', 'level': level})
+    def start(self, level='easy', lesson='basics'):
+        response = self.post('/api/attempts', {'lessonId': lesson, 'level': level})
         self.assertEqual(response.status_code, 201)
         return response.json
 
@@ -54,28 +55,29 @@ class QuizTests(unittest.TestCase):
 
     def test_levels_and_complete_score(self):
         for level, count, rate in [('easy', 7, 80), ('medium', 10, 100), ('hard', 15, 120)]:
-            state = self.start(level)
-            aid = state['attemptId']
-            self.assertEqual(state['total'], count)
-            self.assertEqual(self.client.get(f'/api/attempts/{aid}/result').status_code, 409)
-            for i in range(count):
-                serialized = json.dumps(state)
-                self.assertNotIn('speechText', serialized)
-                self.assertNotIn('correctChoiceId', serialized)
-                self.assertEqual(len(state['question']['choices']), 4)
-                self.assertEqual(self.client.get(state['question']['audioUrl']).mimetype, 'audio/wav')
-                q = self.app.extensions['attempts'][aid]['questions'][i]
-                self.assertEqual(q['rate'], rate)
-                first = self.answer(state, q['correctChoiceId'])
-                self.assertTrue(first.json['isCorrect'])
-                other = next(c['id'] for c in q['choices'] if c['id'] != q['correctChoiceId'])
-                self.assertEqual(self.answer(state, other).json, first.json)
-                previous = state
-                state = self.advance(state).json
-                self.assertEqual(self.advance(previous).status_code, 409)
-            self.assertEqual(state['score'], count)
-            self.assertTrue(state['complete'])
-            self.assertEqual(self.client.get(f'/api/attempts/{aid}/result').json['score'], count)
+            for lesson in LESSONS:
+                state = self.start(level, lesson)
+                aid = state['attemptId']
+                self.assertEqual(state['total'], count)
+                self.assertEqual(self.client.get(f'/api/attempts/{aid}/result').status_code, 409)
+                for i in range(count):
+                    serialized = json.dumps(state)
+                    self.assertNotIn('speechText', serialized)
+                    self.assertNotIn('correctChoiceId', serialized)
+                    self.assertEqual(len(state['question']['choices']), 4)
+                    self.assertEqual(self.client.get(state['question']['audioUrl']).mimetype, 'audio/wav')
+                    q = self.app.extensions['attempts'][aid]['questions'][i]
+                    self.assertEqual(q['rate'], rate)
+                    first = self.answer(state, q['correctChoiceId'])
+                    self.assertTrue(first.json['isCorrect'])
+                    other = next(c['id'] for c in q['choices'] if c['id'] != q['correctChoiceId'])
+                    self.assertEqual(self.answer(state, other).json, first.json)
+                    previous = state
+                    state = self.advance(state).json
+                    self.assertEqual(self.advance(previous).status_code, 409)
+                self.assertEqual(state['score'], count)
+                self.assertTrue(state['complete'])
+                self.assertEqual(self.client.get(f'/api/attempts/{aid}/result').json['score'], count)
 
     def test_wrong_answer_and_order(self):
         state = self.start()
@@ -92,6 +94,22 @@ class QuizTests(unittest.TestCase):
         self.assertEqual(self.client.get(f"/api/attempts/{state['attemptId']}").json['feedback'], response.json)
         self.assertFalse(response.json['isCorrect'])
         self.assertEqual(self.app.extensions['attempts'][state['attemptId']]['score'], 0)
+
+    def test_lesson_selection_isolated_and_private(self):
+        catalog = self.client.get('/api/lessons').json['lessons']
+        self.assertEqual([l['id'] for l in catalog], list(LESSONS))
+        self.assertTrue(all(set(l) == {'id', 'title', 'levels'} for l in catalog))
+        for lid in LESSONS:
+            state = self.start('hard', lid)
+            snapshots = self.app.extensions['attempts'][state['attemptId']]['questions']
+            if lid == 'numbers':
+                self.assertTrue(all(q['speechText'] in [number_to_text(n) for n in range(1, 21)] for q in snapshots))
+                self.assertTrue(all(q['choiceLayout'] == 'short' for q in snapshots))
+            else:
+                pools = [{c['id'] for c in s['choices']} for s in LESSONS[lid]['sources']]
+                self.assertTrue(all(any({c['id'] for c in q['choices']} <= pool for pool in pools) for q in snapshots))
+            self.assertEqual(self.client.get('/lessons/' + ('basics' if lid == 'basics' else lid) + '.json').status_code, 404)
+        self.assertEqual(self.post('/api/attempts', {'lessonId': [], 'level': 'easy'}).status_code, 400)
 
     def test_choice_texts_are_private_until_answer_and_survive_recovery(self):
         state = self.start()
@@ -173,7 +191,9 @@ class QuizTests(unittest.TestCase):
         html = self.client.get('/').get_data(as_text=True)
         self.assertIn('<html lang="ru">', html)
         self.assertIn('Вопросов: 15', html)
-        self.assertIn('Приветствия и числа', html)
+        for lesson in LESSONS.values():
+            self.assertIn(lesson['title'], html)
+            self.assertIn(f'value="{lesson["id"]}"', html)
         for path in re.findall(r'(?:src|href)="(/static/[^\"]+)"', html):
             with self.client.get(path) as response:
                 self.assertEqual(response.status_code, 200)
@@ -181,6 +201,23 @@ class QuizTests(unittest.TestCase):
 
 
 class ContentAndCacheTests(unittest.TestCase):
+    def test_catalog_and_animal_assets(self):
+        self.assertEqual(list(LESSONS), ['basics', 'numbers', 'animals'])
+        self.assertEqual([len(l['sources']) for l in LESSONS.values()], [1, 2, 2])
+        self.assertEqual(len(LESSONS['basics']['sources'][0]['choices']), 12)
+        for source in LESSONS['animals']['sources']:
+            self.assertEqual(len(source['choices']), 10)
+            for choice in validate(source)['choices']:
+                self.assertTrue((Path(__file__).parent / 'static/choices' / choice['image']).is_file())
+
+    def test_short_number_range(self):
+        for correct in range(1, 11):
+            for offset in range(max(0, correct - 7), min(3, correct - 1) + 1):
+                with patch('lessons.generators.random.randint', side_effect=[correct, offset]):
+                    q = validate(number(10), generated=True)
+                self.assertTrue(all(1 <= int(c['translation']) <= 10 for c in q['choices']))
+                self.assertEqual(next(c['translation'] for c in q['choices'] if c['isCorrect']), str(correct))
+
     def test_number_intervals_and_correct_markers(self):
         for correct in range(1, 21):
             for offset in range(max(0, correct - 17), min(3, correct - 1) + 1):
@@ -207,10 +244,13 @@ class ContentAndCacheTests(unittest.TestCase):
         sequences = set()
         for level in ['easy', 'medium', 'hard']:
             for _ in range(30):
-                qs = questions(level)
-                texts = [next(c['text'] for c in q['choices'] if c['id'] == q['correctChoiceId']) for q in qs]
-                self.assertEqual(len(texts), len(set(texts)))
-                sequences.add(tuple(texts))
+                for lesson in LESSONS.values():
+                    qs = questions(level, lesson)
+                    texts = [next(c['text'] for c in q['choices'] if c['id'] == q['correctChoiceId']) for q in qs]
+                    cycle = 12 if lesson['id'] == 'basics' else 20
+                    for start in range(0, len(texts), cycle):
+                        self.assertEqual(len(texts[start:start + cycle]), len(set(texts[start:start + cycle])))
+                    sequences.add(tuple(texts))
         self.assertGreater(len(sequences), 1)
 
     def test_speech_override_and_static_choice_selection(self):

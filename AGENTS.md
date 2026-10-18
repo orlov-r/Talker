@@ -45,6 +45,9 @@ behavior, not existing endpoints. Keep that distinction explicit in docs.
 
 ## Naming and copy
 
+- Generate animal lesson illustrations in the style of Niko Pirosmani. Follow
+  `lessons/README.md` for composition, output format and private prompt storage.
+
 - When introducing names, identifiers, filenames, or user-facing text proposed
   in a prompt, flag likely spelling, grammar, style, or clarity problems and
   suggest a clearer alternative.

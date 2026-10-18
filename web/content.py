@@ -11,7 +11,11 @@ LEVELS = {
     "medium": {"label": "Средний", "rate": 100, "questionCount": 10},
     "hard": {"label": "Сложный", "rate": 120, "questionCount": 15},
 }
-LESSON = json.loads((Path(__file__).resolve().parents[1] / "lessons/basics.json").read_text(encoding="utf-8"))
+LESSON_DIR = Path(__file__).resolve().parents[1] / "lessons"
+LESSONS = {lesson["id"]: lesson for lesson in
+           (json.loads((LESSON_DIR / name).read_text(encoding="utf-8"))
+            for name in ("basics.json", "numbers.json", "animals.json"))}
+LESSON = LESSONS["basics"]
 
 
 def validate(question, generated=False):
@@ -44,11 +48,12 @@ def validate(question, generated=False):
     return q
 
 
-def questions(level):
+def questions(level, lesson=None):
     settings = LEVELS[level]
+    lesson = LESSON if lesson is None else lesson
     result, used = [], set()
-    static = [validate(s) for s in LESSON["sources"] if "generator" not in s]
-    generators = [s for s in LESSON["sources"] if "generator" in s]
+    static = [validate(s) for s in lesson["sources"] if "generator" not in s]
+    generators = [s for s in lesson["sources"] if "generator" in s]
     if not static and not generators:
         raise ValueError("Lesson requires at least one source")
     for i in range(settings["questionCount"]):

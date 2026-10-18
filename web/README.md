@@ -1,6 +1,6 @@
 # Lesson web app
 
-Flask/Jinja and plain JavaScript implement one anonymous listening lesson.
+Flask/Jinja and plain JavaScript implement three anonymous listening lessons.
 Waitress runs production as one process with four threads; no frontend build or
 database is required.
 
@@ -12,14 +12,18 @@ database is required.
 | Medium | 100 | 10 |
 | Hard | 120 | 15 |
 
-The lesson randomly selects vocabulary and generated numbers from 1 to 20.
+Choose «Приветствие» (12 everyday expressions), «Числа» (two generators: 1–10
+and 1–20), or «Животные» (two pools of 10 animal names). Each attempt randomly
+selects sources only from the chosen lesson; the level still sets 7/10/15 answers.
+The two animal groups are a teaching selection, not a measured corpus ranking.
+Animal illustrations use the style of Niko Pirosmani.
 Correct answer texts do not repeat until the available answers are exhausted,
 then a new uniqueness cycle begins. Generators use bounded retries, so an early
 repeat has a small probability. Static vocabulary chooses
 an unused correct choice at random; a generator marks its own correct choice.
 Each question displays that choice and three sampled wrong answers, shuffled
 once per occurrence. Number choices form a consecutive four-number interval
-within 1–20. Levels override source rates.
+within the selected generator’s range (1–10 or 1–20). Levels override source rates.
 `choiceLayout: "short"` uses four square buttons in a row; `"long"` (default)
 uses a 2×2 grid. Buttons show a local image when supplied, otherwise the Russian
 translation; translations also provide accessible image labels.

@@ -6,7 +6,7 @@ import time
 from flask import Flask, abort, jsonify, render_template, request, session, Response
 from werkzeug.exceptions import HTTPException
 from web.audio import AudioCache, cache_key, synthesize
-from web.content import LESSON, LEVELS, questions
+from web.content import LESSONS, LEVELS, questions
 
 
 def create_app(config=None):
@@ -86,7 +86,7 @@ def create_app(config=None):
 
     @app.get("/")
     def index():
-        return render_template("index.html", csrf=session["csrf"], levels=LEVELS, lesson=LESSON)
+        return render_template("index.html", csrf=session["csrf"], levels=LEVELS, lessons=LESSONS.values())
 
     @app.get("/health")
     def health():
@@ -94,12 +94,14 @@ def create_app(config=None):
 
     @app.get("/api/lessons")
     def lessons():
-        return jsonify(levels=LEVELS, lessons=[{"id": LESSON["id"], "title": LESSON["title"], "levels": list(LEVELS)}])
+        return jsonify(levels=LEVELS, lessons=[{"id": lesson["id"], "title": lesson["title"], "levels": list(LEVELS)}
+                                              for lesson in LESSONS.values()])
 
     @app.post("/api/attempts")
     def start():
         data = body()
-        if not isinstance(data.get("level"), str) or data["level"] not in LEVELS or data.get("lessonId") != LESSON["id"]:
+        if (not isinstance(data.get("level"), str) or data["level"] not in LEVELS or
+                not isinstance(data.get("lessonId"), str) or data["lessonId"] not in LESSONS):
             abort(400, "Выберите доступный уровень и урок.")
         with lock:
             now = time.monotonic()
@@ -110,7 +112,7 @@ def create_app(config=None):
                 abort(503, "Слишком много активных уроков. Попробуйте позже.")
             aid = secrets.token_urlsafe(24)
             attempts[aid] = {"owner": session["owner"], "expires": now + app.config["ATTEMPT_TTL"],
-                             "questions": questions(data["level"]), "index": 0, "score": 0, "feedback": None,
+                             "questions": questions(data["level"], LESSONS[data["lessonId"]]), "index": 0, "score": 0, "feedback": None,
                              "audioReady": set()}
             return jsonify(envelope(aid, attempts[aid])), 201
 

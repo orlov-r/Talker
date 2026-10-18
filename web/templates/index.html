@@ -13,7 +13,7 @@
   <main>
     <section id="start">
       <h1>Слушайте понемногу.<br>Двигайтесь вперёд.</h1>
-      <p class="intro">Знакомьтесь с грузинскими приветствиями и числами. Выберите удобный темп.</p>
+      <p class="intro">Узнавайте на слух грузинские приветствия, числа и названия животных. Выберите урок и удобный темп.</p>
       <form id="start-form">
         <fieldset><legend>Уровень сложности</legend><div class="levels">
         {% for id, level in levels.items() %}
@@ -21,8 +21,14 @@
           <span><strong>{{ level.label }}</strong><small>Вопросов: {{ level.questionCount }}<br>Скорость речи: {{ level.rate }}%</small></span></label>
         {% endfor %}
         </div></fieldset>
-        <div class="lesson"><span class="lesson-number">01</span><div><h2>{{ lesson.title }}</h2>
-          <p>Случайные вопросы со словами и числами. Правильные ответы повторяются только после исчерпания вариантов.</p></div></div>
+        <fieldset><legend>Урок</legend>
+        {% for lesson in lessons %}
+          <label class="lesson"><input type="radio" name="lessonId" value="{{ lesson.id }}" {% if loop.first %}checked{% endif %}>
+            <span class="lesson-number">{{ '%02d' % loop.index }}</span>
+            <span><strong>{{ lesson.title }}</strong><span>{{ lesson.description }}</span></span>
+          </label>
+        {% endfor %}
+        </fieldset>
         <button type="submit" id="begin">Начать урок <span aria-hidden="true">→</span></button>
       </form>
       <p class="note">Регистрация не нужна. Урок доступен в течение часа; при обновлении страницы придётся начать заново.</p>
@@ -40,6 +46,6 @@
       <button id="ok" type="button">К выбору урока</button></section>
     <p id="error" role="alert"></p>
   </main>
-  <footer>Один урок. Ваш темп. <span>Озвучивает Natia.</span></footer>
+  <footer>Ваш урок. Ваш темп. <span>Озвучивает Natia.</span></footer>
 </body>
 </html>

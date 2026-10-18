@@ -28,3 +28,6 @@ main{margin:32px auto 40px}
 .quiz-actions{display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:16px}
 .quiz-actions .secondary{margin:0;padding-left:0}
 @media(max-width:600px){main{margin:24px auto 32px;padding:0 16px}#choices{gap:8px}#choices button{padding:18px 22px;font-size:20px}#choices[data-layout="short"] button{padding:8px}.answer-mark{font-size:16px;right:4px;top:0}header,footer{padding:16px}.quiz-toolbar{min-height:80px}}
+
+/* Select a lesson with the whole card. */
+label.lesson{cursor:pointer;margin-bottom:12px}label.lesson input{flex-shrink:0;accent-color:var(--accent)}label.lesson:has(input:checked){border-color:var(--accent);background:#eaf2e8}label.lesson .lesson-number{flex-shrink:0}label.lesson>span:last-child>span{display:block;color:var(--muted);font-size:14px}

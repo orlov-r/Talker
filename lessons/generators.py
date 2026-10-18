@@ -13,9 +13,9 @@ def number_to_text(value):
     return NUMBERS[value - 1]
 
 
-def number():
-    correct = random.randint(1, 20)
-    offset = random.randint(max(0, correct - 17), min(3, correct - 1))
+def number(maximum=20):
+    correct = random.randint(1, maximum)
+    offset = random.randint(max(0, correct - maximum + 3), min(3, correct - 1))
     start = correct - offset
     return {
         "choiceLayout": "short",
@@ -25,4 +25,4 @@ def number():
     }
 
 
-GENERATORS = {"number": number}
+GENERATORS = {"number": number, "number-1-10": lambda: number(10)}

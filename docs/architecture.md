@@ -1,8 +1,8 @@
 # Lesson architecture
 
 RHVoice/Natia and the minimal Flask lesson app are implemented. Compose defines
-their deployment. Accounts, statistics, saved progress/results,
-and additional lessons remain future work.
+their deployment. Accounts, statistics, and saved progress/results remain
+future work.
 
 ## Boundaries
 
@@ -30,14 +30,18 @@ for HTTPS. See [web setup/configuration](../web/README.md).
 
 Three screens provide selection, listening questions with feedback, and final
 score. Easy uses 7 questions at rate 80, Medium 10 at 100, and Hard 15 at 120.
-One lesson randomly selects static vocabulary and generated numbers from 1 to
-20. Correct Georgian answer texts are tracked across the entire attempt and
+Three private lesson definitions provide greetings (one pool of 12 expressions),
+numbers (two generators: 1–10 and 1–20), and animals (two pools of 10).
+The browser selects a lesson ID; the server resolves that ID through its fixed
+catalog and randomly selects only that lesson’s sources. Correct Georgian answer
+texts are tracked across the entire attempt and
 not repeated until available answers are exhausted. Exhausted static sources
 are excluded for the current uniqueness cycle, then the set of used texts resets.
 Duplicate generator results are retried up to 100 times per question; after
 that, unused static vocabulary is preferred, or the uniqueness cycle resets and
 the last generated result is accepted. A rare early generator repeat is allowed.
-The current content offers 26 distinct correct answers for at most 15 questions.
+Greetings offer 12 distinct correct answers, so Hard starts a second cycle after
+12 answers. Numbers and animals each offer 20 distinct answers.
 
 Each occurrence is resolved once into an attempt snapshot. Playback tries
 autoplay with manual fallback and unlimited replay. Four choices lock on
@@ -51,14 +55,15 @@ sources choose the correct option at random; generated questions mark exactly
 one choice with `isCorrect: true`. Sources supply at least four choices; three
 wrong choices are sampled and shuffled with the correct answer once per snapshot.
 The correct choice supplies speech and feedback (`text (translation)`). Number
-choices are four consecutive integers within 1–20, with Georgian names and digit
-translations. Resolved snapshots add a correct ID, attempt-local ID and rate.
+choices are four consecutive integers within the selected 1–10 or 1–20 range,
+with Georgian names and digit translations. Resolved snapshots add a correct ID, attempt-local ID and rate.
 Buttons show images or translations. Feedback reveals the four Georgian texts
 for inspection between Back and Next by hover, keyboard focus or tap. This area
 is present before answering to keep controls in place. Option keyboard shortcuts
 follow the visual layout (Z/X/C/V or A/S/Z/X); R replays, Space/Enter advances
-after answering. Images are 512×512 JPGs at quality 75, named after the English
-word; private generation prompts live in `lessons/image-prompts.json`. Feedback also
+after answering. Animal images use the style of Niko Pirosmani, saved as
+512×512 JPGs at quality 75 and named after the English word. Private generation
+prompts live in `lessons/image-prompts.json`. Feedback also
 includes the submitted choice ID so its green tick or red cross survives state
 recovery. Source rates remain future work. See
 [lesson authoring](../lessons/README.md).

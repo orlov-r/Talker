@@ -144,7 +144,7 @@ $('start-form').onsubmit = event => {
   run(async () => {
     $('begin').disabled = true;
     try { await render(await api('/api/attempts', {
-      lessonId: 'basics', level: new FormData(event.target).get('level')
+      lessonId: new FormData(event.target).get('lessonId'), level: new FormData(event.target).get('level')
     })); } finally { $('begin').disabled = false; }
   });
 };
