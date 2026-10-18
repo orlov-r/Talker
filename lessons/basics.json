@@ -1,17 +1,17 @@
 {
   "id": "basics",
   "title": "Приветствия и числа",
-  "revision": 1,
+  "revision": 2,
   "sources": [
     {
       "choiceLayout": "long",
-      "speechText": "გამარჯობა",
       "choices": [
-        {"id": "hello", "label": "გამარჯობა"},
-        {"id": "thanks", "label": "მადლობა"},
-        {"id": "bye", "label": "ნახვამდის"},
-        {"id": "yes", "label": "დიახ"},
-        {"id": "no", "label": "არა"}
+        {"id": "hello", "text": "გამარჯობა", "translation": "Привет"},
+        {"id": "thanks", "text": "მადლობა", "translation": "Спасибо"},
+        {"id": "bye", "text": "ნახვამდის", "translation": "До свидания"},
+        {"id": "yes", "text": "დიახ", "translation": "Да"},
+        {"id": "no", "text": "არა", "translation": "Нет"},
+        {"id": "dog", "text": "ძაღლი", "translation": "Собака", "image": "dog-pirosmani.png"}
       ]
     },
     {"generator": "number"}

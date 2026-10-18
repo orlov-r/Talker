@@ -29,12 +29,14 @@ The minimal app and private content are implemented. Use the
 [chosen Flask, Jinja, and plain JavaScript stack](web-framework.md), and keep
 install, run, and test commands current in `web/README.md`.
 
-The single lesson has static greeting and generated number sources, temporary
-attempts, feedback, explicit progression, and scores. Picture choices remain
-future work. Run `python -m unittest discover -s web -p test_app.py -v` from the
+The single lesson randomly selects vocabulary and generated number sources,
+without repeating correct texts within an attempt. It supports picture choices,
+temporary attempts, feedback, explicit progression, and scores.
+Run `python -m unittest discover -s web -p test_app.py -v` from the
 root. Tests cover defaults and invalid definitions,
 server-side scoring, duplicate/out-of-order answer and next requests, attempt
-ownership/expiry, stable generated questions on replay, and audio cache
+ownership/expiry, number intervals, speech overrides, private choice texts,
+stable generated questions on replay, and audio cache
 invalidation. No database or saved results are required for the basic version.
 The synthesis service should remain independently buildable.
 

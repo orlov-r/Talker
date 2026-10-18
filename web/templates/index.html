@@ -22,7 +22,7 @@
         {% endfor %}
         </div></fieldset>
         <div class="lesson"><span class="lesson-number">01</span><div><h2>{{ lesson.title }}</h2>
-          <p>Вопросы с приветствием чередуются с вопросами со случайным числом.</p></div></div>
+          <p>Случайные вопросы со словами и числами. Правильные ответы не повторяются.</p></div></div>
         <button type="submit" id="begin">Начать урок <span aria-hidden="true">→</span></button>
       </form>
       <p class="note">Регистрация не нужна. Урок доступен в течение часа; при обновлении страницы придётся начать заново.</p>
@@ -33,6 +33,7 @@
       <div class="quiz-toolbar"><p id="feedback" role="status" lang="ka"></p><button id="replay" type="button">Повторить</button></div>
       <p id="audio-status" role="status"></p>
       <div id="choices" aria-label="Варианты ответа"></div>
+      <p id="choice-text" lang="ka" role="status" hidden></p>
       <div class="quiz-actions"><button class="secondary" id="leave" type="button">Назад</button><button id="next" type="button" disabled>Далее →</button></div>
     </section>
     <section id="result" hidden><p class="eyebrow">УРОК ЗАВЕРШЁН</p><h1>Хорошая тренировка!</h1>

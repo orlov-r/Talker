@@ -1,36 +1,63 @@
 # Server-side lesson content
 
-`basics.json` defines the single lesson, «Приветствия и числа», revision 1.
-Its two ordered sources are a static greeting and the trusted `number`
-generator registered in `generators.py`. Never serve this directory to browsers.
-
-The app alternates sources to produce the selected level's 7, 10, or 15
-questions. Each generator occurrence is resolved once and retained for its
-attempt; replay does not change the number. The generator supplies numbers from 1 to 20, picks one as correct, speaks its
-Georgian name, and displays digits as choices. The app samples three wrong choices
-and shuffles them with the correct choice once per occurrence. Generated values may recur across questions.
+`basics.json` defines «Приветствия и числа», revision 2: a vocabulary pool
+(including `ძაღლი`, dog) and the trusted `number` generator in `generators.py`.
+Never serve this directory to browsers.
 
 ## Implemented schema
 
-A lesson defines `id`, `title`, `revision`, and ordered `sources`. A source is a
-question object or `{ "generator": "number" }`. Generators are trusted registry
-entries, never arbitrary paths or browser-provided code. The app loads the one
-lesson at startup.
+A lesson defines `id`, `title`, `revision`, and `sources`. A source is a question
+object or `{ "generator": "number" }`. Generators are trusted registry entries,
+never browser-provided code or arbitrary paths.
 
-| Question field | Requirement |
+A question has `choiceLayout` (`"short"`: four squares in a row; `"long"`, the
+default: 2×2 grid) and at least four distinct `choices`:
+
+| Choice field | Requirement |
 |---|---|
-| `speechText` | Nonempty string, at most 3000 characters |
-| `choices` | At least four distinct `{id, label}` choices; optional `image` path under `/static/choices/` |
-| `choiceLayout` | `"short"` for four squares in a row; `"long"` (default) for a 2×2 grid |
-| `correctChoiceId` | Choice ID, or inferred from a unique label matching speech |
-| `correctAnswerText` | Nonempty feedback text; defaults to speech text |
+| `id` | Nonempty stable identifier, unique within the source |
+| `text` | Georgian text, nonempty, at most 3000 characters |
+| `speechText` | Optional nonempty speech override, at most 3000 characters; defaults to `text` |
+| `translation` | Russian translation (digits for numbers), nonempty, at most 3000 characters |
+| `image` | Optional image filename in `web/static/choices/`, e.g. `dog-pirosmani.png` |
+| `isCorrect` | Generators mark exactly one choice `true`; static choices omit it |
 
-Matching trims whitespace and otherwise uses exact equality. Explicit correct
-IDs are required when speech differs from the choice label (number names versus
-digits). Duplicate IDs or labels are rejected. The app adds attempt-local IDs
-and level-derived rates. For image choices, place assets in `web/static/choices/`; `label` provides alt
-text. Source rate overrides remain a future extension.
+IDs, trimmed texts and trimmed translations must each be distinct. Images use
+plain filenames with letters, digits, `_` or `-` and PNG/JPEG/WebP extensions.
+Buttons show an image when present, otherwise the translation. The translation
+also supplies accessible image text.
 
-Validation/integration belongs in [`web/content.py`](../web/content.py); source
-content and generators remain here. Runtime audio is never written here.
-See [web setup](../web/README.md) and [architecture](../docs/architecture.md).
+## Selection and playback
+
+The app randomly selects a source for each of the level's 7, 10 or 15 questions.
+For static questions it randomly chooses a correct option whose Georgian text
+has not already been correct in this attempt. Generated questions supply their
+correct option; duplicate correct texts cause a retry. Exhausted static pools
+are excluded. The retry limit is 1000 proposals per question; exhausted or
+nonproductive content fails explicitly instead of repeating correct answers.
+The current 26 possible answers are sufficient for all levels.
+
+The correct option plus three sampled wrong choices are shuffled once and saved
+in the attempt. Its `speechText` is spoken. After answering, feedback shows
+`text (translation)`, and hovering, focusing or tapping each displayed answer
+shows its Georgian text below the buttons. These texts are sent only after
+answering, including during state recovery. Replay preserves the snapshot.
+
+`number()` chooses N uniformly from 1–20 and a random offset R from 0–3 among
+offsets for which N−R through N−R+3 stays within 1–20. These four consecutive
+numbers become choices, with N marked correct. `number_to_text()` converts
+integers 1–20 to Georgian words; translations are digits.
+
+The dog illustration was generated with the built-in image generation tool.
+Prompt: “Use case: stylized-concept. Asset type: square illustration for a
+Georgian vocabulary answer button. Primary request: a single dog painted in the
+style of Niko Pirosmani. Full dog in side profile, clearly recognizable, centered
+with space around the silhouette. Naive Georgian folk oil painting, flat forms,
+expressive eyes, restrained earthy colors on a dark simple background, visible
+painted texture. No writing, no border, no watermark. Save a local output file so
+the illustration can be used in the project.”
+Asset: `web/static/choices/dog-pirosmani.png`.
+
+Validation and snapshots: [`web/content.py`](../web/content.py).
+Runtime audio is never written here. See [web setup](../web/README.md) and
+[architecture](../docs/architecture.md).

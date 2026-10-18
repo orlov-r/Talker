@@ -79,7 +79,9 @@ def create_app(config=None):
         q = a["questions"][a["index"]]
         key = cache_key(q["speechText"], q["rate"], app.config["SYNTHESIS_VERSION"])
         return {"attemptId": aid, "complete": False, "position": a["index"] + 1,
-                "total": len(a["questions"]), "question": {"id": q["id"], "choices": q["choices"],
+                "total": len(a["questions"]), "question": {"id": q["id"], "choices": [
+                    dict(id=c["id"], label=c["translation"], **({"image": "/static/choices/" + c["image"]} if "image" in c else {}))
+                    for c in q["choices"]],
                 "choiceLayout": q["choiceLayout"], "audioUrl": f"/audio/{key}.wav?attempt={aid}"}, "feedback": a["feedback"]}
 
     @app.get("/")
@@ -133,7 +135,8 @@ def create_app(config=None):
                 correct = data["choiceId"] == q["correctChoiceId"]
                 a["score"] += int(correct)
                 a["feedback"] = {"isCorrect": correct, "correctAnswerText": q["correctAnswerText"],
-                                 "selectedChoiceId": data["choiceId"]}
+                                 "selectedChoiceId": data["choiceId"],
+                                 "choiceTexts": {c["id"]: c["text"] for c in q["choices"]}}
             return jsonify(a["feedback"])
 
     @app.post("/api/attempts/<aid>/next")

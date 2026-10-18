@@ -12,19 +12,24 @@ database is required.
 | Medium | 100 | 10 |
 | Hard | 120 | 15 |
 
-The lesson alternates two sources: a static Georgian greeting and a generated
-number from 1 to 20. The greeting repeats; independently generated numbers may
-also repeat. Each question displays four choices: the correct answer and three randomly
-selected wrong answers, shuffled once per occurrence. Levels override source rates.
+The lesson randomly selects vocabulary and generated numbers from 1 to 20.
+Correct answer texts do not repeat within an attempt. Static vocabulary chooses
+an unused correct choice at random; a generator marks its own correct choice.
+Each question displays that choice and three sampled wrong answers, shuffled
+once per occurrence. Number choices form a consecutive four-number interval
+within 1–20. Levels override source rates.
 `choiceLayout: "short"` uses four square buttons in a row; `"long"` (default)
-uses a 2×2 grid. Choices support text or local images with accessible labels.
+uses a 2×2 grid. Buttons show a local image when supplied, otherwise the Russian
+translation; translations also provide accessible image labels.
 
 Three screens provide selection, listening/feedback, and final score.
 The interface, level and lesson names, accessibility labels, and API error
 messages are in Russian. Georgian learning content and speech remain Georgian.
 Audio tries autoplay with manual playback/replay as a fallback. Choices lock after
 submission; the submitted button shows green with a tick or red with a cross.
-Large correct-answer text stays visible until Next. Replay and Next use compact controls. Audio failure leaves the current
+The Georgian correct answer and its translation in parentheses stay visible until
+Next. After answering, hovering, focusing, or tapping an answer displays its
+Georgian text below the buttons. Replay and Next use compact controls. Audio failure leaves the current
 question open and disables choices until playback preparation succeeds.
 
 ## Local setup
@@ -116,7 +121,7 @@ The cookie contains only opaque owner and CSRF IDs, never answers or scores.
 | `GET /api/lessons` | `levels` settings and available `lessons` |
 | `POST /api/attempts` | `{level, lessonId}` to question envelope, HTTP 201 |
 | `GET /api/attempts/{id}` | Current question/feedback or completion envelope |
-| `POST /api/attempts/{id}/answers` | `{questionId, choiceId}` to `{isCorrect, correctAnswerText, selectedChoiceId}` |
+| `POST /api/attempts/{id}/answers` | `{questionId, choiceId}` to `{isCorrect, correctAnswerText, selectedChoiceId, choiceTexts}` |
 | `POST /api/attempts/{id}/next` | `{questionId}` to next/completion envelope |
 | `GET /api/attempts/{id}/result` | Completed attempt envelope |
 | `GET /audio/{key}.wav?attempt={id}` | Current question WAV with ownership check |
@@ -124,7 +129,10 @@ The cookie contains only opaque owner and CSRF IDs, never answers or scores.
 Question envelopes contain `attemptId`, `complete: false`, `position`, `total`,
 `question: {id, audioUrl, choiceLayout, choices: [{id, label, image?}]}`, and `feedback` (initially
 null). Completion envelopes contain `attemptId`, `complete: true`, `score`,
-and `total`. Future questions, speech text, and answer keys are not returned.
+and `total`. Choice `label` is the Russian translation. Feedback includes
+`choiceTexts`, a map from the four displayed IDs to Georgian texts, only after
+answering; current-state recovery includes the same map. Future questions,
+speech overrides, and answer keys are not returned.
 
 The first valid answer is final; retries return the original feedback without
 rescoring. Next requires its answered current ID; duplicate next returns 409.

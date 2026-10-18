@@ -30,8 +30,11 @@ for HTTPS. See [web setup/configuration](../web/README.md).
 
 Three screens provide selection, listening questions with feedback, and final
 score. Easy uses 7 questions at rate 80, Medium 10 at 100, and Hard 15 at 120.
-One lesson alternates two sources: a static greeting and a generated number
-from 1 to 20. Repetition reaches the selected count; generated values may recur.
+One lesson randomly selects static vocabulary and generated numbers from 1 to
+20. Correct Georgian answer texts are tracked across the entire attempt and
+never repeated. Exhausted static sources are removed; duplicate generator
+results are retried (up to 1000 proposals per question, then generation fails).
+The current content offers 26 distinct correct answers for at most 15 questions.
 
 Each occurrence is resolved once into an attempt snapshot. Playback tries
 autoplay with manual fallback and unlimited replay. Four choices lock on
@@ -39,14 +42,18 @@ submission; correctness and correct answer text remain until Next is clicked.
 The final Next returns the score and OK returns to selection. Audio failure
 leaves the current question open and blocks answers until audio retrieval succeeds.
 
-Resolved questions include speech text, four distinct choices, a short/long layout, correct choice
-ID, feedback text, attempt-local ID, and level rate. Feedback defaults to speech
-text; missing correct IDs require a unique exact text-label match after trimming
-whitespace. Number questions define IDs explicitly because choices display
-digits. Sources supply at least four choices; three wrong choices are sampled
-and shuffled with the correct answer once per snapshot. Optional local images
-use text labels for accessibility. Answer feedback includes the submitted choice
-ID so its green tick or red cross survives state recovery. Source rates remain future work. See
+Private choices contain Georgian `text`, optional `speechText` (defaults to
+`text`), Russian `translation`, and an optional local image filename. Static
+sources choose the correct option at random; generated questions mark exactly
+one choice with `isCorrect: true`. Sources supply at least four choices; three
+wrong choices are sampled and shuffled with the correct answer once per snapshot.
+The correct choice supplies speech and feedback (`text (translation)`). Number
+choices are four consecutive integers within 1–20, with Georgian names and digit
+translations. Resolved snapshots add a correct ID, attempt-local ID and rate.
+Buttons show images or translations. Feedback reveals the four Georgian texts
+for inspection below the buttons by hover, keyboard focus or tap. It also
+includes the submitted choice ID so its green tick or red cross survives state
+recovery. Source rates remain future work. See
 [lesson authoring](../lessons/README.md).
 
 ## Implemented web API and security
@@ -57,7 +64,7 @@ explicit progression, final results, and authorized current-question audio.
 
 Before answering, the browser gets only the current question ID, choices, and
 audio URL. Speech text, answer keys, and scores remain in memory. Feedback
-reveals only the submitted question's correct answer. Signed session cookies
+reveals the submitted question's correct answer and displayed choice texts. Signed session cookies
 hold only opaque owner and CSRF IDs. Every POST checks `X-CSRF-Token`; requests
 have a 4096-byte bound. Cookies are HttpOnly, SameSite=Lax, and optionally Secure.
 

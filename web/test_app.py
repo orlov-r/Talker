@@ -4,6 +4,8 @@ import json
 import re
 import unittest
 import wave
+from unittest.mock import patch
+from lessons.generators import number, number_to_text
 from concurrent.futures import ThreadPoolExecutor
 from web.app import create_app
 from web.audio import AudioCache, cache_key
@@ -83,12 +85,30 @@ class QuizTests(unittest.TestCase):
         self.assertEqual(self.answer(state, 'unknown').status_code, 409)
         self.assertEqual(self.post(f"/api/attempts/{state['attemptId']}/answers",
                                   {'questionId': 'q2', 'choiceId': 'hello'}).status_code, 409)
-        wrong = next(c['id'] for c in state['question']['choices'] if c['id'] != 'hello')
+        q = self.app.extensions['attempts'][state['attemptId']]['questions'][0]
+        wrong = next(c['id'] for c in state['question']['choices'] if c['id'] != q['correctChoiceId'])
         response = self.answer(state, wrong)
         self.assertEqual(response.json['selectedChoiceId'], wrong)
         self.assertEqual(self.client.get(f"/api/attempts/{state['attemptId']}").json['feedback'], response.json)
         self.assertFalse(response.json['isCorrect'])
         self.assertEqual(self.app.extensions['attempts'][state['attemptId']]['score'], 0)
+
+    def test_choice_texts_are_private_until_answer_and_survive_recovery(self):
+        state = self.start()
+        q = self.app.extensions['attempts'][state['attemptId']]['questions'][0]
+        for public in state['question']['choices']:
+            self.assertEqual(set(public) - {'id', 'label', 'image'}, set())
+            private = next(c for c in q['choices'] if c['id'] == public['id'])
+            self.assertEqual(public['label'], private['translation'])
+        self.assertIsNone(state['feedback'])
+        self.client.get(state['question']['audioUrl'])
+        self.assertEqual(self.calls, [(q['speechText'], q['rate'])])
+        answered = self.answer(state, q['correctChoiceId']).json
+        self.assertEqual(answered['choiceTexts'], {c['id']: c['text'] for c in q['choices']})
+        self.assertEqual(answered['correctAnswerText'], q['correctAnswerText'])
+        self.assertEqual(self.client.get(f"/api/attempts/{state['attemptId']}").json['feedback'], answered)
+        with self.client.get('/static/choices/dog-pirosmani.png') as response:
+            self.assertEqual(response.mimetype, 'image/png')
 
     def test_ownership_expiry_and_private_content(self):
         state = self.start()
@@ -161,14 +181,55 @@ class QuizTests(unittest.TestCase):
 
 
 class ContentAndCacheTests(unittest.TestCase):
+    def test_number_intervals_and_correct_markers(self):
+        for correct in range(1, 21):
+            for offset in range(max(0, correct - 17), min(3, correct - 1) + 1):
+                with patch('lessons.generators.random.randint', side_effect=[correct, offset]):
+                    q = validate(number(), generated=True)
+                self.assertEqual([int(c['translation']) for c in q['choices']], list(range(correct - offset, correct - offset + 4)))
+                self.assertTrue(1 <= int(q['choices'][0]['translation']) <= 17)
+                marked = [c for c in q['choices'] if c['isCorrect']]
+                self.assertEqual([c['translation'] for c in marked], [str(correct)])
+                self.assertEqual(marked[0]['text'], number_to_text(correct))
+        self.assertEqual(number_to_text(1), 'ერთი')
+        self.assertEqual(number_to_text(20), 'ოცი')
+        for value in [0, 21, True, 1.5, '1']:
+            with self.assertRaises(ValueError):
+                number_to_text(value)
+        for marks in [[False] * 4, [True] * 4]:
+            q = number()
+            for c, mark in zip(q['choices'], marks):
+                c['isCorrect'] = mark
+            with self.assertRaises(ValueError):
+                validate(q, generated=True)
+
+    def test_random_questions_without_repeated_correct_answers(self):
+        sequences = set()
+        for level in ['easy', 'medium', 'hard']:
+            for _ in range(30):
+                qs = questions(level)
+                texts = [next(c['text'] for c in q['choices'] if c['id'] == q['correctChoiceId']) for q in qs]
+                self.assertEqual(len(texts), len(set(texts)))
+                sequences.add(tuple(texts))
+        self.assertGreater(len(sequences), 1)
+
+    def test_speech_override_and_static_choice_selection(self):
+        source = {'choices': [{'id': str(i), 'text': f'word{i}', 'translation': str(i)} for i in range(7)]}
+        source['choices'][0]['speechText'] = 'spoken differently'
+        with patch('web.content.LESSON', {'sources': [source]}):
+            qs = questions('easy')
+        first = next(q for q in qs if q['correctChoiceId'] == '0')
+        self.assertEqual(first['speechText'], 'spoken differently')
+        self.assertEqual(first['correctAnswerText'], 'word0 (0)')
+
     def test_defaults_and_bad_definitions(self):
-        q = {'speechText': ' one ', 'choices': [{'id': str(i), 'label': name}
+        q = {'choices': [{'id': str(i), 'text': name, 'translation': str(i)}
              for i, name in enumerate(['one', 'two', 'three', 'four', 'five'])]}
         resolved = validate(q)
-        self.assertEqual(resolved['correctChoiceId'], '0')
-        self.assertEqual(resolved['correctAnswerText'], ' one ')
-        for changed in [dict(q, speechText='missing'), dict(q, choices=q['choices'][:3]),
-                        dict(q, correctChoiceId='missing'), dict(q, correctAnswerText='')]:
+        self.assertEqual(resolved['choices'][0]['speechText'], 'one')
+        self.assertNotIn('correctChoiceId', resolved)
+        for changed in [dict(q, choices=q['choices'][:3]),
+                        dict(q, choices=[dict(c, translation='') for c in q['choices']])]:
             with self.assertRaises(ValueError):
                 validate(changed)
 
@@ -178,13 +239,15 @@ class ContentAndCacheTests(unittest.TestCase):
                 self.assertEqual(len(q['choices']), 4)
                 self.assertEqual(len({c['id'] for c in q['choices']}), 4)
                 self.assertIn(q['correctChoiceId'], [c['id'] for c in q['choices']])
-                self.assertEqual(q['choiceLayout'], 'short' if int(q['id'][1:]) % 2 == 0 else 'long')
-        q = {'speechText': '0', 'choices': [{'id': str(i), 'label': str(i)} for i in range(4)]}
+                correct = next(c for c in q['choices'] if c['id'] == q['correctChoiceId'])
+                self.assertEqual(q['speechText'], correct['speechText'])
+                self.assertEqual(q['correctAnswerText'], f"{correct['text']} ({correct['translation']})")
+        q = {'choices': [{'id': str(i), 'text': str(i), 'translation': str(i)} for i in range(4)]}
         self.assertEqual(validate(q)['choiceLayout'], 'long')
         with self.assertRaises(ValueError):
             validate(dict(q, choiceLayout='wide'))
-        q['choices'][0]['image'] = '/static/choices/zero.png'
-        self.assertEqual(validate(q)['choices'][0]['image'], '/static/choices/zero.png')
+        q['choices'][0]['image'] = 'zero.png'
+        self.assertEqual(validate(q)['choices'][0]['image'], 'zero.png')
         q['choices'][0]['image'] = 'https://example.com/zero.png'
         with self.assertRaises(ValueError):
             validate(q)

@@ -30,7 +30,11 @@ async function run(action) {
 }
 
 function choicesEnabled(enabled) {
-  $('choices').querySelectorAll('button').forEach(button => button.disabled = !enabled);
+  $('choices').querySelectorAll('button').forEach(button => {
+    // Answered buttons remain focusable for keyboard/touch text inspection.
+    button.disabled = !enabled && !state.feedback;
+    button.setAttribute('aria-disabled', String(!enabled));
+  });
 }
 
 async function loadAudio() {
@@ -61,7 +65,10 @@ function feedback(value) {
   state.feedback = value;
   choicesEnabled(false);
   $('feedback').textContent = value.correctAnswerText;
+  $('choice-text').hidden = false;
+  $('choice-text').textContent = '';
   $('choices').querySelectorAll('button').forEach(button => {
+    if (button.matches(':hover, :focus')) $('choice-text').textContent = value.choiceTexts[button.dataset.choiceId];
     if (button.dataset.choiceId !== value.selectedChoiceId) return;
     button.classList.add(value.isCorrect ? 'correct' : 'incorrect');
     const mark = document.createElement('span');
@@ -86,6 +93,8 @@ async function render(value) {
   $('meter').max = value.total;
   $('meter').value = value.position - 1;
   $('feedback').textContent = '';
+  $('choice-text').textContent = '';
+  $('choice-text').hidden = true;
   $('next').disabled = true;
   $('next').textContent = 'Далее →';
   $('choices').dataset.layout = value.question.choiceLayout;
@@ -94,6 +103,11 @@ async function render(value) {
     const button = document.createElement('button');
     button.type = 'button'; button.disabled = true;
     button.dataset.choiceId = choice.id; button.dataset.label = choice.label;
+    const inspect = () => {
+      if (state.feedback) $('choice-text').textContent = state.feedback.choiceTexts[choice.id];
+    };
+    button.onmouseenter = button.onfocus = inspect;
+    button.onmouseleave = button.onblur = () => { $('choice-text').textContent = ''; };
     if (choice.image) {
       const img = document.createElement('img');
       img.src = choice.image; img.alt = choice.label; button.append(img);
@@ -101,15 +115,18 @@ async function render(value) {
       const label = document.createElement('span');
       label.textContent = choice.label; button.append(label);
     }
-    button.onclick = () => run(async () => {
-      choicesEnabled(false);
-      try {
-        const result = await api(`/api/attempts/${state.attemptId}/answers`, {
-          questionId: state.question.id, choiceId: choice.id
-        });
-        feedback(result);
-      } catch (error) { choicesEnabled(audioReady && !state.feedback); throw error; }
-    });
+    button.onclick = () => {
+      if (state.feedback) { inspect(); return; }
+      return run(async () => {
+        choicesEnabled(false);
+        try {
+          const result = await api(`/api/attempts/${state.attemptId}/answers`, {
+            questionId: state.question.id, choiceId: choice.id
+          });
+          feedback(result);
+        } catch (error) { choicesEnabled(audioReady && !state.feedback); throw error; }
+      });
+    };
     $('choices').append(button);
   }
   if (value.feedback) feedback(value.feedback);

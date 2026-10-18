@@ -21,6 +21,9 @@ main{margin:32px auto 40px}
 #choices button.incorrect{background:#fbe7e5;border:2px solid #bb4039;color:#942d28}
 .answer-mark{position:absolute;right:8px;top:4px;font-size:22px;font-weight:800}
 #choices img{display:block;max-width:100%;max-height:100%;object-fit:contain}
+#choices img{height:160px;border-radius:6px}
+#choice-text{min-height:40px;margin:0 0 16px;text-align:center;font-size:24px}
+#choices button[aria-disabled="true"]{cursor:default}
 .quiz-actions{display:flex;align-items:center;justify-content:space-between;gap:16px}
 .quiz-actions .secondary{margin:0;padding-left:0}
 @media(max-width:600px){main{margin:24px auto 32px;padding:0 16px}#choices{gap:8px}#choices button{padding:18px 22px;font-size:20px}#choices[data-layout="short"] button{padding:8px}.answer-mark{font-size:16px;right:4px;top:0}header,footer{padding:16px}.quiz-toolbar{min-height:80px}}
