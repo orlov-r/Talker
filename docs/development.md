@@ -30,7 +30,8 @@ The minimal app and private content are implemented. Use the
 install, run, and test commands current in `web/README.md`.
 
 The single lesson randomly selects vocabulary and generated number sources,
-without repeating correct texts within an attempt. It supports picture choices,
+avoiding repeated correct texts until the available answers are exhausted.
+Generators use bounded retries and may rarely repeat early. It supports picture choices,
 temporary attempts, feedback, explicit progression, and scores.
 Run `python -m unittest discover -s web -p test_app.py -v` from the
 root. Tests cover defaults and invalid definitions,

@@ -30,8 +30,8 @@ def validate(question, generated=False):
             raise ValueError("Invalid speech text")
         if "isCorrect" in choice and type(choice["isCorrect"]) is not bool:
             raise ValueError("Invalid correct marker")
-        if "image" in choice and (not isinstance(choice["image"], str) or not re.fullmatch(r"[A-Za-z0-9_-]+\.(?:png|jpg|jpeg|webp)", choice["image"])):
-            raise ValueError("Choice image must be a local image filename")
+        if "image" in choice and (not isinstance(choice["image"], str) or not re.fullmatch(r"[a-z]+(?:-[a-z]+)*\.jpg", choice["image"])):
+            raise ValueError("Choice image must be an English word with a .jpg extension")
     for field in ("id", "text", "translation"):
         if len({c[field].strip() for c in choices}) != len(choices):
             raise ValueError("Choices must be distinct")
@@ -49,12 +49,17 @@ def questions(level):
     result, used = [], set()
     static = [validate(s) for s in LESSON["sources"] if "generator" not in s]
     generators = [s for s in LESSON["sources"] if "generator" in s]
+    if not static and not generators:
+        raise ValueError("Lesson requires at least one source")
     for i in range(settings["questionCount"]):
-        for _ in range(1000):
-            available = [q for q in static if any(c["text"].strip() not in used for c in q["choices"])]
-            sources = available + generators
-            if not sources:
-                raise ValueError("Not enough distinct correct answers")
+        available = [q for q in static if any(c["text"].strip() not in used for c in q["choices"])]
+        sources = available + generators
+        if not sources:
+            # Start a new cycle after every static answer has been used.
+            used.clear()
+            available = static
+            sources = static + generators
+        for _ in range(100):
             source = random.choice(sources)
             generated = "generator" in source
             q = validate(GENERATORS[source["generator"]](), generated=True) if generated else copy.deepcopy(source)
@@ -63,7 +68,14 @@ def questions(level):
             if correct["text"].strip() not in used:
                 break
         else:
-            raise ValueError("Could not generate a distinct correct answer")
+            if available:
+                # Do not let an exhausted generator hide unused vocabulary.
+                q = copy.deepcopy(random.choice(available))
+                correct = random.choice([c for c in q["choices"] if c["text"].strip() not in used])
+            else:
+                # A generator's output space is unknown. Bounded retries keep
+                # exhausted or very repetitive generators from blocking a lesson.
+                used.clear()
         used.add(correct["text"].strip())
         wrong = [c for c in q["choices"] if c["id"] != correct["id"]]
         q["choices"] = [correct] + random.sample(wrong, 3)

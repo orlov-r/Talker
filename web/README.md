@@ -13,7 +13,9 @@ database is required.
 | Hard | 120 | 15 |
 
 The lesson randomly selects vocabulary and generated numbers from 1 to 20.
-Correct answer texts do not repeat within an attempt. Static vocabulary chooses
+Correct answer texts do not repeat until the available answers are exhausted,
+then a new uniqueness cycle begins. Generators use bounded retries, so an early
+repeat has a small probability. Static vocabulary chooses
 an unused correct choice at random; a generator marks its own correct choice.
 Each question displays that choice and three sampled wrong answers, shuffled
 once per occurrence. Number choices form a consecutive four-number interval
@@ -29,8 +31,23 @@ Audio tries autoplay with manual playback/replay as a fallback. Choices lock aft
 submission; the submitted button shows green with a tick or red with a cross.
 The Georgian correct answer and its translation in parentheses stay visible until
 Next. After answering, hovering, focusing, or tapping an answer displays its
-Georgian text below the buttons. Replay and Next use compact controls. Audio failure leaves the current
+Georgian text between Back and Next. That area reserves space before answering.
+Level cards put question count and speech rate on separate lines.
+Replay and Next use compact controls. Audio failure leaves the current
 question open and disables choices until playback preparation succeeds.
+
+Keyboard shortcuts use physical key positions, including with Russian or
+Georgian keyboard layouts: Z/X/C/V for the horizontal row, A/S/Z/X for the 2×2
+grid (left to right, top to bottom). Small corner labels show the keys. R
+activates “Повторить (R)”; Space or Enter advances only after answering.
+Held keys, modifier combinations, busy requests and text inputs do not trigger
+quiz actions. After answering, option shortcuts inspect the Georgian text
+without submitting again.
+
+Choice images are 512×512 JPGs encoded at quality 75, named after the English
+word (e.g. `dog.jpg`). Prompts live separately in
+[`lessons/image-prompts.json`](../lessons/image-prompts.json); see
+[image authoring](../lessons/README.md#image-assets).
 
 ## Local setup
 

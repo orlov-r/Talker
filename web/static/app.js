@@ -65,7 +65,6 @@ function feedback(value) {
   state.feedback = value;
   choicesEnabled(false);
   $('feedback').textContent = value.correctAnswerText;
-  $('choice-text').hidden = false;
   $('choice-text').textContent = '';
   $('choices').querySelectorAll('button').forEach(button => {
     if (button.matches(':hover, :focus')) $('choice-text').textContent = value.choiceTexts[button.dataset.choiceId];
@@ -94,15 +93,22 @@ async function render(value) {
   $('meter').value = value.position - 1;
   $('feedback').textContent = '';
   $('choice-text').textContent = '';
-  $('choice-text').hidden = true;
   $('next').disabled = true;
   $('next').textContent = 'Далее →';
   $('choices').dataset.layout = value.question.choiceLayout;
   $('choices').replaceChildren();
-  for (const choice of value.question.choices) {
+  const shortcuts = value.question.choiceLayout === 'short' ? ['Z', 'X', 'C', 'V'] : ['A', 'S', 'Z', 'X'];
+  for (const [index, choice] of value.question.choices.entries()) {
     const button = document.createElement('button');
     button.type = 'button'; button.disabled = true;
     button.dataset.choiceId = choice.id; button.dataset.label = choice.label;
+    button.dataset.shortcut = shortcuts[index];
+    button.setAttribute('aria-keyshortcuts', shortcuts[index]);
+    const shortcut = document.createElement('span');
+    shortcut.className = 'choice-shortcut';
+    shortcut.textContent = shortcuts[index];
+    shortcut.setAttribute('aria-hidden', 'true');
+    button.append(shortcut);
     const inspect = () => {
       if (state.feedback) $('choice-text').textContent = state.feedback.choiceTexts[choice.id];
     };
@@ -158,3 +164,17 @@ $('next').onclick = () => run(async () => {
   }
 });
 $('ok').onclick = $('leave').onclick = () => { if (!busy) screen('start'); };
+
+document.addEventListener('keydown', event => {
+  if ($('quiz').hidden || event.altKey || event.ctrlKey || event.metaKey || event.shiftKey || event.isComposing ||
+      event.target.closest('input, textarea, select, [contenteditable="true"]')) return;
+  const advance = event.code === 'Space' || event.code === 'Enter' || event.code === 'NumpadEnter';
+  const shortcut = event.code.startsWith('Key') ? event.code.slice(3) : '';
+  const button = advance ? $('next') : shortcut === 'R' ? $('replay') :
+    [...$('choices').querySelectorAll('button')].find(item => item.dataset.shortcut === shortcut);
+  if (!button) return;
+  // Suppress native Space/Enter activation even if focus remains on an answer.
+  event.preventDefault();
+  if (event.repeat || busy || button.disabled || (advance && !state.feedback)) return;
+  button.click();
+});

@@ -11,7 +11,7 @@
         {"id": "bye", "text": "ნახვამდის", "translation": "До свидания"},
         {"id": "yes", "text": "დიახ", "translation": "Да"},
         {"id": "no", "text": "არა", "translation": "Нет"},
-        {"id": "dog", "text": "ძაღლი", "translation": "Собака", "image": "dog-pirosmani.png"}
+        {"id": "dog", "text": "ძაღლი", "translation": "Собака", "image": "dog.jpg"}
       ]
     },
     {"generator": "number"}

@@ -107,8 +107,8 @@ class QuizTests(unittest.TestCase):
         self.assertEqual(answered['choiceTexts'], {c['id']: c['text'] for c in q['choices']})
         self.assertEqual(answered['correctAnswerText'], q['correctAnswerText'])
         self.assertEqual(self.client.get(f"/api/attempts/{state['attemptId']}").json['feedback'], answered)
-        with self.client.get('/static/choices/dog-pirosmani.png') as response:
-            self.assertEqual(response.mimetype, 'image/png')
+        with self.client.get('/static/choices/dog.jpg') as response:
+            self.assertEqual(response.mimetype, 'image/jpeg')
 
     def test_ownership_expiry_and_private_content(self):
         state = self.start()
@@ -222,6 +222,34 @@ class ContentAndCacheTests(unittest.TestCase):
         self.assertEqual(first['speechText'], 'spoken differently')
         self.assertEqual(first['correctAnswerText'], 'word0 (0)')
 
+    def test_static_answers_repeat_only_after_exhaustion(self):
+        source = {'choices': [{'id': str(i), 'text': f'word{i}', 'translation': str(i)} for i in range(4)]}
+        with patch('web.content.LESSON', {'sources': [source]}):
+            qs = questions('hard')
+        self.assertEqual(len(qs), 15)
+        for start in range(0, 15, 4):
+            texts = [q['speechText'] for q in qs[start:start + 4]]
+            self.assertEqual(len(texts), len(set(texts)))
+
+    def test_exhausted_generator_still_completes_lesson(self):
+        fixed = number()
+        with patch('web.content.LESSON', {'sources': [{'generator': 'fixed'}]}), \
+                patch.dict('web.content.GENERATORS', {'fixed': lambda: fixed}):
+            qs = questions('easy')
+        self.assertEqual(len(qs), 7)
+        self.assertEqual(len({q['speechText'] for q in qs}), 1)
+
+    def test_unused_static_answers_survive_exhausted_generator(self):
+        source = {'choices': [{'id': str(i), 'text': f'word{i}', 'translation': str(i)} for i in range(7)]}
+        fixed = {'choices': [dict(c, isCorrect=i == 0) for i, c in enumerate(source['choices'])]}
+        # Always propose the generator; after retries the unused static pool
+        # must still win over a repeated correct answer.
+        with patch('web.content.LESSON', {'sources': [source, {'generator': 'fixed'}]}), \
+                patch.dict('web.content.GENERATORS', {'fixed': lambda: fixed}), \
+                patch('web.content.random.choice', side_effect=lambda items: items[-1]):
+            qs = questions('easy')
+        self.assertEqual(len({q['speechText'] for q in qs}), 7)
+
     def test_defaults_and_bad_definitions(self):
         q = {'choices': [{'id': str(i), 'text': name, 'translation': str(i)}
              for i, name in enumerate(['one', 'two', 'three', 'four', 'five'])]}
@@ -246,9 +274,9 @@ class ContentAndCacheTests(unittest.TestCase):
         self.assertEqual(validate(q)['choiceLayout'], 'long')
         with self.assertRaises(ValueError):
             validate(dict(q, choiceLayout='wide'))
-        q['choices'][0]['image'] = 'zero.png'
-        self.assertEqual(validate(q)['choices'][0]['image'], 'zero.png')
-        q['choices'][0]['image'] = 'https://example.com/zero.png'
+        q['choices'][0]['image'] = 'zero.jpg'
+        self.assertEqual(validate(q)['choices'][0]['image'], 'zero.jpg')
+        q['choices'][0]['image'] = 'https://example.com/zero.jpg'
         with self.assertRaises(ValueError):
             validate(q)
 

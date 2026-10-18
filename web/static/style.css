@@ -22,8 +22,9 @@ main{margin:32px auto 40px}
 .answer-mark{position:absolute;right:8px;top:4px;font-size:22px;font-weight:800}
 #choices img{display:block;max-width:100%;max-height:100%;object-fit:contain}
 #choices img{height:160px;border-radius:6px}
-#choice-text{min-height:40px;margin:0 0 16px;text-align:center;font-size:24px}
+#choice-text{min-width:0;height:64px;margin:0;padding:12px 0;text-align:center;font-size:24px;line-height:1.6;overflow-wrap:anywhere;overflow:auto}
+.choice-shortcut{position:absolute;left:8px;bottom:4px;font-size:13px;line-height:1.4;font-weight:400;color:var(--muted)}
 #choices button[aria-disabled="true"]{cursor:default}
-.quiz-actions{display:flex;align-items:center;justify-content:space-between;gap:16px}
+.quiz-actions{display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:16px}
 .quiz-actions .secondary{margin:0;padding-left:0}
 @media(max-width:600px){main{margin:24px auto 32px;padding:0 16px}#choices{gap:8px}#choices button{padding:18px 22px;font-size:20px}#choices[data-layout="short"] button{padding:8px}.answer-mark{font-size:16px;right:4px;top:0}header,footer{padding:16px}.quiz-toolbar{min-height:80px}}

@@ -32,8 +32,11 @@ Three screens provide selection, listening questions with feedback, and final
 score. Easy uses 7 questions at rate 80, Medium 10 at 100, and Hard 15 at 120.
 One lesson randomly selects static vocabulary and generated numbers from 1 to
 20. Correct Georgian answer texts are tracked across the entire attempt and
-never repeated. Exhausted static sources are removed; duplicate generator
-results are retried (up to 1000 proposals per question, then generation fails).
+not repeated until available answers are exhausted. Exhausted static sources
+are excluded for the current uniqueness cycle, then the set of used texts resets.
+Duplicate generator results are retried up to 100 times per question; after
+that, unused static vocabulary is preferred, or the uniqueness cycle resets and
+the last generated result is accepted. A rare early generator repeat is allowed.
 The current content offers 26 distinct correct answers for at most 15 questions.
 
 Each occurrence is resolved once into an attempt snapshot. Playback tries
@@ -51,7 +54,11 @@ The correct choice supplies speech and feedback (`text (translation)`). Number
 choices are four consecutive integers within 1–20, with Georgian names and digit
 translations. Resolved snapshots add a correct ID, attempt-local ID and rate.
 Buttons show images or translations. Feedback reveals the four Georgian texts
-for inspection below the buttons by hover, keyboard focus or tap. It also
+for inspection between Back and Next by hover, keyboard focus or tap. This area
+is present before answering to keep controls in place. Option keyboard shortcuts
+follow the visual layout (Z/X/C/V or A/S/Z/X); R replays, Space/Enter advances
+after answering. Images are 512×512 JPGs at quality 75, named after the English
+word; private generation prompts live in `lessons/image-prompts.json`. Feedback also
 includes the submitted choice ID so its green tick or red cross survives state
 recovery. Source rates remain future work. See
 [lesson authoring](../lessons/README.md).

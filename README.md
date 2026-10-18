@@ -8,8 +8,8 @@ multiple-choice questions, and see a final score.
 
 The speech service and minimal lesson app are implemented, with Docker Compose
 configuration. The lesson randomly selects vocabulary (including `ძაღლი`, dog)
-and generated number questions, without repeating correct answer texts within
-an attempt. Easy gives 7 questions at speech rate
+and generated number questions, avoiding repeated correct answer texts until
+the available answers are exhausted. Easy gives 7 questions at speech rate
 80, Medium gives 10 at 100, and Hard gives 15 at 120. The app checks answers and
 calculates scores on the server.
 

@@ -18,11 +18,11 @@
         <fieldset><legend>Уровень сложности</legend><div class="levels">
         {% for id, level in levels.items() %}
           <label><input type="radio" name="level" value="{{ id }}" {% if loop.first %}checked{% endif %}>
-          <span><strong>{{ level.label }}</strong><small>Вопросов: {{ level.questionCount }} · Скорость речи: {{ level.rate }}%</small></span></label>
+          <span><strong>{{ level.label }}</strong><small>Вопросов: {{ level.questionCount }}<br>Скорость речи: {{ level.rate }}%</small></span></label>
         {% endfor %}
         </div></fieldset>
         <div class="lesson"><span class="lesson-number">01</span><div><h2>{{ lesson.title }}</h2>
-          <p>Случайные вопросы со словами и числами. Правильные ответы не повторяются.</p></div></div>
+          <p>Случайные вопросы со словами и числами. Правильные ответы повторяются только после исчерпания вариантов.</p></div></div>
         <button type="submit" id="begin">Начать урок <span aria-hidden="true">→</span></button>
       </form>
       <p class="note">Регистрация не нужна. Урок доступен в течение часа; при обновлении страницы придётся начать заново.</p>
@@ -30,11 +30,10 @@
     <section id="quiz" hidden>
       <div class="quiz-progress"><progress id="meter" aria-label="Прогресс урока"></progress><span id="progress"></span></div>
       <audio id="audio" aria-label="Аудиозапись вопроса"></audio>
-      <div class="quiz-toolbar"><p id="feedback" role="status" lang="ka"></p><button id="replay" type="button">Повторить</button></div>
+      <div class="quiz-toolbar"><p id="feedback" role="status" lang="ka"></p><button id="replay" type="button" aria-keyshortcuts="R">Повторить (R)</button></div>
       <p id="audio-status" role="status"></p>
       <div id="choices" aria-label="Варианты ответа"></div>
-      <p id="choice-text" lang="ka" role="status" hidden></p>
-      <div class="quiz-actions"><button class="secondary" id="leave" type="button">Назад</button><button id="next" type="button" disabled>Далее →</button></div>
+      <div class="quiz-actions"><button class="secondary" id="leave" type="button">Назад</button><p id="choice-text" lang="ka" role="status"></p><button id="next" type="button" aria-keyshortcuts="Space Enter" disabled>Далее →</button></div>
     </section>
     <section id="result" hidden><p class="eyebrow">УРОК ЗАВЕРШЁН</p><h1>Хорошая тренировка!</h1>
       <p id="score" class="score"></p><p class="intro">Правильных ответов. Возвращайтесь, чтобы потренироваться ещё.</p>
