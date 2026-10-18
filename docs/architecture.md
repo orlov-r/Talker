@@ -1,7 +1,7 @@
 # Lesson architecture
 
 RHVoice/Natia and the minimal Flask lesson app are implemented. Compose defines
-their deployment. Accounts, statistics, saved progress/results, picture choices,
+their deployment. Accounts, statistics, saved progress/results,
 and additional lessons remain future work.
 
 ## Boundaries
@@ -34,16 +34,19 @@ One lesson alternates two sources: a static greeting and a generated number
 from 1 to 20. Repetition reaches the selected count; generated values may recur.
 
 Each occurrence is resolved once into an attempt snapshot. Playback tries
-autoplay with manual fallback and unlimited replay. Five text choices lock on
+autoplay with manual fallback and unlimited replay. Four choices lock on
 submission; correctness and correct answer text remain until Next is clicked.
 The final Next returns the score and OK returns to selection. Audio failure
 leaves the current question open and blocks answers until audio retrieval succeeds.
 
-Resolved questions include speech text, five distinct choices, correct choice
+Resolved questions include speech text, four distinct choices, a short/long layout, correct choice
 ID, feedback text, attempt-local ID, and level rate. Feedback defaults to speech
 text; missing correct IDs require a unique exact text-label match after trimming
 whitespace. Number questions define IDs explicitly because choices display
-digits. Picture choices and source rates remain future work. See
+digits. Sources supply at least four choices; three wrong choices are sampled
+and shuffled with the correct answer once per snapshot. Optional local images
+use text labels for accessibility. Answer feedback includes the submitted choice
+ID so its green tick or red cross survives state recovery. Source rates remain future work. See
 [lesson authoring](../lessons/README.md).
 
 ## Implemented web API and security

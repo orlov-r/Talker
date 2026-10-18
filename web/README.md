@@ -14,12 +14,17 @@ database is required.
 
 The lesson alternates two sources: a static Georgian greeting and a generated
 number from 1 to 20. The greeting repeats; independently generated numbers may
-also repeat. Each question has five text choices. Levels override source rates.
-Picture choices remain future work.
+also repeat. Each question displays four choices: the correct answer and three randomly
+selected wrong answers, shuffled once per occurrence. Levels override source rates.
+`choiceLayout: "short"` uses four square buttons in a row; `"long"` (default)
+uses a 2×2 grid. Choices support text or local images with accessible labels.
 
-Three screens provide selection, listening/feedback, and final score. Audio
-tries autoplay with manual playback/replay as a fallback. Choices lock after
-submission; feedback stays visible until Next. Audio failure leaves the current
+Three screens provide selection, listening/feedback, and final score.
+The interface, level and lesson names, accessibility labels, and API error
+messages are in Russian. Georgian learning content and speech remain Georgian.
+Audio tries autoplay with manual playback/replay as a fallback. Choices lock after
+submission; the submitted button shows green with a tick or red with a cross.
+Large correct-answer text stays visible until Next. Replay and Next use compact controls. Audio failure leaves the current
 question open and disables choices until playback preparation succeeds.
 
 ## Local setup
@@ -111,13 +116,13 @@ The cookie contains only opaque owner and CSRF IDs, never answers or scores.
 | `GET /api/lessons` | `levels` settings and available `lessons` |
 | `POST /api/attempts` | `{level, lessonId}` to question envelope, HTTP 201 |
 | `GET /api/attempts/{id}` | Current question/feedback or completion envelope |
-| `POST /api/attempts/{id}/answers` | `{questionId, choiceId}` to `{isCorrect, correctAnswerText}` |
+| `POST /api/attempts/{id}/answers` | `{questionId, choiceId}` to `{isCorrect, correctAnswerText, selectedChoiceId}` |
 | `POST /api/attempts/{id}/next` | `{questionId}` to next/completion envelope |
 | `GET /api/attempts/{id}/result` | Completed attempt envelope |
 | `GET /audio/{key}.wav?attempt={id}` | Current question WAV with ownership check |
 
 Question envelopes contain `attemptId`, `complete: false`, `position`, `total`,
-`question: {id, audioUrl, choices: [{id, label}]}`, and `feedback` (initially
+`question: {id, audioUrl, choiceLayout, choices: [{id, label, image?}]}`, and `feedback` (initially
 null). Completion envelopes contain `attemptId`, `complete: true`, `score`,
 and `total`. Future questions, speech text, and answer keys are not returned.
 

@@ -29,7 +29,7 @@ def create_app(config=None):
         if request.method == "POST":
             token = request.headers.get("X-CSRF-Token", "")
             if not secrets.compare_digest(token, session["csrf"]):
-                abort(403, "Reload the page and try again.")
+                abort(403, "Обновите страницу и попробуйте ещё раз.")
 
     @app.after_request
     def headers(response):
@@ -47,12 +47,20 @@ def create_app(config=None):
 
     @app.errorhandler(HTTPException)
     def error(exc):
-        return jsonify(error=exc.description), exc.code
+        defaults = {
+            400: "Некорректный запрос.",
+            404: "Страница или аудиозапись не найдена.",
+            405: "Этот метод запроса не поддерживается.",
+            413: "Слишком большой запрос.",
+            500: "Ошибка сервера. Попробуйте ещё раз позже.",
+        }
+        message = defaults.get(exc.code, "Не удалось выполнить запрос.") if exc.description == type(exc).description else exc.description
+        return jsonify(error=message), exc.code
 
     def body():
         data = request.get_json(silent=True)
         if not isinstance(data, dict):
-            abort(400, "Expected a JSON object.")
+            abort(400, "Ожидается объект JSON.")
         return data
 
     def owned(aid):
@@ -62,7 +70,7 @@ def create_app(config=None):
                 del attempts[key]
         attempt = attempts.get(aid)
         if not attempt or attempt["owner"] != session["owner"]:
-            abort(404, "Quiz expired or unavailable. Start a new lesson.")
+            abort(404, "Урок недоступен или время истекло. Начните новый урок.")
         return attempt
 
     def envelope(aid, a):
@@ -72,7 +80,7 @@ def create_app(config=None):
         key = cache_key(q["speechText"], q["rate"], app.config["SYNTHESIS_VERSION"])
         return {"attemptId": aid, "complete": False, "position": a["index"] + 1,
                 "total": len(a["questions"]), "question": {"id": q["id"], "choices": q["choices"],
-                "audioUrl": f"/audio/{key}.wav?attempt={aid}"}, "feedback": a["feedback"]}
+                "choiceLayout": q["choiceLayout"], "audioUrl": f"/audio/{key}.wav?attempt={aid}"}, "feedback": a["feedback"]}
 
     @app.get("/")
     def index():
@@ -90,14 +98,14 @@ def create_app(config=None):
     def start():
         data = body()
         if not isinstance(data.get("level"), str) or data["level"] not in LEVELS or data.get("lessonId") != LESSON["id"]:
-            abort(400, "Choose an available level and lesson.")
+            abort(400, "Выберите доступный уровень и урок.")
         with lock:
             now = time.monotonic()
             for key in list(attempts):
                 if attempts[key]["expires"] <= now or attempts[key]["owner"] == session["owner"]:
                     del attempts[key]
             if len(attempts) >= app.config["MAX_ATTEMPTS"]:
-                abort(503, "Too many active quizzes. Try again later.")
+                abort(503, "Слишком много активных уроков. Попробуйте позже.")
             aid = secrets.token_urlsafe(24)
             attempts[aid] = {"owner": session["owner"], "expires": now + app.config["ATTEMPT_TTL"],
                              "questions": questions(data["level"]), "index": 0, "score": 0, "feedback": None,
@@ -115,16 +123,17 @@ def create_app(config=None):
         with lock:
             a = owned(aid)
             if a["index"] >= len(a["questions"]):
-                abort(409, "Quiz is complete.")
+                abort(409, "Урок завершён.")
             q = a["questions"][a["index"]]
             if data.get("questionId") != q["id"] or data.get("choiceId") not in [c["id"] for c in q["choices"]]:
-                abort(409, "Invalid current question or choice.")
+                abort(409, "Недопустимый вопрос или вариант ответа.")
             if q["id"] not in a["audioReady"]:
-                abort(409, "Play the audio before answering.")
+                abort(409, "Прослушайте аудио перед ответом.")
             if a["feedback"] is None:
                 correct = data["choiceId"] == q["correctChoiceId"]
                 a["score"] += int(correct)
-                a["feedback"] = {"isCorrect": correct, "correctAnswerText": q["correctAnswerText"]}
+                a["feedback"] = {"isCorrect": correct, "correctAnswerText": q["correctAnswerText"],
+                                 "selectedChoiceId": data["choiceId"]}
             return jsonify(a["feedback"])
 
     @app.post("/api/attempts/<aid>/next")
@@ -133,7 +142,7 @@ def create_app(config=None):
         with lock:
             a = owned(aid)
             if a["index"] >= len(a["questions"]) or data.get("questionId") != a["questions"][a["index"]]["id"] or a["feedback"] is None:
-                abort(409, "Answer the current question before continuing.")
+                abort(409, "Ответьте на текущий вопрос, прежде чем продолжить.")
             a["index"] += 1
             a["feedback"] = None
             return jsonify(envelope(aid, a))
@@ -143,7 +152,7 @@ def create_app(config=None):
         with lock:
             a = owned(aid)
             if a["index"] != len(a["questions"]):
-                abort(409, "Quiz is not complete.")
+                abort(409, "Урок ещё не завершён.")
             return jsonify(envelope(aid, a))
 
     @app.get("/audio/<key>.wav")
@@ -161,7 +170,7 @@ def create_app(config=None):
             data = cache.get(key, lambda: producer(q["speechText"], q["rate"], app.config["SYNTHESIS_URL"]))
         except Exception:
             app.logger.exception("Speech synthesis failed")
-            abort(502, "Audio unavailable. Check the speech service and retry playback.")
+            abort(502, "Аудио недоступно. Проверьте сервис озвучки и повторите воспроизведение.")
         with lock:
             owned(aid)["audioReady"].add(q["id"])
         return Response(data, mimetype="audio/wav")

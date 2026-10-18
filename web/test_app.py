@@ -7,7 +7,7 @@ import wave
 from concurrent.futures import ThreadPoolExecutor
 from web.app import create_app
 from web.audio import AudioCache, cache_key
-from web.content import validate
+from web.content import validate, questions
 
 
 def wav_bytes(*args):
@@ -60,7 +60,7 @@ class QuizTests(unittest.TestCase):
                 serialized = json.dumps(state)
                 self.assertNotIn('speechText', serialized)
                 self.assertNotIn('correctChoiceId', serialized)
-                self.assertEqual(len(state['question']['choices']), 5)
+                self.assertEqual(len(state['question']['choices']), 4)
                 self.assertEqual(self.client.get(state['question']['audioUrl']).mimetype, 'audio/wav')
                 q = self.app.extensions['attempts'][aid]['questions'][i]
                 self.assertEqual(q['rate'], rate)
@@ -83,7 +83,10 @@ class QuizTests(unittest.TestCase):
         self.assertEqual(self.answer(state, 'unknown').status_code, 409)
         self.assertEqual(self.post(f"/api/attempts/{state['attemptId']}/answers",
                                   {'questionId': 'q2', 'choiceId': 'hello'}).status_code, 409)
-        response = self.answer(state, 'thanks')
+        wrong = next(c['id'] for c in state['question']['choices'] if c['id'] != 'hello')
+        response = self.answer(state, wrong)
+        self.assertEqual(response.json['selectedChoiceId'], wrong)
+        self.assertEqual(self.client.get(f"/api/attempts/{state['attemptId']}").json['feedback'], response.json)
         self.assertFalse(response.json['isCorrect'])
         self.assertEqual(self.app.extensions['attempts'][state['attemptId']]['score'], 0)
 
@@ -148,7 +151,9 @@ class QuizTests(unittest.TestCase):
 
     def test_page_and_assets(self):
         html = self.client.get('/').get_data(as_text=True)
-        self.assertIn('15 questions', html)
+        self.assertIn('<html lang="ru">', html)
+        self.assertIn('Вопросов: 15', html)
+        self.assertIn('Приветствия и числа', html)
         for path in re.findall(r'(?:src|href)="(/static/[^\"]+)"', html):
             with self.client.get(path) as response:
                 self.assertEqual(response.status_code, 200)
@@ -162,10 +167,27 @@ class ContentAndCacheTests(unittest.TestCase):
         resolved = validate(q)
         self.assertEqual(resolved['correctChoiceId'], '0')
         self.assertEqual(resolved['correctAnswerText'], ' one ')
-        for changed in [dict(q, speechText='missing'), dict(q, choices=q['choices'][:4]),
+        for changed in [dict(q, speechText='missing'), dict(q, choices=q['choices'][:3]),
                         dict(q, correctChoiceId='missing'), dict(q, correctAnswerText='')]:
             with self.assertRaises(ValueError):
                 validate(changed)
+
+    def test_choice_sampling_and_layout(self):
+        for _ in range(20):
+            for q in questions('easy'):
+                self.assertEqual(len(q['choices']), 4)
+                self.assertEqual(len({c['id'] for c in q['choices']}), 4)
+                self.assertIn(q['correctChoiceId'], [c['id'] for c in q['choices']])
+                self.assertEqual(q['choiceLayout'], 'short' if int(q['id'][1:]) % 2 == 0 else 'long')
+        q = {'speechText': '0', 'choices': [{'id': str(i), 'label': str(i)} for i in range(4)]}
+        self.assertEqual(validate(q)['choiceLayout'], 'long')
+        with self.assertRaises(ValueError):
+            validate(dict(q, choiceLayout='wide'))
+        q['choices'][0]['image'] = '/static/choices/zero.png'
+        self.assertEqual(validate(q)['choices'][0]['image'], '/static/choices/zero.png')
+        q['choices'][0]['image'] = 'https://example.com/zero.png'
+        with self.assertRaises(ValueError):
+            validate(q)
 
     def test_cache_bounds_concurrent_misses_and_keys(self):
         cache, calls = AudioCache(limit=2), []

@@ -1,9 +1,10 @@
 {
   "id": "basics",
-  "title": "Greetings and numbers",
+  "title": "Приветствия и числа",
   "revision": 1,
   "sources": [
     {
+      "choiceLayout": "long",
       "speechText": "გამარჯობა",
       "choices": [
         {"id": "hello", "label": "გამარჯობა"},

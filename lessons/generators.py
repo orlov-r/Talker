@@ -7,9 +7,10 @@ NUMBERS = ["ერთი", "ორი", "სამი", "ოთხი", "ხუ�
 
 
 def number():
-    values = random.sample(range(1, 21), 5)
+    values = list(range(1, 21))
     correct = random.choice(values)
     return {
+        "choiceLayout": "short",
         "speechText": NUMBERS[correct - 1],
         "correctAnswerText": f"{NUMBERS[correct - 1]} ({correct})",
         "correctChoiceId": str(correct),

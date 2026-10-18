@@ -13,8 +13,9 @@ number. Sessions alternate these sources: Easy gives 7 questions at speech rate
 calculates scores on the server.
 
 The basic app has three screens: skill level and lesson selection, a listening
-question with five answer choices and feedback, and a final score. Accounts,
+question with four answer choices and feedback, and a final score. Accounts,
 statistics, and persistent attempts/results are outside the basic scope.
+The lesson interface is in Russian; learning content and speech are in Georgian.
 
 ## Repository layout
 
