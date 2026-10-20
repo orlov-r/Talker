@@ -1,0 +1,46 @@
+{
+  "description": "Документы, государство и право: entries 21–30 in dev/word-frequencies/documents-state-government-law.txt order.",
+  "choiceLayout": "long",
+  "choices": [
+    {
+      "text": "ბიუჯეტი",
+      "translation": "Бюджет"
+    },
+    {
+      "text": "ჯარიმა",
+      "translation": "Штраф"
+    },
+    {
+      "text": "ლიცენზია",
+      "translation": "Лицензия"
+    },
+    {
+      "text": "სამინისტრო",
+      "translation": "Министерство"
+    },
+    {
+      "text": "დოკუმენტი",
+      "translation": "Документ"
+    },
+    {
+      "text": "საბუთი",
+      "translation": "Документ/официальная бумага"
+    },
+    {
+      "text": "ხელმოწერა",
+      "translation": "Подпись"
+    },
+    {
+      "text": "კონსტიტუცია",
+      "translation": "Конституция"
+    },
+    {
+      "text": "ვიზა",
+      "translation": "Виза"
+    },
+    {
+      "text": "სასჯელი",
+      "translation": "Наказание"
+    }
+  ]
+}

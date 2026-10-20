@@ -1,0 +1,46 @@
+{
+  "description": "Продукты питания: entries 21–30 in dev/word-frequencies/food-products.txt order.",
+  "choiceLayout": "long",
+  "choices": [
+    {
+      "text": "მაწონი",
+      "translation": "Мацони"
+    },
+    {
+      "text": "კარაქი",
+      "translation": "Сливочное масло"
+    },
+    {
+      "text": "ბრინჯი",
+      "translation": "Рис"
+    },
+    {
+      "text": "წიწიბურა",
+      "translation": "Гречка"
+    },
+    {
+      "text": "ძეხვი",
+      "translation": "Колбаса"
+    },
+    {
+      "text": "ხაჭო",
+      "translation": "Творог"
+    },
+    {
+      "text": "ძმარი",
+      "translation": "Уксус"
+    },
+    {
+      "text": "მაკარონი",
+      "translation": "Макароны"
+    },
+    {
+      "text": "ნაღები",
+      "translation": "Сливки"
+    },
+    {
+      "text": "კანფეტი",
+      "translation": "Конфета"
+    }
+  ]
+}

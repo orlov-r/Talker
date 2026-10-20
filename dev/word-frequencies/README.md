@@ -16,8 +16,10 @@ Each line contains exactly `Georgian<TAB>Russian`, without headers, ranks or
 counts. Georgian entries use dictionary forms (normally nominative singular;
 `არჩევნები`, meaning elections, uses the usual plural). Russian translations
 were authored for these lists. Brief alternate meanings are included where
-useful for common usage. These are development inputs for future lessons;
-the application does not load them automatically.
+useful for common usage. Each list supplies a lesson with four question pools
+of ten consecutive entries, preserving this order. The first pool is marked
+level 1 for Easy; Medium and Hard include all forty words. The application
+loads private JSON in `lessons/`, rather than these authoring lists.
 
 ## Frequency source and ordering
 

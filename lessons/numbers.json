@@ -5,7 +5,8 @@
   "description": "Два набора: числа от 1 до 10 и от 1 до 20.",
   "sources": [
     {
-      "generator": "number-1-10"
+      "generator": "number-1-10",
+      "level": 1
     },
     {
       "generator": "number"

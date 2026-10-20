@@ -1,0 +1,46 @@
+{
+  "description": "Документы, государство и право: entries 1–10 in dev/word-frequencies/documents-state-government-law.txt order.",
+  "choiceLayout": "long",
+  "choices": [
+    {
+      "text": "სახელმწიფო",
+      "translation": "Государство"
+    },
+    {
+      "text": "ქვეყანა",
+      "translation": "Страна"
+    },
+    {
+      "text": "უფლება",
+      "translation": "Право"
+    },
+    {
+      "text": "პრეზიდენტი",
+      "translation": "Президент"
+    },
+    {
+      "text": "კანონი",
+      "translation": "Закон"
+    },
+    {
+      "text": "არჩევნები",
+      "translation": "Выборы"
+    },
+    {
+      "text": "პარტია",
+      "translation": "Партия"
+    },
+    {
+      "text": "მთავრობა",
+      "translation": "Правительство"
+    },
+    {
+      "text": "პოლიტიკა",
+      "translation": "Политика"
+    },
+    {
+      "text": "მინისტრი",
+      "translation": "Министр"
+    }
+  ]
+}

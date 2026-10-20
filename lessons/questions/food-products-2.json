@@ -1,0 +1,46 @@
+{
+  "description": "Продукты питания: entries 11–20 in dev/word-frequencies/food-products.txt order.",
+  "choiceLayout": "long",
+  "choices": [
+    {
+      "text": "შაქარი",
+      "translation": "Сахар"
+    },
+    {
+      "text": "ყველი",
+      "translation": "Сыр"
+    },
+    {
+      "text": "წვენი",
+      "translation": "Сок"
+    },
+    {
+      "text": "ფქვილი",
+      "translation": "Мука"
+    },
+    {
+      "text": "შოკოლადი",
+      "translation": "Шоколад"
+    },
+    {
+      "text": "თაფლი",
+      "translation": "Мёд"
+    },
+    {
+      "text": "ნაყინი",
+      "translation": "Мороженое"
+    },
+    {
+      "text": "მურაბა",
+      "translation": "Варенье"
+    },
+    {
+      "text": "ტორტი",
+      "translation": "Торт"
+    },
+    {
+      "text": "ნამცხვარი",
+      "translation": "Пирожное/выпечка"
+    }
+  ]
+}

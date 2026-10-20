@@ -1,0 +1,46 @@
+{
+  "description": "Погода и природа: entries 31–40 in dev/word-frequencies/weather-and-nature.txt order.",
+  "choiceLayout": "long",
+  "choices": [
+    {
+      "text": "ღრუბელი",
+      "translation": "Облако"
+    },
+    {
+      "text": "სიცივე",
+      "translation": "Холод"
+    },
+    {
+      "text": "ყინული",
+      "translation": "Лёд"
+    },
+    {
+      "text": "ქვიშა",
+      "translation": "Песок"
+    },
+    {
+      "text": "ელვა",
+      "translation": "Молния"
+    },
+    {
+      "text": "ქარიშხალი",
+      "translation": "Буря"
+    },
+    {
+      "text": "ჭექა",
+      "translation": "Гром"
+    },
+    {
+      "text": "სეტყვა",
+      "translation": "Град"
+    },
+    {
+      "text": "ყინვა",
+      "translation": "Мороз"
+    },
+    {
+      "text": "ცისარტყელა",
+      "translation": "Радуга"
+    }
+  ]
+}

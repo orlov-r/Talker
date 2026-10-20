@@ -7,7 +7,10 @@ multiple-choice questions, and see a final score.
 ## Current status
 
 The speech service and minimal lesson app are implemented, with Docker Compose
-configuration. Example lessons include greetings, numbers, and illustrated animals.
+configuration. Example lessons include greetings, numbers, illustrated animals,
+and city vocabulary. Six thematic lessons each provide 40 words in four pools
+ordered by the private [word-frequency lists](dev/word-frequencies/README.md);
+Easy uses their first ten words.
 The selected lesson randomly draws from its own pools, avoiding repeated correct
 answer texts until the available answers are exhausted. Easy gives 7 questions
 at speech rate 80, Medium gives 10 at 100, and Hard gives 15 at 120. The app checks answers and

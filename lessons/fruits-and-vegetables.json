@@ -1,0 +1,21 @@
+{
+  "id": "fruits-and-vegetables",
+  "title": "Фрукты и овощи",
+  "revision": 1,
+  "description": "40 слов из тематического частотного списка: четыре набора по 10. Первый набор — самые частые слова в списке.",
+  "sources": [
+    {
+      "question": "fruits-and-vegetables-1",
+      "level": 1
+    },
+    {
+      "question": "fruits-and-vegetables-2"
+    },
+    {
+      "question": "fruits-and-vegetables-3"
+    },
+    {
+      "question": "fruits-and-vegetables-4"
+    }
+  ]
+}

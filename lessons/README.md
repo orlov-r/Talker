@@ -11,9 +11,15 @@ Private lesson definitions are loaded by the server's fixed catalog. Examples:
 Never serve this directory to browsers. Source counts describe pools, not the
 number of answers in a session: levels continue to use 7/10/15 answers.
 
-Animal vocabulary includes, for example, dog, cat, horse, and rabbit/hare.
-The groups are a practical beginner selection ordered by familiarity, not a
-statistically verified frequency ranking. `კურდღელი` covers
+Six thematic lessons use all 40 entries from each list in
+[`dev/word-frequencies/`](../dev/word-frequencies/README.md), including animals,
+city, and food products.
+Each lesson references four pools of ten consecutive entries in the supplied
+order. Only the first pool is explicitly marked `"level": 1`, so Easy uses the
+first ten words; Medium and Hard use all forty. These curated selections use
+recorded word-form frequency, with the ranking limits documented at the source.
+Animals use pictures; the other topics use Russian text choices.
+`კურდღელი` covers
 rabbit/hare; the choice label explicitly includes both Russian words.
 
 For politeness, `ბოდიში` is presented as an apology (sorry), and `უკაცრავად`
@@ -46,9 +52,9 @@ default to level 1 when the lesson has no explicit `level: 1` source; otherwise
 they default to level 2. The level belongs to the lesson reference, so different lessons may
 assign different levels to the same question. Easy selects only level 1;
 Medium and Hard include every level. This also applies to generator references.
-Currently only `animals1` is explicitly marked level 1, so Easy uses only that
-animal pool. Greetings and numbers have no explicit level 1 sources, so their
-unmarked sources are included on Easy. Lessons remain visible at every
+Each frequency lesson explicitly marks its first pool level 1. Numbers marks
+the 1–10 generator level 1; greetings includes its unmarked pool on Easy.
+Lessons remain visible at every
 difficulty. Explicit levels are preserved; if every source explicitly has a
 higher level, the start API rejects Easy with HTTP 400.
 

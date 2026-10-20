@@ -1,0 +1,46 @@
+{
+  "description": "Фрукты и овощи: entries 11–20 in dev/word-frequencies/fruits-and-vegetables.txt order.",
+  "choiceLayout": "long",
+  "choices": [
+    {
+      "text": "კომბოსტო",
+      "translation": "Капуста"
+    },
+    {
+      "text": "საზამთრო",
+      "translation": "Арбуз"
+    },
+    {
+      "text": "სტაფილო",
+      "translation": "Морковь"
+    },
+    {
+      "text": "წიწაკა",
+      "translation": "Перец"
+    },
+    {
+      "text": "ატამი",
+      "translation": "Персик"
+    },
+    {
+      "text": "ფორთოხალი",
+      "translation": "Апельсин"
+    },
+    {
+      "text": "ბანანი",
+      "translation": "Банан"
+    },
+    {
+      "text": "მსხალი",
+      "translation": "Груша"
+    },
+    {
+      "text": "ბადრიჯანი",
+      "translation": "Баклажан"
+    },
+    {
+      "text": "მარწყვი",
+      "translation": "Клубника"
+    }
+  ]
+}

@@ -1,0 +1,56 @@
+{
+  "description": "Животные: entries 21–30 in dev/word-frequencies/animals.txt order.",
+  "choiceLayout": "long",
+  "choices": [
+    {
+      "text": "მელა",
+      "translation": "Лиса",
+      "image": "fox.jpg"
+    },
+    {
+      "text": "იხვი",
+      "translation": "Утка",
+      "image": "duck.jpg"
+    },
+    {
+      "text": "ბუზი",
+      "translation": "Муха",
+      "image": "fly.jpg"
+    },
+    {
+      "text": "სპილო",
+      "translation": "Слон",
+      "image": "elephant.jpg"
+    },
+    {
+      "text": "ირემი",
+      "translation": "Олень",
+      "image": "deer.jpg"
+    },
+    {
+      "text": "ვეფხვი",
+      "translation": "Тигр",
+      "image": "tiger.jpg"
+    },
+    {
+      "text": "ვირთხა",
+      "translation": "Крыса",
+      "image": "rat.jpg"
+    },
+    {
+      "text": "თაგვი",
+      "translation": "Мышь",
+      "image": "mouse.jpg"
+    },
+    {
+      "text": "მტრედი",
+      "translation": "Голубь",
+      "image": "pigeon.jpg"
+    },
+    {
+      "text": "ბატი",
+      "translation": "Гусь",
+      "image": "goose.jpg"
+    }
+  ]
+}

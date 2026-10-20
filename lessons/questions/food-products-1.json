@@ -1,0 +1,46 @@
+{
+  "description": "Продукты питания: entries 1–10 in dev/word-frequencies/food-products.txt order.",
+  "choiceLayout": "long",
+  "choices": [
+    {
+      "text": "პური",
+      "translation": "Хлеб"
+    },
+    {
+      "text": "ღვინო",
+      "translation": "Вино"
+    },
+    {
+      "text": "ზეთი",
+      "translation": "Растительное масло"
+    },
+    {
+      "text": "ხორცი",
+      "translation": "Мясо"
+    },
+    {
+      "text": "ლუდი",
+      "translation": "Пиво"
+    },
+    {
+      "text": "კვერცხი",
+      "translation": "Яйцо"
+    },
+    {
+      "text": "ჩაი",
+      "translation": "Чай"
+    },
+    {
+      "text": "რძე",
+      "translation": "Молоко"
+    },
+    {
+      "text": "ყავა",
+      "translation": "Кофе"
+    },
+    {
+      "text": "მარილი",
+      "translation": "Соль"
+    }
+  ]
+}

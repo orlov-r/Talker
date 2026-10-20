@@ -1,0 +1,56 @@
+{
+  "description": "Животные: entries 31–40 in dev/word-frequencies/animals.txt order.",
+  "choiceLayout": "long",
+  "choices": [
+    {
+      "text": "ბაყაყი",
+      "translation": "Лягушка",
+      "image": "frog.jpg"
+    },
+    {
+      "text": "ციყვი",
+      "translation": "Белка",
+      "image": "squirrel.jpg"
+    },
+    {
+      "text": "ფუტკარი",
+      "translation": "Пчела",
+      "image": "bee.jpg"
+    },
+    {
+      "text": "ზღარბი",
+      "translation": "Ёж",
+      "image": "hedgehog.jpg"
+    },
+    {
+      "text": "ინდაური",
+      "translation": "Индейка",
+      "image": "turkey.jpg"
+    },
+    {
+      "text": "კოღო",
+      "translation": "Комар",
+      "image": "mosquito.jpg"
+    },
+    {
+      "text": "ზვიგენი",
+      "translation": "Акула",
+      "image": "shark.jpg"
+    },
+    {
+      "text": "ჭიანჭველა",
+      "translation": "Муравей",
+      "image": "ant.jpg"
+    },
+    {
+      "text": "ბეღურა",
+      "translation": "Воробей",
+      "image": "bird.jpg"
+    },
+    {
+      "text": "დელფინი",
+      "translation": "Дельфин",
+      "image": "dolphin.jpg"
+    }
+  ]
+}

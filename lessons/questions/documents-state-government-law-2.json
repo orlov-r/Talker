@@ -1,0 +1,46 @@
+{
+  "description": "Документы, государство и право: entries 11–20 in dev/word-frequencies/documents-state-government-law.txt order.",
+  "choiceLayout": "long",
+  "choices": [
+    {
+      "text": "განცხადება",
+      "translation": "Заявление/объявление"
+    },
+    {
+      "text": "სასამართლო",
+      "translation": "Суд"
+    },
+    {
+      "text": "მოქალაქე",
+      "translation": "Гражданин"
+    },
+    {
+      "text": "დანაშაული",
+      "translation": "Преступление"
+    },
+    {
+      "text": "ცნობა",
+      "translation": "Справка/сведение"
+    },
+    {
+      "text": "საზღვარი",
+      "translation": "Граница"
+    },
+    {
+      "text": "პოლიცია",
+      "translation": "Полиция"
+    },
+    {
+      "text": "გადასახადი",
+      "translation": "Налог/плата"
+    },
+    {
+      "text": "ხელშეკრულება",
+      "translation": "Договор"
+    },
+    {
+      "text": "პარლამენტი",
+      "translation": "Парламент"
+    }
+  ]
+}

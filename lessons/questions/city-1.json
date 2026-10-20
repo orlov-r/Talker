@@ -1,0 +1,46 @@
+{
+  "description": "Город: entries 1–10 in dev/word-frequencies/city.txt order.",
+  "choiceLayout": "long",
+  "choices": [
+    {
+      "text": "მანქანა",
+      "translation": "Машина"
+    },
+    {
+      "text": "გზა",
+      "translation": "Дорога"
+    },
+    {
+      "text": "ქალაქი",
+      "translation": "Город"
+    },
+    {
+      "text": "ეკლესია",
+      "translation": "Церковь"
+    },
+    {
+      "text": "ბაზარი",
+      "translation": "Рынок"
+    },
+    {
+      "text": "სახლი",
+      "translation": "Дом"
+    },
+    {
+      "text": "სკოლა",
+      "translation": "Школа"
+    },
+    {
+      "text": "მისამართი",
+      "translation": "Адрес"
+    },
+    {
+      "text": "ბინა",
+      "translation": "Квартира"
+    },
+    {
+      "text": "კინო",
+      "translation": "Кино/кинотеатр"
+    }
+  ]
+}

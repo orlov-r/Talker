@@ -149,11 +149,7 @@ class QuizTests(unittest.TestCase):
         self.assertTrue(all(set(l) == {"id", "title", "levels"} for l in catalog))
         self.assertEqual(
             {l["id"]: l["levels"] for l in catalog},
-            {
-                "basics": ["easy", "medium", "hard"],
-                "numbers": ["easy", "medium", "hard"],
-                "animals": ["easy", "medium", "hard"],
-            },
+            {lid: ["easy", "medium", "hard"] for lid in LESSONS},
         )
         self.assertEqual(
             self.client.get("/lessons/questions/animals1.json").status_code, 404
@@ -432,7 +428,12 @@ class ContentAndCacheTests(unittest.TestCase):
         root = Path(__file__).resolve().parents[1] / "lessons"
         self.assertEqual(
             json.loads((root / "animals.json").read_text(encoding="utf-8"))["sources"],
-            [{"question": "animals1", "level": 1}, {"question": "animals2"}],
+            [
+                {"question": "animals1", "level": 1},
+                {"question": "animals2"},
+                {"question": "animals3"},
+                {"question": "animals4"},
+            ],
         )
         with TemporaryDirectory() as folder:
             directory = Path(folder)
@@ -481,15 +482,15 @@ class ContentAndCacheTests(unittest.TestCase):
                     load([{"question": "shared", "level": level}])
 
     def test_easy_filters_sources_and_higher_difficulties_include_all(self):
-        first, second = LESSONS["animals"]["sources"]
+        first, *advanced = LESSONS["animals"]["sources"]
         easy_ids = {c["text"] for c in first["choices"]}
-        advanced_ids = {c["text"] for c in second["choices"]}
+        advanced_ids = {c["text"] for source in advanced for c in source["choices"]}
         for q in questions("easy", LESSONS["animals"]):
             self.assertLessEqual({c["text"] for c in q["choices"]}, easy_ids)
         for level in ["medium", "hard"]:
-            # Draw 15 snapshots to exhaust animals1 if it is selected first.
+            # Exhaust all pools so the assertion does not depend on random draws.
             with patch.dict(
-                "web.content.LEVELS", {level: {"rate": 100, "questionCount": 15}}
+                "web.content.LEVELS", {level: {"rate": 100, "questionCount": 40}}
             ):
                 qs = questions(level, LESSONS["animals"])
             correct = {q["correctText"] for q in qs}
@@ -521,8 +522,22 @@ class ContentAndCacheTests(unittest.TestCase):
                 self.assertNotIn("level", unmarked)
 
     def test_catalog_and_animal_assets(self):
-        self.assertEqual(list(LESSONS), ["basics", "numbers", "animals"])
-        self.assertEqual([len(l["sources"]) for l in LESSONS.values()], [1, 2, 2])
+        self.assertEqual(
+            list(LESSONS),
+            [
+                "basics",
+                "numbers",
+                "animals",
+                "city",
+                "documents-state-government-law",
+                "food-products",
+                "fruits-and-vegetables",
+                "weather-and-nature",
+            ],
+        )
+        self.assertEqual(
+            [len(l["sources"]) for l in LESSONS.values()], [1, 2] + [4] * 6
+        )
         self.assertEqual(len(LESSONS["basics"]["sources"][0]["choices"]), 11)
         for source in LESSONS["animals"]["sources"]:
             self.assertEqual(len(source["choices"]), 10)
@@ -532,6 +547,32 @@ class ContentAndCacheTests(unittest.TestCase):
                         Path(__file__).parent / "static/choices" / choice["image"]
                     ).is_file()
                 )
+
+    def test_frequency_lessons_preserve_order_and_easy_vocabulary(self):
+        root = Path(__file__).resolve().parents[1]
+        for path in sorted((root / "dev/word-frequencies").glob("*.txt")):
+            with self.subTest(topic=path.stem):
+                expected = [
+                    line.split("\t")
+                    for line in path.read_text(encoding="utf-8").splitlines()
+                ]
+                lesson = LESSONS[path.stem]
+                self.assertEqual(len(lesson["sources"]), 4)
+                self.assertTrue(all(len(s["choices"]) == 10 for s in lesson["sources"]))
+                actual = [
+                    [c["text"], c["translation"]]
+                    for s in lesson["sources"]
+                    for c in s["choices"]
+                ]
+                self.assertEqual(actual, expected)
+                self.assertEqual(
+                    eligible_sources("easy", lesson), lesson["sources"][:1]
+                )
+                self.assertEqual(lesson["sources"][0]["level"], 1)
+                easy_words = {text for text, _ in expected[:10]}
+                for q in questions("easy", lesson):
+                    self.assertIn(q["correctText"], easy_words)
+                    self.assertLessEqual({c["text"] for c in q["choices"]}, easy_words)
 
     def test_short_number_range(self):
         for correct in range(1, 11):
@@ -589,7 +630,12 @@ class ContentAndCacheTests(unittest.TestCase):
                         )
                         for q in qs
                     ]
-                    cycle = 11 if lesson["id"] == "basics" else 20
+                    cycle = len({
+                        c["text"]
+                        for source in eligible_sources(level, lesson)
+                        if "choices" in source
+                        for c in source["choices"]
+                    }) or (10 if level == "easy" else 20)
                     for start in range(0, len(texts), cycle):
                         self.assertEqual(
                             len(texts[start : start + cycle]),

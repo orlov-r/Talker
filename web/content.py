@@ -213,7 +213,16 @@ LESSONS = {
     lesson["id"]: lesson
     for lesson in (
         load_lesson(LESSON_DIR / name)
-        for name in ("basics.json", "numbers.json", "animals.json")
+        for name in (
+            "basics.json",
+            "numbers.json",
+            "animals.json",
+            "city.json",
+            "documents-state-government-law.json",
+            "food-products.json",
+            "fruits-and-vegetables.json",
+            "weather-and-nature.json",
+        )
     )
 }
 LESSON = LESSONS["basics"]

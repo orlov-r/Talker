@@ -1,26 +1,16 @@
 {
-  "description": "Additional animal vocabulary, including wild animals and waterfowl, with picture choices.",
+  "description": "Животные: entries 11–20 in dev/word-frequencies/animals.txt order.",
   "choiceLayout": "long",
   "choices": [
     {
-      "text": "კურდღელი",
-      "translation": "Кролик/заяц",
-      "image": "rabbit.jpg"
+      "text": "ძროხა",
+      "translation": "Корова",
+      "image": "cow.jpg"
     },
     {
-      "text": "თაგვი",
-      "translation": "Мышь",
-      "image": "mouse.jpg"
-    },
-    {
-      "text": "იხვი",
-      "translation": "Утка",
-      "image": "duck.jpg"
-    },
-    {
-      "text": "ბატი",
-      "translation": "Гусь",
-      "image": "goose.jpg"
+      "text": "ცხვარი",
+      "translation": "Овца",
+      "image": "sheep.jpg"
     },
     {
       "text": "დათვი",
@@ -28,29 +18,39 @@
       "image": "bear.jpg"
     },
     {
-      "text": "მგელი",
-      "translation": "Волк",
-      "image": "wolf.jpg"
+      "text": "ქათამი",
+      "translation": "Курица",
+      "image": "chicken.jpg"
     },
     {
-      "text": "მელა",
-      "translation": "Лиса",
-      "image": "fox.jpg"
+      "text": "არწივი",
+      "translation": "Орёл",
+      "image": "eagle.jpg"
     },
     {
-      "text": "ირემი",
-      "translation": "Олень",
-      "image": "deer.jpg"
+      "text": "კუ",
+      "translation": "Черепаха",
+      "image": "turtle.jpg"
     },
     {
-      "text": "ლომი",
-      "translation": "Лев",
-      "image": "lion.jpg"
+      "text": "კურდღელი",
+      "translation": "Кролик/заяц",
+      "image": "rabbit.jpg"
     },
     {
-      "text": "სპილო",
-      "translation": "Слон",
-      "image": "elephant.jpg"
+      "text": "მაიმუნი",
+      "translation": "Обезьяна",
+      "image": "monkey.jpg"
+    },
+    {
+      "text": "თხა",
+      "translation": "Коза",
+      "image": "goat.jpg"
+    },
+    {
+      "text": "ყვავი",
+      "translation": "Ворона",
+      "image": "crow.jpg"
     }
   ]
 }

@@ -1,0 +1,46 @@
+{
+  "description": "Погода и природа: entries 21–30 in dev/word-frequencies/weather-and-nature.txt order.",
+  "choiceLayout": "long",
+  "choices": [
+    {
+      "text": "ზაფხული",
+      "translation": "Лето"
+    },
+    {
+      "text": "სიცხე",
+      "translation": "Жара"
+    },
+    {
+      "text": "ზამთარი",
+      "translation": "Зима"
+    },
+    {
+      "text": "სითბო",
+      "translation": "Тепло"
+    },
+    {
+      "text": "სანაპირო",
+      "translation": "Побережье"
+    },
+    {
+      "text": "გაზაფხული",
+      "translation": "Весна"
+    },
+    {
+      "text": "ხეობა",
+      "translation": "Долина/ущелье"
+    },
+    {
+      "text": "ამინდი",
+      "translation": "Погода"
+    },
+    {
+      "text": "შემოდგომა",
+      "translation": "Осень"
+    },
+    {
+      "text": "ნისლი",
+      "translation": "Туман"
+    }
+  ]
+}

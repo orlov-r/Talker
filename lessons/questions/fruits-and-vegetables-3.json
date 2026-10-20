@@ -1,0 +1,46 @@
+{
+  "description": "Фрукты и овощи: entries 21–30 in dev/word-frequencies/fruits-and-vegetables.txt order.",
+  "choiceLayout": "long",
+  "choices": [
+    {
+      "text": "პომიდორი",
+      "translation": "Помидор"
+    },
+    {
+      "text": "მანდარინი",
+      "translation": "Мандарин"
+    },
+    {
+      "text": "ქლიავი",
+      "translation": "Слива"
+    },
+    {
+      "text": "ბროწეული",
+      "translation": "Гранат"
+    },
+    {
+      "text": "ხურმა",
+      "translation": "Хурма"
+    },
+    {
+      "text": "ალუბალი",
+      "translation": "Вишня"
+    },
+    {
+      "text": "გოგრა",
+      "translation": "Тыква"
+    },
+    {
+      "text": "ბარდა",
+      "translation": "Горох"
+    },
+    {
+      "text": "კომში",
+      "translation": "Айва"
+    },
+    {
+      "text": "ჭარხალი",
+      "translation": "Свёкла"
+    }
+  ]
+}

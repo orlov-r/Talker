@@ -1,0 +1,46 @@
+{
+  "description": "Фрукты и овощи: entries 1–10 in dev/word-frequencies/fruits-and-vegetables.txt order.",
+  "choiceLayout": "long",
+  "choices": [
+    {
+      "text": "ბალი",
+      "translation": "Черешня"
+    },
+    {
+      "text": "ვაშლი",
+      "translation": "Яблоко"
+    },
+    {
+      "text": "კარტოფილი",
+      "translation": "Картофель"
+    },
+    {
+      "text": "ხახვი",
+      "translation": "Лук"
+    },
+    {
+      "text": "ლობიო",
+      "translation": "Фасоль"
+    },
+    {
+      "text": "ლიმონი",
+      "translation": "Лимон"
+    },
+    {
+      "text": "ყურძენი",
+      "translation": "Виноград"
+    },
+    {
+      "text": "კიტრი",
+      "translation": "Огурец"
+    },
+    {
+      "text": "ლეღვი",
+      "translation": "Инжир"
+    },
+    {
+      "text": "ნიორი",
+      "translation": "Чеснок"
+    }
+  ]
+}

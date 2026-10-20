@@ -1,0 +1,46 @@
+{
+  "description": "Документы, государство и право: entries 31–40 in dev/word-frequencies/documents-state-government-law.txt order.",
+  "choiceLayout": "long",
+  "choices": [
+    {
+      "text": "პასპორტი",
+      "translation": "Паспорт"
+    },
+    {
+      "text": "მოქალაქეობა",
+      "translation": "Гражданство"
+    },
+    {
+      "text": "მოწმობა",
+      "translation": "Удостоверение/свидетельство"
+    },
+    {
+      "text": "ნებართვა",
+      "translation": "Разрешение"
+    },
+    {
+      "text": "საბაჟო",
+      "translation": "Таможня"
+    },
+    {
+      "text": "ადვოკატი",
+      "translation": "Адвокат"
+    },
+    {
+      "text": "მოსამართლე",
+      "translation": "Судья"
+    },
+    {
+      "text": "მერია",
+      "translation": "Мэрия"
+    },
+    {
+      "text": "საჩივარი",
+      "translation": "Жалоба"
+    },
+    {
+      "text": "პროკურორი",
+      "translation": "Прокурор"
+    }
+  ]
+}

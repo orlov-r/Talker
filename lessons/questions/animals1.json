@@ -1,5 +1,5 @@
 {
-  "description": "Common domestic animals and familiar animal vocabulary with picture choices.",
+  "description": "Животные: entries 1–10 in dev/word-frequencies/animals.txt order.",
   "choiceLayout": "long",
   "choices": [
     {
@@ -8,19 +8,34 @@
       "image": "dog.jpg"
     },
     {
-      "text": "კატა",
-      "translation": "Кошка",
-      "image": "cat.jpg"
-    },
-    {
       "text": "ცხენი",
       "translation": "Лошадь",
       "image": "horse.jpg"
     },
     {
-      "text": "ძროხა",
-      "translation": "Корова",
-      "image": "cow.jpg"
+      "text": "კატა",
+      "translation": "Кошка",
+      "image": "cat.jpg"
+    },
+    {
+      "text": "თევზი",
+      "translation": "Рыба",
+      "image": "fish.jpg"
+    },
+    {
+      "text": "მგელი",
+      "translation": "Волк",
+      "image": "wolf.jpg"
+    },
+    {
+      "text": "ლომი",
+      "translation": "Лев",
+      "image": "lion.jpg"
+    },
+    {
+      "text": "მამალი",
+      "translation": "Петух",
+      "image": "rooster.jpg"
     },
     {
       "text": "ღორი",
@@ -28,29 +43,14 @@
       "image": "pig.jpg"
     },
     {
-      "text": "ცხვარი",
-      "translation": "Овца",
-      "image": "sheep.jpg"
+      "text": "გველი",
+      "translation": "Змея",
+      "image": "snake.jpg"
     },
     {
-      "text": "თხა",
-      "translation": "Коза",
-      "image": "goat.jpg"
-    },
-    {
-      "text": "ქათამი",
-      "translation": "Курица",
-      "image": "chicken.jpg"
-    },
-    {
-      "text": "ჩიტი",
-      "translation": "Птичка",
-      "image": "bird.jpg"
-    },
-    {
-      "text": "თევზი",
-      "translation": "Рыба",
-      "image": "fish.jpg"
+      "text": "ბუ",
+      "translation": "Сова",
+      "image": "owl.jpg"
     }
   ]
 }

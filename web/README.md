@@ -16,12 +16,14 @@ Example lessons include «Приветствие», «Числа», and «Жив
 selects sources only from the chosen lesson; the level still sets 7/10/15 answers.
 Easy selects level 1 sources. Unmarked sources default to level 1 when the
 lesson has no explicit `level: 1` source, otherwise to level 2. Medium and Hard
-include all sources. All lessons stay visible; Easy uses `animals1` for animals
-and all unmarked sources for greetings and numbers. Explicit higher levels
+include all sources. All lessons stay visible; Easy uses the first ten words
+of each frequency lesson, numbers 1–10, and the greetings pool. Explicit higher levels
 remain excluded on Easy; the start API returns HTTP 400 if no source is eligible.
 Question JSON is resolved from
 private references in `lessons/questions/`; generators remain unchanged.
-Animal vocabulary is a teaching selection, not a measured corpus ranking.
+Six thematic lessons each use four ten-word pools from the private
+[word-frequency lists](../dev/word-frequencies/README.md), preserving their order.
+They are curated selections sorted by recorded word-form frequency.
 Animal illustrations use the style of Niko Pirosmani.
 Correct answer texts do not repeat until the available answers are exhausted,
 then a new uniqueness cycle begins. Generators use bounded retries, so an early

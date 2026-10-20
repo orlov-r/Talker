@@ -1,0 +1,46 @@
+{
+  "description": "Погода и природа: entries 11–20 in dev/word-frequencies/weather-and-nature.txt order.",
+  "choiceLayout": "long",
+  "choices": [
+    {
+      "text": "ქვა",
+      "translation": "Камень"
+    },
+    {
+      "text": "მთვარე",
+      "translation": "Луна"
+    },
+    {
+      "text": "ტემპერატურა",
+      "translation": "Температура"
+    },
+    {
+      "text": "თოვლი",
+      "translation": "Снег"
+    },
+    {
+      "text": "ჰაერი",
+      "translation": "Воздух"
+    },
+    {
+      "text": "წვიმა",
+      "translation": "Дождь"
+    },
+    {
+      "text": "ტბა",
+      "translation": "Озеро"
+    },
+    {
+      "text": "ვარსკვლავი",
+      "translation": "Звезда"
+    },
+    {
+      "text": "ტყე",
+      "translation": "Лес"
+    },
+    {
+      "text": "კუნძული",
+      "translation": "Остров"
+    }
+  ]
+}

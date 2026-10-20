@@ -1,0 +1,46 @@
+{
+  "description": "Город: entries 11–20 in dev/word-frequencies/city.txt order.",
+  "choiceLayout": "long",
+  "choices": [
+    {
+      "text": "მაღაზია",
+      "translation": "Магазин"
+    },
+    {
+      "text": "უნივერსიტეტი",
+      "translation": "Университет"
+    },
+    {
+      "text": "შენობა",
+      "translation": "Здание"
+    },
+    {
+      "text": "ბანკი",
+      "translation": "Банк"
+    },
+    {
+      "text": "ქუჩა",
+      "translation": "Улица"
+    },
+    {
+      "text": "პარკი",
+      "translation": "Парк"
+    },
+    {
+      "text": "სასტუმრო",
+      "translation": "Гостиница"
+    },
+    {
+      "text": "თეატრი",
+      "translation": "Театр"
+    },
+    {
+      "text": "ხიდი",
+      "translation": "Мост"
+    },
+    {
+      "text": "მოედანი",
+      "translation": "Площадь"
+    }
+  ]
+}

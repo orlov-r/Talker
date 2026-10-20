@@ -1,0 +1,46 @@
+{
+  "description": "Погода и природа: entries 1–10 in dev/word-frequencies/weather-and-nature.txt order.",
+  "choiceLayout": "long",
+  "choices": [
+    {
+      "text": "წყალი",
+      "translation": "Вода"
+    },
+    {
+      "text": "მზე",
+      "translation": "Солнце"
+    },
+    {
+      "text": "მდინარე",
+      "translation": "Река"
+    },
+    {
+      "text": "მიწა",
+      "translation": "Земля/почва"
+    },
+    {
+      "text": "ველი",
+      "translation": "Поле/равнина"
+    },
+    {
+      "text": "ზღვა",
+      "translation": "Море"
+    },
+    {
+      "text": "ცა",
+      "translation": "Небо"
+    },
+    {
+      "text": "მთა",
+      "translation": "Гора"
+    },
+    {
+      "text": "ბუნება",
+      "translation": "Природа"
+    },
+    {
+      "text": "ქარი",
+      "translation": "Ветер"
+    }
+  ]
+}

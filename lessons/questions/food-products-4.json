@@ -1,0 +1,46 @@
+{
+  "description": "Продукты питания: entries 31–40 in dev/word-frequencies/food-products.txt order.",
+  "choiceLayout": "long",
+  "choices": [
+    {
+      "text": "მაიონეზი",
+      "translation": "Майонез"
+    },
+    {
+      "text": "ლორი",
+      "translation": "Ветчина"
+    },
+    {
+      "text": "არაჟანი",
+      "translation": "Сметана"
+    },
+    {
+      "text": "სოსისი",
+      "translation": "Сосиска"
+    },
+    {
+      "text": "მდოგვი",
+      "translation": "Горчица"
+    },
+    {
+      "text": "ლავაში",
+      "translation": "Лаваш"
+    },
+    {
+      "text": "სუნელი",
+      "translation": "Приправа"
+    },
+    {
+      "text": "იოგურტი",
+      "translation": "Йогурт"
+    },
+    {
+      "text": "სოუსი",
+      "translation": "Соус"
+    },
+    {
+      "text": "ორცხობილა",
+      "translation": "Печенье"
+    }
+  ]
+}

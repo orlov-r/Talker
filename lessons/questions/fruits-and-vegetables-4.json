@@ -1,0 +1,46 @@
+{
+  "description": "Фрукты и овощи: entries 31–40 in dev/word-frequencies/fruits-and-vegetables.txt order.",
+  "choiceLayout": "long",
+  "choices": [
+    {
+      "text": "ნესვი",
+      "translation": "Дыня"
+    },
+    {
+      "text": "კივი",
+      "translation": "Киви"
+    },
+    {
+      "text": "ბოლოკი",
+      "translation": "Редис"
+    },
+    {
+      "text": "გარგარი",
+      "translation": "Абрикос"
+    },
+    {
+      "text": "ანანასი",
+      "translation": "Ананас"
+    },
+    {
+      "text": "მოცვი",
+      "translation": "Черника/голубика"
+    },
+    {
+      "text": "ჟოლო",
+      "translation": "Малина"
+    },
+    {
+      "text": "მაყვალი",
+      "translation": "Ежевика"
+    },
+    {
+      "text": "ისპანახი",
+      "translation": "Шпинат"
+    },
+    {
+      "text": "ყაბაყი",
+      "translation": "Кабачок"
+    }
+  ]
+}

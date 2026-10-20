@@ -1,0 +1,46 @@
+{
+  "description": "Город: entries 31–40 in dev/word-frequencies/city.txt order.",
+  "choiceLayout": "long",
+  "choices": [
+    {
+      "text": "რესტორანი",
+      "translation": "Ресторан"
+    },
+    {
+      "text": "აეროპორტი",
+      "translation": "Аэропорт"
+    },
+    {
+      "text": "ტაქსი",
+      "translation": "Такси"
+    },
+    {
+      "text": "საავადმყოფო",
+      "translation": "Больница"
+    },
+    {
+      "text": "სადარბაზო",
+      "translation": "Подъезд"
+    },
+    {
+      "text": "აფთიაქი",
+      "translation": "Аптека"
+    },
+    {
+      "text": "შუქნიშანი",
+      "translation": "Светофор"
+    },
+    {
+      "text": "სუპერმარკეტი",
+      "translation": "Супермаркет"
+    },
+    {
+      "text": "ავტოსადგომი",
+      "translation": "Автостоянка"
+    },
+    {
+      "text": "ტროტუარი",
+      "translation": "Тротуар"
+    }
+  ]
+}

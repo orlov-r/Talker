@@ -1,0 +1,46 @@
+{
+  "description": "Город: entries 21–30 in dev/word-frequencies/city.txt order.",
+  "choiceLayout": "long",
+  "choices": [
+    {
+      "text": "მუზეუმი",
+      "translation": "Музей"
+    },
+    {
+      "text": "უბანი",
+      "translation": "Район/квартал"
+    },
+    {
+      "text": "ბაღი",
+      "translation": "Сад"
+    },
+    {
+      "text": "მეტრო",
+      "translation": "Метро"
+    },
+    {
+      "text": "ბიბლიოთეკა",
+      "translation": "Библиотека"
+    },
+    {
+      "text": "ფოსტა",
+      "translation": "Почта"
+    },
+    {
+      "text": "სადგური",
+      "translation": "Станция/вокзал"
+    },
+    {
+      "text": "გაჩერება",
+      "translation": "Остановка"
+    },
+    {
+      "text": "ავტობუსი",
+      "translation": "Автобус"
+    },
+    {
+      "text": "კაფე",
+      "translation": "Кафе"
+    }
+  ]
+}

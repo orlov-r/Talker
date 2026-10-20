@@ -1,0 +1,21 @@
+{
+  "id": "documents-state-government-law",
+  "title": "Документы, государство и право",
+  "revision": 1,
+  "description": "40 слов из тематического частотного списка: четыре набора по 10. Первый набор — самые частые слова в списке.",
+  "sources": [
+    {
+      "question": "documents-state-government-law-1",
+      "level": 1
+    },
+    {
+      "question": "documents-state-government-law-2"
+    },
+    {
+      "question": "documents-state-government-law-3"
+    },
+    {
+      "question": "documents-state-government-law-4"
+    }
+  ]
+}
