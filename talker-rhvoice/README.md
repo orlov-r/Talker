@@ -4,9 +4,9 @@ Offline Georgian text-to-speech using RHVoice and the Natia voice.
 The HTTP service accepts text and returns WAV audio.
 
 This directory contains the speech service and its manual browser test page.
-For project status and the planned lesson web app, see the
+For project status and the implemented lesson web app, see the
 [project README](../README.md) and [architecture](../docs/architecture.md).
-Commands in this document assume the working directory is `talker/`, unless
+Commands in this document assume the working directory is `talker-rhvoice/`, unless
 otherwise stated.
 
 ## Requirements

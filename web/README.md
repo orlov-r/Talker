@@ -1,6 +1,6 @@
 # Lesson web app
 
-Flask/Jinja and plain JavaScript implement three anonymous listening lessons.
+Flask/Jinja and plain JavaScript implement anonymous listening lessons.
 Waitress runs production as one process with four threads; no frontend build or
 database is required.
 
@@ -12,10 +12,9 @@ database is required.
 | Medium | 100 | 10 |
 | Hard | 120 | 15 |
 
-Choose «Приветствие» (12 everyday expressions), «Числа» (two generators: 1–10
-and 1–20), or «Животные» (two pools of 10 animal names). Each attempt randomly
+Example lessons include «Приветствие», «Числа», and «Животные». Each attempt randomly
 selects sources only from the chosen lesson; the level still sets 7/10/15 answers.
-The two animal groups are a teaching selection, not a measured corpus ranking.
+Animal vocabulary is a teaching selection, not a measured corpus ranking.
 Animal illustrations use the style of Niko Pirosmani.
 Correct answer texts do not repeat until the available answers are exhausted,
 then a new uniqueness cycle begins. Generators use bounded retries, so an early
@@ -50,7 +49,7 @@ without submitting again.
 
 Choice images are 512×512 JPGs encoded at quality 75, named after the English
 word (e.g. `dog.jpg`). Prompts live separately in
-[`lessons/image-prompts.json`](../lessons/image-prompts.json); see
+[`dev/image-prompts.json`](../dev/image-prompts.json); see
 [image authoring](../lessons/README.md#image-assets).
 
 ## Local setup
@@ -126,9 +125,10 @@ results are implemented.
 
 Audio uses an in-memory LRU cache of at most 128 WAVs, each limited to 4 MiB.
 Evicted audio is regenerated from its retained question snapshot. Keys hash
-text, Natia, rate, and synthesis version. Misses are serialized and only complete
-validated WAVs are cached. No runtime files or database are created. A future
-persistent cache or SQLite database must use a volume.
+text, Natia, rate, and synthesis version. Misses are serialized. WAV validation
+checks headers and a nonzero declared frame count; rejecting truncated frame
+data is a [future enhancement](../docs/todo.md). No runtime files or database
+are created. A future persistent cache or SQLite database must use a volume.
 
 ## API
 

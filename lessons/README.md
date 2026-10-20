@@ -1,26 +1,38 @@
 # Server-side lesson content
 
-Three private definitions are loaded by the server’s fixed catalog:
+Private lesson definitions are loaded by the server's fixed catalog. Examples:
 
-| File | Lesson | Sources |
+| File | Lesson | Example content |
 |---|---|---|
-| `basics.json` | Приветствие | One pool of 12 everyday expressions; keeps the existing `basics` ID |
-| `numbers.json` | Числа | Two generators: 1–10 and 1–20 |
-| `animals.json` | Животные | Two separate pools of 10 animal names |
+| `basics.json` | Приветствие | Everyday expressions; keeps the existing `basics` ID |
+| `numbers.json` | Числа | Generated number questions |
+| `animals.json` | Животные | Illustrated animal vocabulary |
 
 Never serve this directory to browsers. Source counts describe pools, not the
 number of answers in a session: levels continue to use 7/10/15 answers.
 
-The first animal pool contains dog, cat, horse, cow, pig, sheep, goat, chicken,
-bird and fish. The second contains rabbit/hare, mouse, duck, goose, bear, wolf,
-fox, deer, lion and elephant. This is a practical beginner selection ordered by
-familiarity, not a statistically verified frequency ranking. `კურდღელი` covers
+Animal vocabulary includes, for example, dog, cat, horse, and rabbit/hare.
+The groups are a practical beginner selection ordered by familiarity, not a
+statistically verified frequency ranking. `კურდღელი` covers
 rabbit/hare; the choice label explicitly includes both Russian words.
 
 For politeness, `ბოდიში` is presented as an apology (sorry), and `უკაცრავად`
 as getting attention (excuse me). Their usage overlaps; these are learning cues,
 not exclusive translations. See the [Georgian teacher’s explanation](https://www.online-georgian.com/en/post/i-am-sorry-in-georgian)
 and [phrasebook examples](https://en.wikivoyage.org/wiki/Georgian_phrasebook).
+
+## Directory structure
+
+Lesson JSON files currently live directly in `lessons/` and embed their sources.
+`generators.py` provides trusted server-side generators.
+[`questions/`](questions/README.md) is reserved for separate question definitions.
+Extracting questions and composing lessons from references is the next step;
+the current loader does not read that directory. The future reference format
+has not been implemented.
+
+Development resources live in [`dev/`](../dev/README.md), outside runtime lesson
+content. Keep READMEs focused on schema and a few examples; the JSON files are
+the authoritative catalog.
 
 ## Implemented schema
 
@@ -58,8 +70,8 @@ cannot supply an unused correct answer, unused static vocabulary is preferred;
 if none remains, uniqueness resets and the last valid generated question is used.
 This bounds generator work and permits a very small chance of repeating a
 generated answer before its full output space is exhausted.
-Greetings have 12 possible correct answers (Hard starts a new cycle); numbers
-and animals each have 20.
+For example, a lesson with fewer unique answers than the requested question
+count starts a new cycle after those answers are exhausted.
 
 The correct option plus three sampled wrong choices are shuffled once and saved
 in the attempt. Its `speechText` is spoken. After answering, feedback shows
@@ -84,11 +96,12 @@ future animal images too.
 
 Save every choice image as **512×512 pixels, JPG, quality 75**. Use the
 corresponding English word as the basename, e.g. `dog.jpg`; omit style qualifiers.
-Store generation prompts separately in [image-prompts.json](image-prompts.json),
-keyed by image filename. This private file is not served to browsers.
+Store generation prompts separately in
+[`dev/image-prompts.json`](../dev/image-prompts.json), keyed by image filename.
+This private development file is not served to browsers or copied into images.
 
-All animal illustrations use the built-in image generation tool. The existing
-`dog.jpg` is reused; the other 19 assets were generated for this catalog.
+Animal illustrations use the built-in image generation tool. Reuse suitable
+existing assets when extending the catalog.
 
 Validation and snapshots: [`web/content.py`](../web/content.py).
 Runtime audio is never written here. See [web setup](../web/README.md) and

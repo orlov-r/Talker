@@ -16,9 +16,15 @@ flowchart LR
 
 `web/` owns the interface, API, content validation, attempts, answer checking,
 scoring, and audio retrieval. `lessons/` owns private content and generators.
-`talker/` remains the independent speech image and manual test page. Flask/Jinja
+`talker-rhvoice/` remains the independent speech image and manual test page. Flask/Jinja
 and plain JavaScript run in one Waitress process with four threads. See
 [the stack decision](web-framework.md).
+
+Development resources live in `dev/`; private image prompts are excluded from
+Docker build contexts and runtime images. `lessons/questions/` is reserved for
+separate question files. Current lessons still embed their sources, and the
+loader does not read that directory. Composing lessons from question references
+is future work; see [the enhancement list](todo.md).
 
 Compose exposes only the web app on `127.0.0.1:8070`; speech is internal at
 `http://rhvoice:8080`. Standalone speech scripts still publish loopback port
@@ -63,7 +69,7 @@ is present before answering to keep controls in place. Option keyboard shortcuts
 follow the visual layout (Z/X/C/V or A/S/Z/X); R replays, Space/Enter advances
 after answering. Animal images use the style of Niko Pirosmani, saved as
 512×512 JPGs at quality 75 and named after the English word. Private generation
-prompts live in `lessons/image-prompts.json`. Feedback also
+prompts live in `dev/image-prompts.json`. Feedback also
 includes the submitted choice ID so its green tick or red cross survives state
 recovery. Source rates remain future work. See
 [lesson authoring](../lessons/README.md).
@@ -93,7 +99,7 @@ integer rate (50 to 200, default 100), returning audio/wav. Natia is fixed by th
 service; voice/version are not request fields. Text is limited to 3000 characters,
 synthesis is serialized, and its timeout is 60 seconds. The web app allows 65
 seconds for upstream synthesis. Neither health endpoint proves fresh synthesis.
-See [the service README](../talker/README.md) for full operational instructions.
+See [the service README](../talker-rhvoice/README.md) for full operational instructions.
 
 ## Temporary state and audio
 
@@ -106,7 +112,9 @@ minimal scope. No database or persistent results are used.
 The in-memory LRU audio cache holds at most 128 WAVs, each capped at 4 MiB. Keys
 hash deterministic JSON containing text, Natia, rate, and SYNTHESIS_VERSION.
 Update that configured version whenever RHVoice/voice data changes. Misses are
-serialized and only complete validated WAVs are cached. Evicted audio can be
-regenerated from the retained snapshot. Failure does not cache an error, score
+serialized. Validation checks WAV headers and a nonzero declared frame count;
+it does not yet reject truncated frame data (see [the planned fix](todo.md)).
+Evicted audio can be regenerated from the retained snapshot.
+Failure does not cache an error, score
 an answer, or advance. No cache files are written or committed. Future persistent
 audio or SQLite storage must use volumes.

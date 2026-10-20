@@ -7,8 +7,7 @@ multiple-choice questions, and see a final score.
 ## Current status
 
 The speech service and minimal lesson app are implemented, with Docker Compose
-configuration. Three lessons are available: greetings (12 everyday expressions),
-numbers (1–10 and 1–20), and animals (two pools of 10 illustrated words).
+configuration. Example lessons include greetings, numbers, and illustrated animals.
 The selected lesson randomly draws from its own pools, avoiding repeated correct
 answer texts until the available answers are exhausted. Easy gives 7 questions
 at speech rate 80, Medium gives 10 at 100, and Hard gives 15 at 120. The app checks answers and
@@ -23,12 +22,15 @@ The lesson interface is in Russian; learning content and speech are in Georgian.
 
 | Path | Purpose |
 |---|---|
-| [talker/](talker/README.md) | Existing RHVoice/Natia service, Docker image, and build/run scripts |
+| [talker-rhvoice/](talker-rhvoice/README.md) | Existing RHVoice/Natia service, Docker image, and build/run scripts |
 | [web/](web/README.md) | Flask lesson app, UI, API, Dockerfile, and tests |
 | [lessons/](lessons/README.md) | Private lesson JSON and trusted number generator |
+| [lessons/questions/](lessons/questions/README.md) | Reserved for separate questions in the next content migration |
+| [dev/](dev/README.md) | Development resources, including private image-generation prompts |
 | [docs/architecture.md](docs/architecture.md) | Container boundaries, API, storage, and quiz flow |
 | [docs/web-framework.md](docs/web-framework.md) | Chosen web stack and framework comparison |
 | [docs/development.md](docs/development.md) | Development workflow and implementation sequence |
+| [docs/todo.md](docs/todo.md) | Future enhancements from the project review |
 | [AGENTS.md](AGENTS.md) | Repository guidance for coding agents |
 
 ## Run the existing speech service
@@ -40,15 +42,15 @@ Run these commands from the repository root.
 Windows (PowerShell):
 
 ```powershell
-.\talker\build.ps1
-.\talker\run.ps1
+.\talker-rhvoice\build.ps1
+.\talker-rhvoice\run.ps1
 ```
 
 Linux:
 
 ```sh
-sh talker/build.sh
-sh talker/run.sh
+sh talker-rhvoice/build.sh
+sh talker-rhvoice/run.sh
 ```
 
 Continue to the run command only after the build succeeds. Open the
@@ -59,11 +61,11 @@ Health and synthesis checks from the repository root:
 
 ```powershell
 curl.exe --fail http://127.0.0.1:8071/health
-curl.exe --fail http://127.0.0.1:8071/synthesize -H "Content-Type: application/json" --data-binary "@talker/sample.json" --output hello.wav
+curl.exe --fail http://127.0.0.1:8071/synthesize -H "Content-Type: application/json" --data-binary "@talker-rhvoice/sample.json" --output hello.wav
 ```
 
 On Linux, use `curl` instead of `curl.exe`. Listen to `hello.wav` to assess
-pronunciation. See the [service README](talker/README.md) for API limits,
+pronunciation. See the [service README](talker-rhvoice/README.md) for API limits,
 container replacement, image transfer, source pinning, and voice license notes.
 
 ## Run the lesson app

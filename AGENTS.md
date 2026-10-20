@@ -6,18 +6,22 @@ This file applies to the whole repository. Read `README.md` and
 `docs/architecture.md` before changing project boundaries. Read the relevant
 subproject README before editing its files.
 
-`talker/` is the implemented RHVoice/Natia service. `web/` and `lessons/` are
-placeholders. Architecture and lesson API documentation describe planned
-behavior, not existing endpoints. Keep that distinction explicit in docs.
+`talker-rhvoice/` is the implemented RHVoice/Natia service. `web/` contains the
+implemented Flask lesson app and its automated tests; `lessons/` contains private
+lesson JSON and trusted generators. Compose is implemented. Distinguish existing
+behavior from future enhancements in `docs/todo.md`.
 
 ## Ownership and boundaries
 
-- Keep synthesis code, the voice image, and its manual test page in `talker/`.
-- Put the future lesson UI and API in `web/`. Do not turn `talker/index.html`
+- Keep synthesis code, the voice image, and its manual test page in `talker-rhvoice/`.
+- Keep the lesson UI and API in `web/`. Do not turn `talker-rhvoice/index.html`
   into the lesson application or add scoring to the synthesis service.
 - Put lesson source content in `lessons/`. Correct answers must remain on the
   server; never serve these files directly to browsers.
 - Keep architecture and workflow documentation in `docs/`.
+- Keep development resources, including private image prompts, in `dev/`.
+  `lessons/questions/` is reserved for a future question extraction; lesson JSON
+  still embeds its sources until that migration is implemented.
 - Preserve existing directory names and script entry points unless the task
   calls for a migration; update all affected paths when moving files.
 
@@ -31,12 +35,13 @@ behavior, not existing endpoints. Keep that distinction explicit in docs.
 - Preserve request bounds, the synthesis timeout, serialized synthesis,
   non-root runtime, read-only filesystem, and temporary-file cleanup unless
   deliberately changing them with corresponding documentation and validation.
-- In the future web app, check answers and calculate scores on the server.
+- In the web app, check answers and calculate scores on the server.
   Validate attempt ownership, current question, and submitted choice; prevent
   repeated submissions from incrementing the score again.
-- Use persistent storage for SQLite and cached audio. Do not commit generated
+- Current attempts and audio use bounded process memory. If SQLite or a persistent
+  audio cache is added, use persistent storage. Do not commit generated
   WAV files, database files, Docker image archives, secrets, or runtime caches.
-- Keep RHVoice internal in the planned Compose deployment. Existing standalone
+- Keep RHVoice internal in the Compose deployment. Existing standalone
   run scripts publish only to host loopback for manual testing.
 - Support Windows PowerShell and Linux shell workflows. Build scripts resolve
   the Docker context from their own directory; preserve this behavior.
@@ -60,8 +65,10 @@ behavior, not existing endpoints. Keep that distinction explicit in docs.
 
 ## Validation
 
-Match checks to the changed behavior. There is no committed automated test
-suite or runnable lesson app yet.
+Match checks to the changed behavior. Quiz tests are committed in
+`web/test_app.py`; run `python -m unittest discover -s web -p test_app.py -v`
+from the root. Speech HTTP tests are not yet committed. Quiz tests use simulated
+audio and cannot validate the real voice.
 
 - For documentation changes, verify relative links, commands, and consistency
   with the source. No Docker rebuild is needed for documentation alone.
@@ -69,11 +76,11 @@ suite or runnable lesson app yet.
   type, valid WAV output, synthesis failures, and timeouts. A simulated
   synthesizer can test HTTP behavior but cannot validate the real voice.
 - For Docker or voice changes, build the image (its build step checks for a
-  nonempty Natia WAV), check `/health`, synthesize `talker/sample.json`, and
+  nonempty Natia WAV), check `/health`, synthesize `talker-rhvoice/sample.json`, and
   listen to the result when possible.
 - For scripts, check syntax in the relevant shell and verify affected paths
   and options. Avoid replacing a running container merely to validate docs.
-- When adding the lesson app, add tests for answer checking, replayed or
+- When changing the lesson app, maintain tests for answer checking, replayed or
   out-of-order submissions, final scoring, and audio cache invalidation.
 
 Run existing service scripts from the repository root as documented in
@@ -83,8 +90,10 @@ engine; do not claim real synthesis passed based on a mock or health response.
 ## Documentation maintenance
 
 Update documentation in the same change as behavior: root README for project
-status/setup, `talker/README.md` for the speech service, `web/README.md` for the
+status/setup, `talker-rhvoice/README.md` for the speech service, `web/README.md` for the
 lesson app, and `docs/architecture.md` for cross-service contracts or storage.
 Keep commands executable and label illustrative API examples as proposals
 until implemented. Do not replace existing detailed operational instructions
 with a duplicate summary.
+Use a few examples (usually three or four) in READMEs rather than maintaining
+complete lists of lessons, questions, or choices. Content files are authoritative.

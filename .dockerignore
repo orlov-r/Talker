@@ -6,3 +6,4 @@
 **/*.sqlite*
 *.tar
 .env
+dev/
