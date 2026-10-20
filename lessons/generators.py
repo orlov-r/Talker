@@ -1,9 +1,29 @@
 """Trusted question generators. Never exposed as browser assets."""
+
 import random
 
-NUMBERS = ["ერთი", "ორი", "სამი", "ოთხი", "ხუთი", "ექვსი", "შვიდი", "რვა", "ცხრა", "ათი",
-           "თერთმეტი", "თორმეტი", "ცამეტი", "თოთხმეტი", "თხუთმეტი", "თექვსმეტი",
-           "ჩვიდმეტი", "თვრამეტი", "ცხრამეტი", "ოცი"]
+NUMBERS = [
+    "ერთი",
+    "ორი",
+    "სამი",
+    "ოთხი",
+    "ხუთი",
+    "ექვსი",
+    "შვიდი",
+    "რვა",
+    "ცხრა",
+    "ათი",
+    "თერთმეტი",
+    "თორმეტი",
+    "ცამეტი",
+    "თოთხმეტი",
+    "თხუთმეტი",
+    "თექვსმეტი",
+    "ჩვიდმეტი",
+    "თვრამეტი",
+    "ცხრამეტი",
+    "ოცი",
+]
 
 
 def number_to_text(value):
@@ -14,14 +34,21 @@ def number_to_text(value):
 
 
 def number(maximum=20):
+    """Ask for a Georgian number with four consecutive digit choices."""
     correct = random.randint(1, maximum)
     offset = random.randint(max(0, correct - maximum + 3), min(3, correct - 1))
     start = correct - offset
     return {
         "choiceLayout": "short",
-        "choices": [{"id": str(value), "text": number_to_text(value),
-                     "translation": str(value), "isCorrect": value == correct}
-                    for value in range(start, start + 4)],
+        "choices": [
+            {
+                "id": str(value),
+                "text": number_to_text(value),
+                "translation": str(value),
+                "isCorrect": value == correct,
+            }
+            for value in range(start, start + 4)
+        ],
     }
 
 

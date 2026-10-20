@@ -5,7 +5,10 @@ as `animals1.json`, `animals2.json`, and `basics1.json`.
 
 Lessons reference a file with `{ "question": "animals1", "level": 1 }` in
 `sources`. The extension is omitted. Each file contains `choiceLayout` and
-`choices`; the loader validates the question and resolves it on the server.
+`choices`, plus a short author-facing `description`; the loader validates the
+question and resolves it on the server. Use `description` rather than JSON
+comments. The field is optional for loading and is never included in quiz API
+responses. Describe the pool's learning purpose rather than listing all choices.
 Level is set on the lesson reference and controls Easy eligibility. Unmarked
 sources default to 1 if the lesson has no explicit level 1 source, otherwise to 2.
 Generators remain in `lessons/generators.py` and are referenced directly by lessons.

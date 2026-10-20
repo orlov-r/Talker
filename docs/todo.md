@@ -1,6 +1,6 @@
 # Future enhancements
 
-These items are proposed work, not implemented behavior. They retain the
+Unchecked items are proposed work, not implemented behavior. They retain the
 remaining recommendations from the project review. The directory reorganization
 and correction of outdated project guidance are complete.
 
@@ -26,9 +26,9 @@ and correction of outdated project guidance are complete.
 
 ## Source style
 
-- [ ] Expand and consolidate `web/static/style.css`, removing duplicate rules
+- [x] Expand and consolidate `web/static/style.css`, removing duplicate rules
   and obsolete selectors while preserving appearance and responsive behavior.
-- [ ] Normalize Python and JavaScript formatting, simplify dense expressions,
+- [x] Normalize Python and JavaScript formatting, simplify dense expressions,
   and document lightweight formatting conventions. Preserve public identifiers.
 
 ## Repeatable validation and builds

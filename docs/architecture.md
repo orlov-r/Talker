@@ -24,6 +24,8 @@ Development resources live in `dev/`; private image prompts are excluded from
 Docker build contexts and runtime images. `lessons/questions/` contains reusable
 private question files. Lesson sources reference their basenames; the server
 resolves and validates these at startup. Generator references remain in lessons.
+Question `description` fields are private authoring notes, excluded from quiz
+responses and speech.
 
 Compose exposes only the web app on `127.0.0.1:8070`; speech is internal at
 `http://rhvoice:8080`. Standalone speech scripts still publish loopback port

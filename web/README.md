@@ -175,6 +175,9 @@ Each lesson's `levels` lists only difficulties with eligible sources.
 
 ## Validation
 
+Source formatting conventions and optional tool commands are documented in
+[the development workflow](../docs/development.md#source-style).
+
 With dependencies installed, run from the root:
 
 ```sh

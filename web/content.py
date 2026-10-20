@@ -1,9 +1,11 @@
 """Load and snapshot private lesson content."""
+
 import copy
 import json
 import random
 import re
 from pathlib import Path
+
 from lessons.generators import GENERATORS
 
 LEVELS = {
@@ -19,7 +21,11 @@ def load_lesson(path):
     resolved = []
     question_dir = (path.parent / "questions").resolve()
     for source in lesson["sources"]:
-        if not isinstance(source, dict) or set(source) - {"question", "generator", "level"}:
+        if not isinstance(source, dict) or set(source) - {
+            "question",
+            "generator",
+            "level",
+        }:
             raise ValueError(f"{path}: invalid source reference")
         if ("question" in source) == ("generator" in source):
             raise ValueError(f"{path}: source requires a question or generator")
@@ -38,7 +44,10 @@ def load_lesson(path):
                 question["level"] = source_level(source)
             resolved.append(question)
         else:
-            if not isinstance(source["generator"], str) or source["generator"] not in GENERATORS:
+            if (
+                not isinstance(source["generator"], str)
+                or source["generator"] not in GENERATORS
+            ):
                 raise ValueError(f"{path}: unknown generator")
             resolved.append(copy.deepcopy(source))
     lesson["sources"] = resolved
@@ -68,18 +77,35 @@ def validate(question, generated=False):
     if not isinstance(choices, list) or len(choices) < 4:
         raise ValueError("At least four choices required")
     for choice in choices:
-        if not isinstance(choice, dict) or not isinstance(choice.get("id"), str) or not choice["id"]:
+        if (
+            not isinstance(choice, dict)
+            or not isinstance(choice.get("id"), str)
+            or not choice["id"]
+        ):
             raise ValueError("Invalid choice ID")
         for field in ("text", "translation"):
-            if not isinstance(choice.get(field), str) or not choice[field].strip() or len(choice[field]) > 3000:
+            if (
+                not isinstance(choice.get(field), str)
+                or not choice[field].strip()
+                or len(choice[field]) > 3000
+            ):
                 raise ValueError("Choices require text and translation")
         choice.setdefault("speechText", choice["text"])
-        if not isinstance(choice["speechText"], str) or not choice["speechText"].strip() or len(choice["speechText"]) > 3000:
+        if (
+            not isinstance(choice["speechText"], str)
+            or not choice["speechText"].strip()
+            or len(choice["speechText"]) > 3000
+        ):
             raise ValueError("Invalid speech text")
         if "isCorrect" in choice and type(choice["isCorrect"]) is not bool:
             raise ValueError("Invalid correct marker")
-        if "image" in choice and (not isinstance(choice["image"], str) or not re.fullmatch(r"[a-z]+(?:-[a-z]+)*\.jpg", choice["image"])):
-            raise ValueError("Choice image must be an English word with a .jpg extension")
+        if "image" in choice and (
+            not isinstance(choice["image"], str)
+            or not re.fullmatch(r"[a-z]+(?:-[a-z]+)*\.jpg", choice["image"])
+        ):
+            raise ValueError(
+                "Choice image must be an English word with a .jpg extension"
+            )
     for field in ("id", "text", "translation"):
         if len({c[field].strip() for c in choices}) != len(choices):
             raise ValueError("Choices must be distinct")
@@ -95,14 +121,19 @@ def validate(question, generated=False):
 def questions(level, lesson=None):
     settings = LEVELS[level]
     lesson = LESSON if lesson is None else lesson
-    result, used = [], set()
+    result = []
+    used = set()
     sources = eligible_sources(level, lesson)
     static = [validate(s) for s in sources if "generator" not in s]
     generators = [s for s in sources if "generator" in s]
     if not static and not generators:
         raise ValueError("Lesson requires at least one source")
     for i in range(settings["questionCount"]):
-        available = [q for q in static if any(c["text"].strip() not in used for c in q["choices"])]
+        available = [
+            q
+            for q in static
+            if any(c["text"].strip() not in used for c in q["choices"])
+        ]
         sources = available + generators
         if not sources:
             # Start a new cycle after every static answer has been used.
@@ -112,8 +143,12 @@ def questions(level, lesson=None):
         for _ in range(100):
             source = random.choice(sources)
             generated = "generator" in source
-            q = validate(GENERATORS[source["generator"]](), generated=True) if generated else copy.deepcopy(source)
-            candidates = [c for c in q["choices"] if c.get("isCorrect")] if generated else [c for c in q["choices"] if c["text"].strip() not in used]
+            if generated:
+                q = validate(GENERATORS[source["generator"]](), generated=True)
+                candidates = [c for c in q["choices"] if c.get("isCorrect")]
+            else:
+                q = copy.deepcopy(source)
+                candidates = [c for c in q["choices"] if c["text"].strip() not in used]
             correct = random.choice(candidates)
             if correct["text"].strip() not in used:
                 break
@@ -121,7 +156,9 @@ def questions(level, lesson=None):
             if available:
                 # Do not let an exhausted generator hide unused vocabulary.
                 q = copy.deepcopy(random.choice(available))
-                correct = random.choice([c for c in q["choices"] if c["text"].strip() not in used])
+                correct = random.choice(
+                    [c for c in q["choices"] if c["text"].strip() not in used]
+                )
             else:
                 # A generator's output space is unknown. Bounded retries keep
                 # exhausted or very repetitive generators from blocking a lesson.
@@ -130,14 +167,22 @@ def questions(level, lesson=None):
         wrong = [c for c in q["choices"] if c["id"] != correct["id"]]
         q["choices"] = [correct] + random.sample(wrong, 3)
         random.shuffle(q["choices"])
-        q.update(id=f"q{i + 1}", rate=settings["rate"], correctChoiceId=correct["id"],
-                 speechText=correct["speechText"],
-                 correctAnswerText=f'{correct["text"]} ({correct["translation"]})')
+        q.update(
+            id=f"q{i + 1}",
+            rate=settings["rate"],
+            correctChoiceId=correct["id"],
+            speechText=correct["speechText"],
+            correctAnswerText=f'{correct["text"]} ({correct["translation"]})',
+        )
         result.append(q)
     return result
 
 
-LESSONS = {lesson["id"]: lesson for lesson in
-           (load_lesson(LESSON_DIR / name)
-            for name in ("basics.json", "numbers.json", "animals.json"))}
+LESSONS = {
+    lesson["id"]: lesson
+    for lesson in (
+        load_lesson(LESSON_DIR / name)
+        for name in ("basics.json", "numbers.json", "animals.json")
+    )
+}
 LESSON = LESSONS["basics"]

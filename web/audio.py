@@ -1,22 +1,28 @@
 """Bounded process-local WAV cache; serialize misses and publish complete bytes."""
-from collections import OrderedDict
+
 import hashlib
 import io
 import json
 import threading
 import urllib.request
 import wave
+from collections import OrderedDict
 
 
 def cache_key(text, rate, version):
-    return hashlib.sha256(json.dumps([text, "Natia", rate, version], ensure_ascii=False,
-                                     separators=(",", ":")).encode()).hexdigest()
+    return hashlib.sha256(
+        json.dumps(
+            [text, "Natia", rate, version], ensure_ascii=False, separators=(",", ":")
+        ).encode()
+    ).hexdigest()
 
 
 def synthesize(text, rate, url):
-    request = urllib.request.Request(url.rstrip("/") + "/synthesize",
-                                     json.dumps({"text": text, "rate": rate}).encode(),
-                                     {"Content-Type": "application/json"})
+    request = urllib.request.Request(
+        url.rstrip("/") + "/synthesize",
+        json.dumps({"text": text, "rate": rate}).encode(),
+        {"Content-Type": "application/json"},
+    )
     with urllib.request.urlopen(request, timeout=65) as response:
         if response.headers.get_content_type() != "audio/wav":
             raise ValueError("Speech service returned non-WAV data")

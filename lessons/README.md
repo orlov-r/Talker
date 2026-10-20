@@ -55,6 +55,11 @@ higher level, the start API rejects Easy with HTTP 400.
 A question has `choiceLayout` (`"short"`: four squares in a row; `"long"`, the
 default: 2×2 grid) and at least four distinct `choices`:
 
+Question files may also include a short `description` for content authors.
+Use this field instead of comments: standard JSON does not support comments.
+It describes the vocabulary pool, stays server-side, and does not change
+selection, speech, or scoring.
+
 | Choice field | Requirement |
 |---|---|
 | `id` | Nonempty stable identifier, unique within the source |

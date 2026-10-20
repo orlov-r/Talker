@@ -19,8 +19,11 @@ class Handler(BaseHTTPRequestHandler):
 
     def do_GET(self):
         if self.path == "/":
-            self.reply(200, Path(__file__).with_name("index.html").read_bytes(),
-                       "text/html; charset=utf-8")
+            self.reply(
+                200,
+                Path(__file__).with_name("index.html").read_bytes(),
+                "text/html; charset=utf-8",
+            )
         elif self.path == "/health":
             self.reply(200, b'{"status":"ok","voice":"Natia"}')
         else:
@@ -58,8 +61,7 @@ class Handler(BaseHTTPRequestHandler):
             with tempfile.TemporaryDirectory() as directory:
                 output = Path(directory) / "speech.wav"
                 subprocess.run(
-                    ["RHVoice-test", "-p", "Natia",
-                     "-r", str(rate), "-o", str(output)],
+                    ["RHVoice-test", "-p", "Natia", "-r", str(rate), "-o", str(output)],
                     input=text.encode("utf-8"),
                     stdout=subprocess.PIPE,
                     stderr=subprocess.PIPE,
@@ -73,8 +75,7 @@ class Handler(BaseHTTPRequestHandler):
         except subprocess.TimeoutExpired:
             self.error(504, "Synthesis timed out")
             return
-        except (subprocess.CalledProcessError, OSError,
-                ValueError, wave.Error):
+        except (subprocess.CalledProcessError, OSError, ValueError, wave.Error):
             self.error(500, "Synthesis failed")
             return
 
