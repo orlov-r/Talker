@@ -8,7 +8,7 @@ import wave
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 from tempfile import TemporaryDirectory
-from unittest.mock import patch
+from unittest.mock import Mock, patch
 
 from lessons.generators import number, number_to_text
 from web.app import create_app
@@ -171,11 +171,11 @@ class QuizTests(unittest.TestCase):
                 self.assertTrue(all(q["choiceLayout"] == "short" for q in snapshots))
             else:
                 pools = [
-                    {c["id"] for c in s["choices"]} for s in LESSONS[lid]["sources"]
+                    {c["text"] for c in s["choices"]} for s in LESSONS[lid]["sources"]
                 ]
                 self.assertTrue(
                     all(
-                        any({c["id"] for c in q["choices"]} <= pool for pool in pools)
+                        any({c["text"] for c in q["choices"]} <= pool for pool in pools)
                         for q in snapshots
                     )
                 )
@@ -296,6 +296,57 @@ class QuizTests(unittest.TestCase):
             503,
         )
 
+    def test_equal_georgian_choices_are_all_accepted(self):
+        # Four separate buttons may represent the same Georgian answer.
+        source = {
+            "choices": [{"text": "ერთი", "translation": str(i)} for i in range(4)]
+        }
+        with patch.dict(LESSONS, {"duplicate": {"sources": [source]}}):
+            for index in range(4):
+                state = self.start(lesson="duplicate")
+                self.client.get(state["question"]["audioUrl"])
+                choice = state["question"]["choices"][index]["id"]
+                self.assertTrue(self.answer(state, choice).json["isCorrect"])
+                self.assertTrue(self.answer(state, choice).json["isCorrect"])
+                self.assertEqual(
+                    self.app.extensions["attempts"][state["attemptId"]]["score"], 1
+                )
+
+    def test_invalid_lesson_does_not_replace_active_attempt(self):
+        state = self.start()
+        invalid = [
+            None,
+            {},
+            {"sources": []},
+            {"sources": [None]},
+            {"sources": [{"choices": [None] * 4}]},
+            {"sources": [{"generator": "broken"}]},
+        ]
+        for lesson in invalid:
+            with self.subTest(lesson=lesson), patch.dict(LESSONS, {"bad": lesson}):
+                with self.assertLogs(self.app.logger, level="ERROR"):
+                    response = self.post(
+                        "/api/attempts", {"lessonId": "bad", "level": "easy"}
+                    )
+                self.assertEqual(response.status_code, 400)
+                self.assertEqual(
+                    self.client.get(f"/api/attempts/{state['attemptId']}").json, state
+                )
+
+    def test_missing_images_use_translation(self):
+        source = {
+            "choices": [
+                {"text": str(i), "translation": str(i), "image": "missing.jpg"}
+                for i in range(4)
+            ]
+        }
+        with patch.dict(LESSONS, {"missing": {"sources": [source]}}):
+            state = self.start(lesson="missing")
+        self.assertTrue(all("image" not in c for c in state["question"]["choices"]))
+        self.assertEqual(
+            {c["label"] for c in state["question"]["choices"]}, {"0", "1", "2", "3"}
+        )
+
     def test_page_and_assets(self):
         html = self.client.get("/").get_data(as_text=True)
         self.assertIn('<html lang="ru">', html)
@@ -313,6 +364,70 @@ class QuizTests(unittest.TestCase):
 
 
 class ContentAndCacheTests(unittest.TestCase):
+    def test_generator_failures_retry_once_then_static_fallback(self):
+        static = {
+            "level": 2,
+            "choices": [{"text": str(i), "translation": str(i)} for i in range(4)],
+        }
+        for bad in [
+            RuntimeError("broken"), None, [], {}, {"choices": []},
+            {"choices": [None]}, {"choices": [{"text": "one"}]},
+        ]:
+            for recover in [True, False]:
+                with self.subTest(bad=bad, recover=recover):
+                    generator = Mock(side_effect=[bad, number() if recover else bad])
+                    lesson = {
+                        "sources": [{"generator": "test", "level": 1}, static]
+                    }
+                    with patch.dict(
+                        "web.content.GENERATORS", {"test": generator}
+                    ), patch.dict(
+                        "web.content.LEVELS", {"easy": {"questionCount": 1, "rate": 80}}
+                    ):
+                        q = questions("easy", lesson)[0]
+                    self.assertEqual(generator.call_count, 2)
+                    self.assertEqual(len(q["choices"]), 4)
+                    if not recover:
+                        self.assertIn(q["correctText"], {"0", "1", "2", "3"})
+
+    def test_generator_failure_without_static_is_bounded(self):
+        generator = Mock(side_effect=RuntimeError("broken"))
+        with patch.dict("web.content.GENERATORS", {"test": generator}):
+            with self.assertRaises(ValueError):
+                questions("easy", {"sources": [{"generator": "test"}]})
+        self.assertEqual(generator.call_count, 2)
+
+    def test_short_generated_questions_are_padded_without_mutating_output(self):
+        for count in [1, 2, 3]:
+            output = {
+                "choices": [
+                    {"text": str(i), "translation": str(i), "isCorrect": i == 0}
+                    for i in range(count)
+                ]
+            }
+            generator = Mock(return_value=output)
+            with patch.dict("web.content.GENERATORS", {"test": generator}), patch.dict(
+                "web.content.LEVELS", {"easy": {"questionCount": 1, "rate": 80}}
+            ):
+                q = questions("easy", {"sources": [{"generator": "test"}]})[0]
+            self.assertEqual(generator.call_count, 1)
+            self.assertEqual(len(q["choices"]), 4)
+            self.assertEqual(len({c["id"] for c in q["choices"]}), 4)
+            self.assertEqual(q["correctText"], "0")
+            self.assertEqual(len(output["choices"]), count)
+            self.assertTrue(all("id" not in c for c in output["choices"]))
+
+    def test_generator_can_reuse_correct_choice_dictionary(self):
+        choice = {"text": "ერთი", "translation": "1", "isCorrect": True}
+        with patch.dict(
+            "web.content.GENERATORS", {"test": lambda: {"choices": [choice] * 4}}
+        ):
+            qs = questions("easy", {"sources": [{"generator": "test"}]})
+        for q in qs:
+            self.assertEqual(len({c["id"] for c in q["choices"]}), 4)
+            self.assertEqual(q["correctText"], "ერთი")
+        self.assertNotIn("id", choice)
+
     def test_references_and_lesson_specific_levels(self):
         root = Path(__file__).resolve().parents[1] / "lessons"
         self.assertEqual(
@@ -367,17 +482,17 @@ class ContentAndCacheTests(unittest.TestCase):
 
     def test_easy_filters_sources_and_higher_difficulties_include_all(self):
         first, second = LESSONS["animals"]["sources"]
-        easy_ids = {c["id"] for c in first["choices"]}
-        advanced_ids = {c["id"] for c in second["choices"]}
+        easy_ids = {c["text"] for c in first["choices"]}
+        advanced_ids = {c["text"] for c in second["choices"]}
         for q in questions("easy", LESSONS["animals"]):
-            self.assertLessEqual({c["id"] for c in q["choices"]}, easy_ids)
+            self.assertLessEqual({c["text"] for c in q["choices"]}, easy_ids)
         for level in ["medium", "hard"]:
             # Draw 15 snapshots to exhaust animals1 if it is selected first.
             with patch.dict(
                 "web.content.LEVELS", {level: {"rate": 100, "questionCount": 15}}
             ):
                 qs = questions(level, LESSONS["animals"])
-            correct = {q["correctChoiceId"] for q in qs}
+            correct = {q["correctText"] for q in qs}
             self.assertTrue(correct & easy_ids)
             self.assertTrue(correct & advanced_ids)
         fixed = number()
@@ -494,7 +609,7 @@ class ContentAndCacheTests(unittest.TestCase):
         source["choices"][0]["speechText"] = "spoken differently"
         with patch("web.content.LESSON", {"sources": [source]}):
             qs = questions("easy")
-        first = next(q for q in qs if q["correctChoiceId"] == "0")
+        first = next(q for q in qs if q["correctText"] == "word0")
         self.assertEqual(first["speechText"], "spoken differently")
         self.assertEqual(first["correctAnswerText"], "word0 (0)")
 

@@ -4,6 +4,7 @@ import os
 import secrets
 import threading
 import time
+from pathlib import Path
 
 from flask import Flask, Response, abort, jsonify, render_template, request, session
 from werkzeug.exceptions import HTTPException
@@ -102,7 +103,9 @@ def create_app(config=None):
         choices = []
         for choice in q["choices"]:
             public_choice = {"id": choice["id"], "label": choice["translation"]}
-            if "image" in choice:
+            if "image" in choice and (
+                Path(app.static_folder) / "choices" / choice["image"]
+            ).is_file():
                 public_choice["image"] = "/static/choices/" + choice["image"]
             choices.append(public_choice)
         return {
@@ -153,9 +156,15 @@ def create_app(config=None):
             or data["lessonId"] not in LESSONS
         ):
             abort(400, "Выберите доступный уровень и урок.")
-        if data["level"] not in available_levels(LESSONS[data["lessonId"]]):
-            abort(400, "В этом уроке нет вопросов для выбранного уровня сложности.")
         with lock:
+            try:
+                lesson = LESSONS[data["lessonId"]]
+                if not isinstance(lesson, dict):
+                    raise ValueError("Lesson must be an object")
+                snapshots = questions(data["level"], lesson)
+            except ValueError:
+                app.logger.exception("Lesson preparation failed")
+                abort(400, "Не удалось подготовить вопросы урока. Попробуйте ещё раз.")
             now = time.monotonic()
             for key in list(attempts):
                 if (
@@ -169,7 +178,7 @@ def create_app(config=None):
             attempts[aid] = {
                 "owner": session["owner"],
                 "expires": now + app.config["ATTEMPT_TTL"],
-                "questions": questions(data["level"], LESSONS[data["lessonId"]]),
+                "questions": snapshots,
                 "index": 0,
                 "score": 0,
                 "feedback": None,
@@ -197,7 +206,8 @@ def create_app(config=None):
             if q["id"] not in a["audioReady"]:
                 abort(409, "Прослушайте аудио перед ответом.")
             if a["feedback"] is None:
-                correct = data["choiceId"] == q["correctChoiceId"]
+                selected = next(c for c in q["choices"] if c["id"] == data["choiceId"])
+                correct = selected["text"].strip() == q["correctText"]
                 a["score"] += int(correct)
                 a["feedback"] = {
                     "isCorrect": correct,

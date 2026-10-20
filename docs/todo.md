@@ -21,7 +21,8 @@ and correction of outdated project guidance are complete.
   focused modules. Keep routes responsible for HTTP concerns and preserve
   ownership, expiry, synchronization, scoring, and retry semantics.
 - [ ] Validate the entire lesson catalog at startup: metadata, duplicate lesson
-  IDs, source schemas, generator references, and image existence. Report the
+  IDs, and detailed source diagnostics. Basic question/source validation, generator
+  retries and static fallbacks are implemented; missing images use text. Report the
   file and source location for invalid content. Keep the explicit trusted catalog.
 
 ## Source style

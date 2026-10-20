@@ -169,6 +169,11 @@ async function render(value) {
       const img = document.createElement('img');
       img.src = choice.image;
       img.alt = choice.label;
+      img.onerror = () => {
+        const label = document.createElement('span');
+        label.textContent = choice.label;
+        img.replaceWith(label);
+      };
       button.append(img);
     } else {
       const label = document.createElement('span');

@@ -27,12 +27,19 @@ Correct answer texts do not repeat until the available answers are exhausted,
 then a new uniqueness cycle begins. Generators use bounded retries, so an early
 repeat has a small probability. Static vocabulary chooses
 an unused correct choice at random; a generator marks its own correct choice.
-Each question displays that choice and three sampled wrong answers, shuffled
+Each question displays that choice and three sampled other choices, shuffled
 once per occurrence. Number choices form a consecutive four-number interval
 within the selected generator’s range (1–10 or 1–20). Levels override source rates.
+Failed or invalid generator output is retried once;
+a second failure uses a random static pool from the lesson, ignoring difficulty
+and repeated answers. Valid generated questions with one to three choices are
+padded to four with duplicates. If no fallback exists, start returns HTTP 400
+and keeps the active attempt. Static content and eligible sources are checked
+before replacing an attempt.
 `choiceLayout: "short"` uses four square buttons in a row; `"long"` (default)
 uses a 2×2 grid. Buttons show a local image when supplied, otherwise the Russian
-translation; translations also provide accessible image labels.
+translation; translations also provide accessible image labels. Missing images
+fall back to the Russian translation, including browser image-loading failures.
 
 Three screens provide selection, listening/feedback, and final score.
 The interface, level and lesson names, accessibility labels, and API error
@@ -165,7 +172,11 @@ The cookie contains only opaque owner and CSRF IDs, never answers or scores.
 Question envelopes contain `attemptId`, `complete: false`, `position`, `total`,
 `question: {id, audioUrl, choiceLayout, choices: [{id, label, image?}]}`, and `feedback` (initially
 null). Completion envelopes contain `attemptId`, `complete: true`, `score`,
-and `total`. Choice `label` is the Russian translation. Feedback includes
+and `total`. Choice `label` is the Russian translation. IDs are temporary button
+identifiers,
+assigned by the server; private choices need no IDs. Scoring compares trimmed
+Georgian text, accepting every displayed choice with the correct text. Feedback
+includes
 `choiceTexts`, a map from the four displayed IDs to Georgian texts, only after
 answering; current-state recovery includes the same map. Future questions,
 speech overrides, and answer keys are not returned.

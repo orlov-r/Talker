@@ -11,7 +11,9 @@ configuration. Example lessons include greetings, numbers, and illustrated anima
 The selected lesson randomly draws from its own pools, avoiding repeated correct
 answer texts until the available answers are exhausted. Easy gives 7 questions
 at speech rate 80, Medium gives 10 at 100, and Hard gives 15 at 120. The app checks answers and
-calculates scores on the server.
+calculates scores on the server by Georgian text, accepting duplicate correct
+choices. Lesson start validates questions; broken generators retry once and fall
+back to static content when available. Missing pictures show Russian text.
 Easy includes level 1 sources; Medium and Hard include all sources. Unmarked
 sources default to level 1 if the lesson has no explicit `level: 1` source,
 otherwise to level 2. All lessons remain visible at every difficulty.

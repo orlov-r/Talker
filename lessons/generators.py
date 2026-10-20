@@ -42,7 +42,6 @@ def number(maximum=20):
         "choiceLayout": "short",
         "choices": [
             {
-                "id": str(value),
                 "text": number_to_text(value),
                 "translation": str(value),
                 "isCorrect": value == correct,

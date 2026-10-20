@@ -53,7 +53,7 @@ difficulty. Explicit levels are preserved; if every source explicitly has a
 higher level, the start API rejects Easy with HTTP 400.
 
 A question has `choiceLayout` (`"short"`: four squares in a row; `"long"`, the
-default: 2×2 grid) and at least four distinct `choices`:
+default: 2×2 grid) and at least four `choices` for static pools:
 
 Question files may also include a short `description` for content authors.
 Use this field instead of comments: standard JSON does not support comments.
@@ -62,18 +62,20 @@ selection, speech, or scoring.
 
 | Choice field | Requirement |
 |---|---|
-| `id` | Nonempty stable identifier, unique within the source |
 | `text` | Georgian text, nonempty, at most 3000 characters |
 | `speechText` | Optional nonempty speech override, at most 3000 characters; defaults to `text` |
 | `translation` | Russian translation (digits for numbers), nonempty, at most 3000 characters |
 | `image` | Optional image filename in `web/static/choices/`, e.g. `dog.jpg` |
-| `isCorrect` | Generators mark exactly one choice `true`; static choices omit it |
+| `isCorrect` | Generators mark the correct Georgian text with `true`; static choices omit it |
 
-IDs, trimmed texts and trimmed translations must each be distinct. Images use
+Choices need no IDs. Duplicate texts and translations are allowed; all choices
+whose trimmed Georgian text matches the correct text are accepted. Multiple
+generator markers must agree on that text. Images use
 lowercase English words as filenames with a `.jpg` extension (hyphens may join
 multiword names). Do not add style qualifiers such as `pirosmani`.
 Buttons show an image when present, otherwise the translation. The translation
-also supplies accessible image text.
+also supplies accessible image text. Missing images are nonfatal: the Russian
+translation is shown instead, including if image loading fails in the browser.
 
 ## Selection and playback
 
@@ -85,12 +87,18 @@ are excluded. After all static answers are exhausted, uniqueness resets and a
 new cycle begins. Generators get up to 100 proposals per question. If these
 cannot supply an unused correct answer, unused static vocabulary is preferred;
 if none remains, uniqueness resets and the last valid generated question is used.
-This bounds generator work and permits a very small chance of repeating a
-generated answer before its full output space is exhausted.
+A generator that raises an exception or returns invalid data is called again
+once. After a second failure, a random static question from the same lesson is
+used, ignoring difficulty and previously used answers. Without a static fallback,
+lesson start returns an error and preserves the active attempt. Nonempty valid
+generated questions with fewer than four choices are padded with duplicates.
+Static content and eligible sources are validated before the attempt starts.
+The uniqueness retry limit bounds generator work and permits a very small chance
+of repeating a generated answer before its full output space is exhausted.
 For example, a lesson with fewer unique answers than the requested question
 count starts a new cycle after those answers are exhausted.
 
-The correct option plus three sampled wrong choices are shuffled once and saved
+The correct option plus three sampled other choices are shuffled once and saved
 in the attempt. Its `speechText` is spoken. After answering, feedback shows
 `text (translation)`, and hovering, focusing or tapping each displayed answer
 shows its Georgian text between Back and Next. This area reserves space before

@@ -18,6 +18,7 @@ LESSON_DIR = Path(__file__).resolve().parents[1] / "lessons"
 
 def load_lesson(path):
     lesson = json.loads(path.read_text(encoding="utf-8"))
+    eligible_sources("medium", lesson)
     resolved = []
     question_dir = (path.parent / "questions").resolve()
     for source in lesson["sources"]:
@@ -62,7 +63,13 @@ def source_level(source, default=2):
 
 
 def eligible_sources(level, lesson):
-    sources = lesson["sources"]
+    if not isinstance(lesson, dict):
+        raise ValueError("Lesson must be an object")
+    sources = lesson.get("sources")
+    if not isinstance(sources, list) or not sources or not all(
+        isinstance(s, dict) for s in sources
+    ):
+        raise ValueError("Lesson requires sources")
     default = 2 if any(s.get("level") == 1 for s in sources) else 1
     return [s for s in sources if source_level(s, default) == 1 or level != "easy"]
 
@@ -72,17 +79,18 @@ def available_levels(lesson):
 
 
 def validate(question, generated=False):
+    if not isinstance(question, dict):
+        raise ValueError("Question must be an object")
     q = copy.deepcopy(question)
     choices = q.get("choices")
-    if not isinstance(choices, list) or len(choices) < 4:
-        raise ValueError("At least four choices required")
+    if not isinstance(choices, list) or len(choices) < (1 if generated else 4):
+        raise ValueError("Question requires choices (at least four for static pools)")
+    # A generator may reuse the same dictionary for several choice slots.
+    choices = q["choices"] = [copy.deepcopy(choice) for choice in choices]
     for choice in choices:
-        if (
-            not isinstance(choice, dict)
-            or not isinstance(choice.get("id"), str)
-            or not choice["id"]
-        ):
-            raise ValueError("Invalid choice ID")
+        if not isinstance(choice, dict):
+            raise ValueError("Choice must be an object")
+        choice.pop("id", None)
         for field in ("text", "translation"):
             if (
                 not isinstance(choice.get(field), str)
@@ -106,16 +114,31 @@ def validate(question, generated=False):
             raise ValueError(
                 "Choice image must be an English word with a .jpg extension"
             )
-    for field in ("id", "text", "translation"):
-        if len({c[field].strip() for c in choices}) != len(choices):
-            raise ValueError("Choices must be distinct")
     marked = [c for c in choices if c.get("isCorrect")]
-    if (generated and len(marked) != 1) or (not generated and marked):
-        raise ValueError("Only generated questions require one correct marker")
+    if (generated and not marked) or (not generated and marked):
+        raise ValueError("Only generated questions require correct markers")
+    if generated and len({c["text"].strip() for c in marked}) > 1:
+        raise ValueError("Correct markers must agree on Georgian text")
     q.setdefault("choiceLayout", "long")
     if q["choiceLayout"] not in ("short", "long"):
         raise ValueError("Invalid choice layout")
     return q
+
+
+def generate(source, static):
+    """Retry a broken generator once, then use any static pool."""
+    for _ in range(2):
+        try:
+            q = validate(GENERATORS[source["generator"]](), generated=True)
+            while len(q["choices"]) < 4:
+                q["choices"].append(copy.deepcopy(random.choice(q["choices"])))
+            return q, True
+        except Exception:
+            # Trusted generators can raise arbitrary exceptions or return bad data.
+            pass
+    if static:
+        return copy.deepcopy(random.choice(static)), False
+    raise ValueError("Generator failed twice and no static questions are available")
 
 
 def questions(level, lesson=None):
@@ -126,6 +149,8 @@ def questions(level, lesson=None):
     sources = eligible_sources(level, lesson)
     static = [validate(s) for s in sources if "generator" not in s]
     generators = [s for s in sources if "generator" in s]
+    # Fallback may ignore difficulty and previously used answers.
+    fallback = [validate(s) for s in lesson["sources"] if "generator" not in s]
     if not static and not generators:
         raise ValueError("Lesson requires at least one source")
     for i in range(settings["questionCount"]):
@@ -144,7 +169,10 @@ def questions(level, lesson=None):
             source = random.choice(sources)
             generated = "generator" in source
             if generated:
-                q = validate(GENERATORS[source["generator"]](), generated=True)
+                q, generated = generate(source, fallback)
+                if not generated:
+                    correct = random.choice(q["choices"])
+                    break
                 candidates = [c for c in q["choices"] if c.get("isCorrect")]
             else:
                 q = copy.deepcopy(source)
@@ -164,13 +192,16 @@ def questions(level, lesson=None):
                 # exhausted or very repetitive generators from blocking a lesson.
                 used.clear()
         used.add(correct["text"].strip())
-        wrong = [c for c in q["choices"] if c["id"] != correct["id"]]
-        q["choices"] = [correct] + random.sample(wrong, 3)
+        others = [c for c in q["choices"] if c is not correct]
+        q["choices"] = [correct] + random.sample(others, 3)
         random.shuffle(q["choices"])
+        for index, choice in enumerate(q["choices"]):
+            choice["id"] = str(index)
         q.update(
             id=f"q{i + 1}",
             rate=settings["rate"],
             correctChoiceId=correct["id"],
+            correctText=correct["text"].strip(),
             speechText=correct["speechText"],
             correctAnswerText=f'{correct["text"]} ({correct["translation"]})',
         )

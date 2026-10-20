@@ -65,13 +65,23 @@ leaves the current question open and blocks answers until audio retrieval succee
 
 Private choices contain Georgian `text`, optional `speechText` (defaults to
 `text`), Russian `translation`, and an optional local image filename. Static
-sources choose the correct option at random; generated questions mark exactly
-one choice with `isCorrect: true`. Sources supply at least four choices; three
-wrong choices are sampled and shuffled with the correct answer once per snapshot.
+sources choose the correct option at random; generated questions mark the correct
+Georgian text with `isCorrect: true`. Multiple markers must agree on that text.
+Static sources supply at least four choices; three other choices are sampled and shuffled with the correct answer once per snapshot.
 The correct choice supplies speech and feedback (`text (translation)`). Number
 choices are four consecutive integers within the selected 1–10 or 1–20 range,
-with Georgian names and digit translations. Resolved snapshots add a correct ID, attempt-local ID and rate.
-Buttons show images or translations. Picture choices show Russian hints on hover
+with Georgian names and digit translations. Choices have no authored IDs;
+snapshots assign temporary button IDs and retain
+the correct Georgian text, question ID and rate. Scoring compares trimmed Georgian
+texts so duplicate correct choices are all accepted.
+Buttons show images or translations; absent or failed images fall back to Russian
+translations. Before replacing an attempt, the server validates static content
+and eligible sources and prepares every question snapshot. Generator exceptions
+and invalid values are retried once, then a random static pool from the same
+lesson is used, ignoring difficulty and repeat avoidance. Without static content,
+start returns HTTP 400 and preserves the active attempt. Valid nonempty generated
+questions with fewer than four choices are padded with duplicate choices.
+Picture choices show Russian hints on hover
 or keyboard focus before answering. Feedback reveals the four Georgian texts
 for inspection between Back and Next by hover, keyboard focus or tap; picture
 choice hints then include the Russian translation in parentheses. This area is
