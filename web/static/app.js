@@ -248,13 +248,14 @@ $('ok').onclick = $('leave').onclick = () => {
 
 document.addEventListener('keydown', (event) => {
   if (
-    $('quiz').hidden ||
     event.altKey ||
     event.ctrlKey ||
     event.metaKey ||
     event.shiftKey ||
     event.isComposing ||
-    event.target.closest('input, textarea, select, [contenteditable="true"]')
+    event.target.closest(
+      'input:not([type="radio"]):not([type="checkbox"]), textarea, select, [contenteditable="true"]',
+    )
   )
     return;
   const advance =
@@ -262,17 +263,40 @@ document.addEventListener('keydown', (event) => {
     event.code === 'Enter' ||
     event.code === 'NumpadEnter';
   const shortcut = event.code.startsWith('Key') ? event.code.slice(3) : '';
-  const button = advance
-    ? $('next')
-    : shortcut === 'R'
-      ? $('replay')
-      : [...$('choices').querySelectorAll('button')].find(
-          (item) => item.dataset.shortcut === shortcut,
-        );
+  let button;
+  if (!$('start').hidden) {
+    const difficulty = /^(?:Digit|Numpad)([123])$/.exec(event.code);
+    if (advance) button = $('begin');
+    else if (difficulty)
+      button = document.querySelectorAll('input[name="level"]')[
+        Number(difficulty[1]) - 1
+      ];
+    else if (shortcut === 'Q' || shortcut === 'A') {
+      const lessons = [...document.querySelectorAll('input[name="lessonId"]')];
+      const current = lessons.findIndex((lesson) => lesson.checked);
+      const direction = shortcut === 'Q' ? -1 : 1;
+      button = lessons[(current + direction + lessons.length) % lessons.length];
+    }
+  } else if (!$('result').hidden) {
+    if (advance) button = $('ok');
+  } else if (!$('quiz').hidden) {
+    button = advance
+      ? $('next')
+      : shortcut === 'R'
+        ? $('replay')
+        : [...$('choices').querySelectorAll('button')].find(
+            (item) => item.dataset.shortcut === shortcut,
+          );
+  }
   if (!button) return;
-  // Suppress native Space/Enter activation even if focus remains on an answer.
+  // Suppress native activation so the shortcut performs exactly one action.
   event.preventDefault();
-  if (event.repeat || busy || button.disabled || (advance && !state.feedback))
+  if (
+    event.repeat ||
+    busy ||
+    button.disabled ||
+    (!$('quiz').hidden && advance && !state.feedback)
+  )
     return;
   button.click();
 });

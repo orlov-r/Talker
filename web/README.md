@@ -50,7 +50,12 @@ Replay and Next use compact controls. Audio failure leaves the current
 question open and disables choices until playback preparation succeeds.
 
 Keyboard shortcuts use physical key positions, including with Russian or
-Georgian keyboard layouts: Z/X/C/V for the horizontal row, A/S/Z/X for the 2×2
+Georgian keyboard layouts. On selection, 1/2/3 select Easy/Medium/Hard (including
+the numeric keypad), with key numbers in the top-right corners of difficulty
+cards. Q selects the previous lesson and A the next, wrapping at
+either end. Space or Enter starts the selected lesson and returns from results
+to selection. These shortcuts also work while a selection radio has focus.
+During a quiz: Z/X/C/V for the horizontal row, A/S/Z/X for the 2×2
 grid (left to right, top to bottom). Small corner labels show the keys. R
 activates “Повторить (R)”; Space or Enter advances only after answering.
 Held keys, modifier combinations, busy requests and text inputs do not trigger

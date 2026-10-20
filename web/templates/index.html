@@ -17,11 +17,11 @@
       <form id="start-form">
         <fieldset><legend>Уровень сложности</legend><div class="levels">
         {% for id, level in levels.items() %}
-          <label><input type="radio" name="level" value="{{ id }}" {% if loop.first %}checked{% endif %}>
-          <span><strong>{{ level.label }}</strong><small>Вопросов: {{ level.questionCount }}<br>Скорость речи: {{ level.rate }}%</small></span></label>
+          <label><input type="radio" name="level" value="{{ id }}" aria-keyshortcuts="{{ loop.index }}" {% if loop.first %}checked{% endif %}>
+          <span><small class="level-shortcut" aria-hidden="true">{{ loop.index }}</small><strong>{{ level.label }}</strong><small>Вопросов: {{ level.questionCount }}<br>Скорость речи: {{ level.rate }}%</small></span></label>
         {% endfor %}
         </div></fieldset>
-        <fieldset><legend>Урок</legend>
+        <fieldset aria-keyshortcuts="Q A"><legend>Урок · Q↑ A↓</legend>
         {% for lesson in lessons %}
           <label class="lesson"><input type="radio" name="lessonId" value="{{ lesson.id }}" {% if loop.first %}checked{% endif %}>
             <span class="lesson-number">{{ '%02d' % loop.index }}</span>
@@ -29,7 +29,8 @@
           </label>
         {% endfor %}
         </fieldset>
-        <button type="submit" id="begin">Начать урок <span aria-hidden="true">→</span></button>
+        <button type="submit" id="begin" aria-keyshortcuts="Space Enter">Начать урок <span aria-hidden="true">→</span></button>
+        <small>Пробел / Enter — начать урок</small>
       </form>
       <p class="note">Регистрация не нужна. Урок доступен в течение часа; при обновлении страницы придётся начать заново.</p>
     </section>
@@ -43,7 +44,7 @@
     </section>
     <section id="result" hidden><p class="eyebrow">УРОК ЗАВЕРШЁН</p><h1>Хорошая тренировка!</h1>
       <p id="score" class="score"></p><p class="intro">Правильных ответов. Возвращайтесь, чтобы потренироваться ещё.</p>
-      <button id="ok" type="button">К выбору урока</button></section>
+      <button id="ok" type="button" aria-keyshortcuts="Space Enter">К выбору урока</button><small>Пробел / Enter — вернуться</small></section>
     <p id="error" role="alert"></p>
   </main>
   <footer>Ваш урок. Ваш темп. <span>Озвучивает Natia.</span></footer>
