@@ -89,6 +89,15 @@ async function loadAudio() {
   }
 }
 
+function choiceHint(choiceId) {
+  const choice = state.question.choices.find((item) => item.id === choiceId);
+  if (state.feedback) {
+    const text = state.feedback.choiceTexts[choiceId];
+    return choice.image ? `${text} (${choice.label})` : text;
+  }
+  return choice.image ? choice.label : '';
+}
+
 function feedback(value) {
   state.feedback = value;
   choicesEnabled(false);
@@ -99,7 +108,7 @@ function feedback(value) {
     .forEach((button) => {
       if (button.matches(':hover, :focus'))
         $('choice-text').textContent =
-          value.choiceTexts[button.dataset.choiceId];
+          choiceHint(button.dataset.choiceId);
       if (button.dataset.choiceId !== value.selectedChoiceId) return;
       button.classList.add(value.isCorrect ? 'correct' : 'incorrect');
       const mark = document.createElement('span');
@@ -150,8 +159,7 @@ async function render(value) {
     shortcut.setAttribute('aria-hidden', 'true');
     button.append(shortcut);
     const inspect = () => {
-      if (state.feedback)
-        $('choice-text').textContent = state.feedback.choiceTexts[choice.id];
+      $('choice-text').textContent = choiceHint(choice.id);
     };
     button.onmouseenter = button.onfocus = inspect;
     button.onmouseleave = button.onblur = () => {

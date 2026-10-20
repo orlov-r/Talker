@@ -71,9 +71,11 @@ wrong choices are sampled and shuffled with the correct answer once per snapshot
 The correct choice supplies speech and feedback (`text (translation)`). Number
 choices are four consecutive integers within the selected 1–10 or 1–20 range,
 with Georgian names and digit translations. Resolved snapshots add a correct ID, attempt-local ID and rate.
-Buttons show images or translations. Feedback reveals the four Georgian texts
-for inspection between Back and Next by hover, keyboard focus or tap. This area
-is present before answering to keep controls in place. Option keyboard shortcuts
+Buttons show images or translations. Picture choices show Russian hints on hover
+or keyboard focus before answering. Feedback reveals the four Georgian texts
+for inspection between Back and Next by hover, keyboard focus or tap; picture
+choice hints then include the Russian translation in parentheses. This area is
+present before answering to keep controls in place. Option keyboard shortcuts
 follow the visual layout (Z/X/C/V or A/S/Z/X); R replays, Space/Enter advances
 after answering. Animal images use the style of Niko Pirosmani, saved as
 512×512 JPGs at quality 75 and named after the English word. Private generation

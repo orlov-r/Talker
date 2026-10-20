@@ -40,8 +40,11 @@ messages are in Russian. Georgian learning content and speech remain Georgian.
 Audio tries autoplay with manual playback/replay as a fallback. Choices lock after
 submission; the submitted button shows green with a tick or red with a cross.
 The Georgian correct answer and its translation in parentheses stay visible until
-Next. After answering, hovering, focusing, or tapping an answer displays its
-Georgian text between Back and Next. That area reserves space before answering.
+Next. Hovering or focusing a picture choice shows its Russian translation between
+Back and Next before answering. After answering, hovering, focusing, or tapping
+a picture choice shows its Georgian word with the Russian translation in
+parentheses; text choices show their Georgian text. That area reserves space
+before answering.
 Level cards put question count and speech rate on separate lines.
 Replay and Next use compact controls. Audio failure leaves the current
 question open and disables choices until playback preparation succeeds.
