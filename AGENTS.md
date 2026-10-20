@@ -20,8 +20,8 @@ behavior from future enhancements in `docs/todo.md`.
   server; never serve these files directly to browsers.
 - Keep architecture and workflow documentation in `docs/`.
 - Keep development resources, including private image prompts, in `dev/`.
-  `lessons/questions/` is reserved for a future question extraction; lesson JSON
-  still embeds its sources until that migration is implemented.
+  `lessons/questions/` holds reusable private question JSON; lessons reference
+  questions and may set their level. Generators remain in `lessons/generators.py`.
 - Preserve existing directory names and script entry points unless the task
   calls for a migration; update all affected paths when moving files.
 

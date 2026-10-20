@@ -4,13 +4,14 @@ import json
 import re
 import unittest
 import wave
+from tempfile import TemporaryDirectory
 from pathlib import Path
 from unittest.mock import patch
 from lessons.generators import number, number_to_text
 from concurrent.futures import ThreadPoolExecutor
 from web.app import create_app
 from web.audio import AudioCache, cache_key
-from web.content import LESSONS, validate, questions
+from web.content import LESSONS, available_levels, eligible_sources, load_lesson, validate, questions
 
 
 def wav_bytes(*args):
@@ -40,7 +41,7 @@ class QuizTests(unittest.TestCase):
     def post(self, path, data):
         return self.client.post(path, json=data, headers={'X-CSRF-Token': self.token})
 
-    def start(self, level='easy', lesson='basics'):
+    def start(self, level='easy', lesson='animals'):
         response = self.post('/api/attempts', {'lessonId': lesson, 'level': level})
         self.assertEqual(response.status_code, 201)
         return response.json
@@ -99,6 +100,10 @@ class QuizTests(unittest.TestCase):
         catalog = self.client.get('/api/lessons').json['lessons']
         self.assertEqual([l['id'] for l in catalog], list(LESSONS))
         self.assertTrue(all(set(l) == {'id', 'title', 'levels'} for l in catalog))
+        self.assertEqual({l['id']: l['levels'] for l in catalog}, {
+            'basics': ['easy', 'medium', 'hard'], 'numbers': ['easy', 'medium', 'hard'],
+            'animals': ['easy', 'medium', 'hard']})
+        self.assertEqual(self.client.get('/lessons/questions/animals1.json').status_code, 404)
         for lid in LESSONS:
             state = self.start('hard', lid)
             snapshots = self.app.extensions['attempts'][state['attemptId']]['questions']
@@ -185,7 +190,7 @@ class QuizTests(unittest.TestCase):
 
     def test_capacity(self):
         self.app.config['MAX_ATTEMPTS'] = 0
-        self.assertEqual(self.post('/api/attempts', {'lessonId': 'basics', 'level': 'easy'}).status_code, 503)
+        self.assertEqual(self.post('/api/attempts', {'lessonId': 'animals', 'level': 'easy'}).status_code, 503)
 
     def test_page_and_assets(self):
         html = self.client.get('/').get_data(as_text=True)
@@ -201,10 +206,85 @@ class QuizTests(unittest.TestCase):
 
 
 class ContentAndCacheTests(unittest.TestCase):
+    def test_references_and_lesson_specific_levels(self):
+        root = Path(__file__).resolve().parents[1] / 'lessons'
+        self.assertEqual(json.loads((root / 'animals.json').read_text(encoding='utf-8'))['sources'],
+                         [{'question': 'animals1', 'level': 1}, {'question': 'animals2'}])
+        with TemporaryDirectory() as folder:
+            directory = Path(folder)
+            (directory / 'questions').mkdir()
+            source = {'choices': [{'id': str(i), 'text': str(i), 'translation': str(i)} for i in range(4)]}
+            question_path = directory / 'questions/shared.json'
+            question_path.write_text(json.dumps(source), encoding='utf-8')
+            path = directory / 'lesson.json'
+
+            def load(sources):
+                path.write_text(json.dumps({'sources': sources}), encoding='utf-8')
+                return load_lesson(path)
+
+            first = load([{'question': 'shared', 'level': 1}])
+            second = load([{'question': 'shared'}])
+            self.assertEqual(available_levels(first), ['easy', 'medium', 'hard'])
+            self.assertEqual(available_levels(second), ['easy', 'medium', 'hard'])
+            self.assertEqual(len(questions('easy', first)), 7)
+            self.assertEqual(len(questions('easy', second)), 7)
+            mixed = load([{'question': 'shared', 'level': 1}, {'question': 'shared'}])
+            self.assertEqual(len(eligible_sources('easy', mixed)), 1)
+            self.assertNotIn('level', second['sources'][0])
+            self.assertEqual(json.loads(question_path.read_text(encoding='utf-8')), source)
+            for ref in ['../shared', '/shared', 'shared.json', 1]:
+                with self.subTest(ref=ref), self.assertRaises(ValueError):
+                    load([{'question': ref}])
+            with self.assertRaises(FileNotFoundError):
+                load([{'question': 'missing'}])
+            for source_ref in [{}, {'question': 'shared', 'generator': 'number'},
+                               {'generator': 'unknown'}, {'choices': []}]:
+                with self.subTest(source=source_ref), self.assertRaises(ValueError):
+                    load([source_ref])
+            for level in [0, -1, True, '1', 1.5, None]:
+                with self.subTest(level=level), self.assertRaises(ValueError):
+                    load([{'question': 'shared', 'level': level}])
+
+    def test_easy_filters_sources_and_higher_difficulties_include_all(self):
+        first, second = LESSONS['animals']['sources']
+        easy_ids = {c['id'] for c in first['choices']}
+        advanced_ids = {c['id'] for c in second['choices']}
+        for q in questions('easy', LESSONS['animals']):
+            self.assertLessEqual({c['id'] for c in q['choices']}, easy_ids)
+        for level in ['medium', 'hard']:
+            # Draw 15 snapshots to exhaust animals1 if it is selected first.
+            with patch.dict('web.content.LEVELS', {level: {'rate': 100, 'questionCount': 15}}):
+                qs = questions(level, LESSONS['animals'])
+            correct = {q['correctChoiceId'] for q in qs}
+            self.assertTrue(correct & easy_ids)
+            self.assertTrue(correct & advanced_ids)
+        fixed = number()
+        with patch.dict('web.content.GENERATORS', {'fixed': lambda: fixed}):
+            lesson = {'sources': [dict(first, level=1), {'generator': 'fixed'}]}
+            with patch('web.content.GENERATORS', {}):
+                self.assertEqual(len(questions('easy', lesson)), 7)
+            lesson = {'sources': [{'generator': 'fixed', 'level': 1}]}
+            self.assertEqual(len(questions('easy', lesson)), 7)
+
+    def test_implicit_levels_depend_on_explicit_level_one_in_lesson(self):
+        unmarked = {'generator': 'number'}
+        advanced = {'generator': 'number-1-10', 'level': 2}
+        beginner = {'generator': 'number-1-10', 'level': 1}
+        for sources, expected in [([unmarked], [unmarked]),
+                                  ([advanced, unmarked], [unmarked]),
+                                  ([unmarked, beginner], [beginner]),
+                                  ([advanced, beginner, unmarked], [beginner])]:
+            with self.subTest(sources=sources):
+                lesson = {'sources': sources}
+                self.assertEqual(eligible_sources('easy', lesson), expected)
+                for level in ['medium', 'hard']:
+                    self.assertEqual(eligible_sources(level, lesson), sources)
+                self.assertNotIn('level', unmarked)
+
     def test_catalog_and_animal_assets(self):
         self.assertEqual(list(LESSONS), ['basics', 'numbers', 'animals'])
         self.assertEqual([len(l['sources']) for l in LESSONS.values()], [1, 2, 2])
-        self.assertEqual(len(LESSONS['basics']['sources'][0]['choices']), 12)
+        self.assertEqual(len(LESSONS['basics']['sources'][0]['choices']), 11)
         for source in LESSONS['animals']['sources']:
             self.assertEqual(len(source['choices']), 10)
             for choice in validate(source)['choices']:
@@ -247,14 +327,14 @@ class ContentAndCacheTests(unittest.TestCase):
                 for lesson in LESSONS.values():
                     qs = questions(level, lesson)
                     texts = [next(c['text'] for c in q['choices'] if c['id'] == q['correctChoiceId']) for q in qs]
-                    cycle = 12 if lesson['id'] == 'basics' else 20
+                    cycle = 11 if lesson['id'] == 'basics' else 20
                     for start in range(0, len(texts), cycle):
                         self.assertEqual(len(texts[start:start + cycle]), len(set(texts[start:start + cycle])))
                     sequences.add(tuple(texts))
         self.assertGreater(len(sequences), 1)
 
     def test_speech_override_and_static_choice_selection(self):
-        source = {'choices': [{'id': str(i), 'text': f'word{i}', 'translation': str(i)} for i in range(7)]}
+        source = {'level': 1, 'choices': [{'id': str(i), 'text': f'word{i}', 'translation': str(i)} for i in range(7)]}
         source['choices'][0]['speechText'] = 'spoken differently'
         with patch('web.content.LESSON', {'sources': [source]}):
             qs = questions('easy')
@@ -273,18 +353,18 @@ class ContentAndCacheTests(unittest.TestCase):
 
     def test_exhausted_generator_still_completes_lesson(self):
         fixed = number()
-        with patch('web.content.LESSON', {'sources': [{'generator': 'fixed'}]}), \
+        with patch('web.content.LESSON', {'sources': [{'generator': 'fixed', 'level': 1}]}), \
                 patch.dict('web.content.GENERATORS', {'fixed': lambda: fixed}):
             qs = questions('easy')
         self.assertEqual(len(qs), 7)
         self.assertEqual(len({q['speechText'] for q in qs}), 1)
 
     def test_unused_static_answers_survive_exhausted_generator(self):
-        source = {'choices': [{'id': str(i), 'text': f'word{i}', 'translation': str(i)} for i in range(7)]}
+        source = {'level': 1, 'choices': [{'id': str(i), 'text': f'word{i}', 'translation': str(i)} for i in range(7)]}
         fixed = {'choices': [dict(c, isCorrect=i == 0) for i, c in enumerate(source['choices'])]}
         # Always propose the generator; after retries the unused static pool
         # must still win over a repeated correct answer.
-        with patch('web.content.LESSON', {'sources': [source, {'generator': 'fixed'}]}), \
+        with patch('web.content.LESSON', {'sources': [source, {'generator': 'fixed', 'level': 1}]}), \
                 patch.dict('web.content.GENERATORS', {'fixed': lambda: fixed}), \
                 patch('web.content.random.choice', side_effect=lambda items: items[-1]):
             qs = questions('easy')
@@ -303,7 +383,7 @@ class ContentAndCacheTests(unittest.TestCase):
 
     def test_choice_sampling_and_layout(self):
         for _ in range(20):
-            for q in questions('easy'):
+            for q in questions('medium'):
                 self.assertEqual(len(q['choices']), 4)
                 self.assertEqual(len({c['id'] for c in q['choices']}), 4)
                 self.assertIn(q['correctChoiceId'], [c['id'] for c in q['choices']])

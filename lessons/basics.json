@@ -1,73 +1,11 @@
 {
   "id": "basics",
   "title": "Приветствие",
-  "revision": 3,
-  "description": "12 повседневных слов и выражений: приветствия, благодарность и вежливое обращение.",
+  "revision": 4,
+  "description": "11 повседневных слов и выражений: приветствия, благодарность и вежливое обращение.",
   "sources": [
     {
-      "choiceLayout": "long",
-      "choices": [
-        {
-          "id": "hello",
-          "text": "გამარჯობა",
-          "translation": "Здравствуйте"
-        },
-        {
-          "id": "morning",
-          "text": "დილა მშვიდობისა",
-          "translation": "Доброе утро"
-        },
-        {
-          "id": "evening",
-          "text": "საღამო მშვიდობისა",
-          "translation": "Добрый вечер"
-        },
-        {
-          "id": "night",
-          "text": "ღამე მშვიდობისა",
-          "translation": "Спокойной ночи"
-        },
-        {
-          "id": "thanks",
-          "text": "მადლობა",
-          "translation": "Спасибо"
-        },
-        {
-          "id": "bye",
-          "text": "ნახვამდის",
-          "translation": "До свидания"
-        },
-        {
-          "id": "please",
-          "text": "გთხოვთ",
-          "translation": "Пожалуйста (при просьбе)"
-        },
-        {
-          "id": "sorry",
-          "text": "ბოდიში",
-          "translation": "Извините (sorry — прошу прощения)"
-        },
-        {
-          "id": "excuse-me",
-          "text": "უკაცრავად",
-          "translation": "Извините (excuse me — обращаюсь за вниманием)"
-        },
-        {
-          "id": "yes",
-          "text": "დიახ",
-          "translation": "Да"
-        },
-        {
-          "id": "no",
-          "text": "არა",
-          "translation": "Нет"
-        },
-        {
-          "id": "welcome",
-          "text": "კეთილი იყოს თქვენი მობრძანება",
-          "translation": "Добро пожаловать"
-        }
-      ]
+      "question": "basics1"
     }
   ]
 }

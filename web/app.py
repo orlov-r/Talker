@@ -6,7 +6,7 @@ import time
 from flask import Flask, abort, jsonify, render_template, request, session, Response
 from werkzeug.exceptions import HTTPException
 from web.audio import AudioCache, cache_key, synthesize
-from web.content import LESSONS, LEVELS, questions
+from web.content import LESSONS, LEVELS, available_levels, questions
 
 
 def create_app(config=None):
@@ -86,7 +86,8 @@ def create_app(config=None):
 
     @app.get("/")
     def index():
-        return render_template("index.html", csrf=session["csrf"], levels=LEVELS, lessons=LESSONS.values())
+        return render_template("index.html", csrf=session["csrf"], levels=LEVELS,
+                               lessons=LESSONS.values())
 
     @app.get("/health")
     def health():
@@ -94,7 +95,7 @@ def create_app(config=None):
 
     @app.get("/api/lessons")
     def lessons():
-        return jsonify(levels=LEVELS, lessons=[{"id": lesson["id"], "title": lesson["title"], "levels": list(LEVELS)}
+        return jsonify(levels=LEVELS, lessons=[{"id": lesson["id"], "title": lesson["title"], "levels": available_levels(lesson)}
                                               for lesson in LESSONS.values()])
 
     @app.post("/api/attempts")
@@ -103,6 +104,8 @@ def create_app(config=None):
         if (not isinstance(data.get("level"), str) or data["level"] not in LEVELS or
                 not isinstance(data.get("lessonId"), str) or data["lessonId"] not in LESSONS):
             abort(400, "Выберите доступный уровень и урок.")
+        if data["level"] not in available_levels(LESSONS[data["lessonId"]]):
+            abort(400, "В этом уроке нет вопросов для выбранного уровня сложности.")
         with lock:
             now = time.monotonic()
             for key in list(attempts):

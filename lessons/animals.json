@@ -1,138 +1,15 @@
 {
   "id": "animals",
   "title": "Животные",
-  "revision": 1,
+  "revision": 2,
   "description": "Два набора по 10 распространённых названий животных. Иллюстрации в стиле Пиросмани.",
   "sources": [
     {
-      "choiceLayout": "long",
-      "choices": [
-        {
-          "id": "dog",
-          "text": "ძაღლი",
-          "translation": "Собака",
-          "image": "dog.jpg"
-        },
-        {
-          "id": "cat",
-          "text": "კატა",
-          "translation": "Кошка",
-          "image": "cat.jpg"
-        },
-        {
-          "id": "horse",
-          "text": "ცხენი",
-          "translation": "Лошадь",
-          "image": "horse.jpg"
-        },
-        {
-          "id": "cow",
-          "text": "ძროხა",
-          "translation": "Корова",
-          "image": "cow.jpg"
-        },
-        {
-          "id": "pig",
-          "text": "ღორი",
-          "translation": "Свинья",
-          "image": "pig.jpg"
-        },
-        {
-          "id": "sheep",
-          "text": "ცხვარი",
-          "translation": "Овца",
-          "image": "sheep.jpg"
-        },
-        {
-          "id": "goat",
-          "text": "თხა",
-          "translation": "Коза",
-          "image": "goat.jpg"
-        },
-        {
-          "id": "chicken",
-          "text": "ქათამი",
-          "translation": "Курица",
-          "image": "chicken.jpg"
-        },
-        {
-          "id": "bird",
-          "text": "ჩიტი",
-          "translation": "Птица",
-          "image": "bird.jpg"
-        },
-        {
-          "id": "fish",
-          "text": "თევზი",
-          "translation": "Рыба",
-          "image": "fish.jpg"
-        }
-      ]
+      "question": "animals1",
+      "level": 1
     },
     {
-      "choiceLayout": "long",
-      "choices": [
-        {
-          "id": "rabbit",
-          "text": "კურდღელი",
-          "translation": "Кролик / заяц",
-          "image": "rabbit.jpg"
-        },
-        {
-          "id": "mouse",
-          "text": "თაგვი",
-          "translation": "Мышь",
-          "image": "mouse.jpg"
-        },
-        {
-          "id": "duck",
-          "text": "იხვი",
-          "translation": "Утка",
-          "image": "duck.jpg"
-        },
-        {
-          "id": "goose",
-          "text": "ბატი",
-          "translation": "Гусь",
-          "image": "goose.jpg"
-        },
-        {
-          "id": "bear",
-          "text": "დათვი",
-          "translation": "Медведь",
-          "image": "bear.jpg"
-        },
-        {
-          "id": "wolf",
-          "text": "მგელი",
-          "translation": "Волк",
-          "image": "wolf.jpg"
-        },
-        {
-          "id": "fox",
-          "text": "მელა",
-          "translation": "Лиса",
-          "image": "fox.jpg"
-        },
-        {
-          "id": "deer",
-          "text": "ირემი",
-          "translation": "Олень",
-          "image": "deer.jpg"
-        },
-        {
-          "id": "lion",
-          "text": "ლომი",
-          "translation": "Лев",
-          "image": "lion.jpg"
-        },
-        {
-          "id": "elephant",
-          "text": "სპილო",
-          "translation": "Слон",
-          "image": "elephant.jpg"
-        }
-      ]
+      "question": "animals2"
     }
   ]
 }

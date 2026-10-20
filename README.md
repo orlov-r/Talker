@@ -12,6 +12,9 @@ The selected lesson randomly draws from its own pools, avoiding repeated correct
 answer texts until the available answers are exhausted. Easy gives 7 questions
 at speech rate 80, Medium gives 10 at 100, and Hard gives 15 at 120. The app checks answers and
 calculates scores on the server.
+Easy includes level 1 sources; Medium and Hard include all sources. Unmarked
+sources default to level 1 if the lesson has no explicit `level: 1` source,
+otherwise to level 2. All lessons remain visible at every difficulty.
 
 The basic app has three screens: skill level and lesson selection, a listening
 question with four answer choices and feedback, and a final score. Accounts,
@@ -25,7 +28,7 @@ The lesson interface is in Russian; learning content and speech are in Georgian.
 | [talker-rhvoice/](talker-rhvoice/README.md) | Existing RHVoice/Natia service, Docker image, and build/run scripts |
 | [web/](web/README.md) | Flask lesson app, UI, API, Dockerfile, and tests |
 | [lessons/](lessons/README.md) | Private lesson JSON and trusted number generator |
-| [lessons/questions/](lessons/questions/README.md) | Reserved for separate questions in the next content migration |
+| [lessons/questions/](lessons/questions/README.md) | Private reusable question definitions referenced by lessons |
 | [dev/](dev/README.md) | Development resources, including private image-generation prompts |
 | [docs/architecture.md](docs/architecture.md) | Container boundaries, API, storage, and quiz flow |
 | [docs/web-framework.md](docs/web-framework.md) | Chosen web stack and framework comparison |

@@ -1,0 +1,65 @@
+{
+  "choiceLayout": "long",
+  "choices": [
+    {
+      "id": "rabbit",
+      "text": "კურდღელი",
+      "translation": "Кролик/заяц",
+      "image": "rabbit.jpg"
+    },
+    {
+      "id": "mouse",
+      "text": "თაგვი",
+      "translation": "Мышь",
+      "image": "mouse.jpg"
+    },
+    {
+      "id": "duck",
+      "text": "იხვი",
+      "translation": "Утка",
+      "image": "duck.jpg"
+    },
+    {
+      "id": "goose",
+      "text": "ბატი",
+      "translation": "Гусь",
+      "image": "goose.jpg"
+    },
+    {
+      "id": "bear",
+      "text": "დათვი",
+      "translation": "Медведь",
+      "image": "bear.jpg"
+    },
+    {
+      "id": "wolf",
+      "text": "მგელი",
+      "translation": "Волк",
+      "image": "wolf.jpg"
+    },
+    {
+      "id": "fox",
+      "text": "მელა",
+      "translation": "Лиса",
+      "image": "fox.jpg"
+    },
+    {
+      "id": "deer",
+      "text": "ირემი",
+      "translation": "Олень",
+      "image": "deer.jpg"
+    },
+    {
+      "id": "lion",
+      "text": "ლომი",
+      "translation": "Лев",
+      "image": "lion.jpg"
+    },
+    {
+      "id": "elephant",
+      "text": "სპილო",
+      "translation": "Слон",
+      "image": "elephant.jpg"
+    }
+  ]
+}

@@ -14,6 +14,13 @@ database is required.
 
 Example lessons include «Приветствие», «Числа», and «Животные». Each attempt randomly
 selects sources only from the chosen lesson; the level still sets 7/10/15 answers.
+Easy selects level 1 sources. Unmarked sources default to level 1 when the
+lesson has no explicit `level: 1` source, otherwise to level 2. Medium and Hard
+include all sources. All lessons stay visible; Easy uses `animals1` for animals
+and all unmarked sources for greetings and numbers. Explicit higher levels
+remain excluded on Easy; the start API returns HTTP 400 if no source is eligible.
+Question JSON is resolved from
+private references in `lessons/questions/`; generators remain unchanged.
 Animal vocabulary is a teaching selection, not a measured corpus ranking.
 Animal illustrations use the style of Niko Pirosmani.
 Correct answer texts do not repeat until the available answers are exhausted,
@@ -164,6 +171,7 @@ Errors return `{error: message}`: 400 invalid JSON/selection, 403 CSRF, 404
 unavailable/expired/non-owned attempt or audio, 409 invalid progression/choice,
 413 oversized request, 502 synthesis failure/timeout, 503 attempt capacity.
 All responses use `Cache-Control: no-store`.
+Each lesson's `levels` lists only difficulties with eligible sources.
 
 ## Validation
 

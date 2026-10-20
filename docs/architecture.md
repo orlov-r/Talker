@@ -21,10 +21,9 @@ and plain JavaScript run in one Waitress process with four threads. See
 [the stack decision](web-framework.md).
 
 Development resources live in `dev/`; private image prompts are excluded from
-Docker build contexts and runtime images. `lessons/questions/` is reserved for
-separate question files. Current lessons still embed their sources, and the
-loader does not read that directory. Composing lessons from question references
-is future work; see [the enhancement list](todo.md).
+Docker build contexts and runtime images. `lessons/questions/` contains reusable
+private question files. Lesson sources reference their basenames; the server
+resolves and validates these at startup. Generator references remain in lessons.
 
 Compose exposes only the web app on `127.0.0.1:8070`; speech is internal at
 `http://rhvoice:8080`. Standalone speech scripts still publish loopback port
@@ -36,7 +35,7 @@ for HTTPS. See [web setup/configuration](../web/README.md).
 
 Three screens provide selection, listening questions with feedback, and final
 score. Easy uses 7 questions at rate 80, Medium 10 at 100, and Hard 15 at 120.
-Three private lesson definitions provide greetings (one pool of 12 expressions),
+Three private lesson definitions provide greetings (one pool of 11 expressions),
 numbers (two generators: 1–10 and 1–20), and animals (two pools of 10).
 The browser selects a lesson ID; the server resolves that ID through its fixed
 catalog and randomly selects only that lesson’s sources. Correct Georgian answer
@@ -46,8 +45,15 @@ are excluded for the current uniqueness cycle, then the set of used texts resets
 Duplicate generator results are retried up to 100 times per question; after
 that, unused static vocabulary is preferred, or the uniqueness cycle resets and
 the last generated result is accepted. A rare early generator repeat is allowed.
-Greetings offer 12 distinct correct answers, so Hard starts a second cycle after
-12 answers. Numbers and animals each offer 20 distinct answers.
+Greetings offer 11 distinct correct answers, so Hard starts a second cycle after
+11 answers. Numbers and animals each offer 20 distinct answers on Medium and Hard.
+Source references may set a positive integer `level`. Unmarked sources default
+to 1 if the lesson has no explicit level 1 source, otherwise to 2. Easy includes
+level 1 sources; Medium and Hard include all sources. Only `animals1` is
+explicitly marked level 1, so Easy has 10 available animal answers; greetings
+and numbers include their unmarked sources. The UI always shows every lesson.
+The start API rejects a difficulty with no eligible sources before replacing
+an existing attempt. The catalog reports each lesson's available levels.
 
 Each occurrence is resolved once into an attempt snapshot. Playback tries
 autoplay with manual fallback and unlimited replay. Four choices lock on

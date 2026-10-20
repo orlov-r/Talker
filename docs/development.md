@@ -41,9 +41,11 @@ stable generated questions on replay, and audio cache
 invalidation. No database or saved results are required for the basic version.
 The synthesis service should remain independently buildable.
 
-`lessons/questions/` is reserved for separate question definitions in the next
-content migration. Current lesson JSON files still embed their sources; the
-loader does not read that directory yet. Development resources belong in `dev/`,
+`lessons/questions/` contains reusable private question definitions. Lessons
+reference these files and optionally assign a level. Unmarked sources default
+to 1 if the lesson has no explicit level 1 source, otherwise to 2. Easy selects
+level 1 sources, while Medium and Hard include all sources. Keep
+generator references directly in lessons. Development resources belong in `dev/`,
 including `dev/image-prompts.json`, and are excluded from the Docker build context.
 See [future enhancements](todo.md) for the remaining review proposals.
 

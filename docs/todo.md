@@ -4,13 +4,6 @@ These items are proposed work, not implemented behavior. They retain the
 remaining recommendations from the project review. The directory reorganization
 and correction of outdated project guidance are complete.
 
-## Content organization
-
-- [ ] Extract reusable questions into `lessons/questions/` and compose lesson
-  definitions from question references. Define the reference format, preserve
-  existing lesson IDs, and update loading, validation, documentation, and tests
-  together. The directory is prepared; current lessons still embed sources.
-
 ## Audio correctness and availability
 
 - [ ] Validate actual WAV frame data before caching. Header parsing and a

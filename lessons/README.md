@@ -23,12 +23,10 @@ and [phrasebook examples](https://en.wikivoyage.org/wiki/Georgian_phrasebook).
 
 ## Directory structure
 
-Lesson JSON files currently live directly in `lessons/` and embed their sources.
-`generators.py` provides trusted server-side generators.
-[`questions/`](questions/README.md) is reserved for separate question definitions.
-Extracting questions and composing lessons from references is the next step;
-the current loader does not read that directory. The future reference format
-has not been implemented.
+Lesson JSON files live directly in `lessons/` and reference private question
+files in [`questions/`](questions/README.md). For example, `animals1` resolves
+to `questions/animals1.json`. `generators.py` provides trusted server-side
+generators; generator references stay directly in the lesson.
 
 Development resources live in [`dev/`](../dev/README.md), outside runtime lesson
 content. Keep READMEs focused on schema and a few examples; the JSON files are
@@ -36,9 +34,23 @@ the authoritative catalog.
 
 ## Implemented schema
 
-A lesson defines `id`, `title`, `description`, `revision`, and `sources`. A source is a question
-object or `{ "generator": "number" }`. Generators are trusted registry entries,
-never browser-provided code or arbitrary paths.
+A lesson defines `id`, `title`, `description`, `revision`, and `sources`.
+A source is `{ "question": "animals1", "level": 1 }` or
+`{ "generator": "number" }`. Question references use a basename without `.json`,
+matching `[a-z][a-z0-9-]*`; paths and nested references are not supported.
+Question JSON contains the question object described below. Generators are
+trusted registry entries, never browser-provided code or arbitrary paths.
+
+Each source reference may specify a positive integer `level`. Unmarked sources
+default to level 1 when the lesson has no explicit `level: 1` source; otherwise
+they default to level 2. The level belongs to the lesson reference, so different lessons may
+assign different levels to the same question. Easy selects only level 1;
+Medium and Hard include every level. This also applies to generator references.
+Currently only `animals1` is explicitly marked level 1, so Easy uses only that
+animal pool. Greetings and numbers have no explicit level 1 sources, so their
+unmarked sources are included on Easy. Lessons remain visible at every
+difficulty. Explicit levels are preserved; if every source explicitly has a
+higher level, the start API rejects Easy with HTTP 400.
 
 A question has `choiceLayout` (`"short"`: four squares in a row; `"long"`, the
 default: 2×2 grid) and at least four distinct `choices`:
@@ -60,7 +72,7 @@ also supplies accessible image text.
 
 ## Selection and playback
 
-The app randomly selects a source for each of the level's 7, 10 or 15 questions.
+The app randomly selects an eligible source for each of the difficulty's 7, 10 or 15 questions.
 For static questions it randomly chooses a correct option whose Georgian text
 has not already been correct in this attempt. Generated questions supply their
 correct option; duplicate correct texts cause a retry. Exhausted static pools

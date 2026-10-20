@@ -1,0 +1,60 @@
+{
+  "choiceLayout": "long",
+  "choices": [
+    {
+      "id": "hello",
+      "text": "გამარჯობა",
+      "translation": "Здравствуйте"
+    },
+    {
+      "id": "morning",
+      "text": "დილა მშვიდობისა",
+      "translation": "Доброе утро"
+    },
+    {
+      "id": "evening",
+      "text": "საღამო მშვიდობისა",
+      "translation": "Добрый вечер"
+    },
+    {
+      "id": "night",
+      "text": "ღამე მშვიდობისა",
+      "translation": "Спокойной ночи"
+    },
+    {
+      "id": "thanks",
+      "text": "მადლობა",
+      "translation": "Спасибо"
+    },
+    {
+      "id": "bye",
+      "text": "ნახვამდის",
+      "translation": "До свидания"
+    },
+    {
+      "id": "please",
+      "text": "გთხოვთ",
+      "translation": "Пожалуйста (при просьбе)"
+    },
+    {
+      "id": "sorry",
+      "text": "ბოდიში",
+      "translation": "Извините (sorry)"
+    },
+    {
+      "id": "excuse-me",
+      "text": "უკაცრავად",
+      "translation": "Извините (excuse me)"
+    },
+    {
+      "id": "yes",
+      "text": "დიახ",
+      "translation": "Да"
+    },
+    {
+      "id": "no",
+      "text": "არა",
+      "translation": "Нет"
+    }
+  ]
+}
