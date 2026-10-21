@@ -1,0 +1,6 @@
+# Keep private lessons, tests, and development resources out of the image.
+*
+!Dockerfile
+!requirements.txt
+!server.py
+!index.html

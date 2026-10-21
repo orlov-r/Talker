@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Edge TTS speech test</title>
+  <style>
+    body { max-width: 42rem; margin: 3rem auto; padding: 0 1rem; font: 1rem/1.5 system-ui, sans-serif; }
+    textarea { box-sizing: border-box; width: 100%; padding: .75rem; font: inherit; }
+    button { margin-top: 1rem; padding: .6rem 1rem; font: inherit; cursor: pointer; }
+    audio { display: block; width: 100%; margin-top: 1rem; }
+    audio[hidden] { display: none; }
+  </style>
+</head>
+<body>
+  <h1>Edge TTS speech test</h1>
+  <p>Online synthesis via Microsoft Edge. Submitted text is sent to Microsoft.</p>
+  <p id="voice"></p>
+  <form id="speech-form">
+    <label for="text">Georgian text (up to 3000 characters)</label>
+    <textarea id="text" name="text" lang="ka" rows="5" maxlength="3000" required>გამარჯობა! როგორ ხარ?</textarea>
+    <label for="rate">Speech rate (50–200; 100 = normal)</label>
+    <input id="rate" type="number" min="50" max="200" step="1" value="100" required>
+    <button id="read" type="submit">Read aloud</button>
+  </form>
+  <p id="status" role="status" aria-live="polite"></p>
+  <audio id="audio" controls hidden></audio>
+  <script>
+    const form = document.getElementById('speech-form');
+    const text = document.getElementById('text');
+    const button = document.getElementById('read');
+    const status = document.getElementById('status');
+    const audio = document.getElementById('audio');
+    const rate = document.getElementById('rate');
+    let audioUrl;
+    fetch('/health').then(response => response.json()).then(data => {
+      document.getElementById('voice').textContent = `Voice: ${data.voice}`;
+    }).catch(() => {});
+
+    form.addEventListener('submit', async (event) => {
+      event.preventDefault();
+      if (!text.value.trim()) {
+        status.textContent = 'Enter some text first.';
+        text.focus();
+        return;
+      }
+      button.disabled = true;
+      audio.pause();
+      status.textContent = 'Generating speech…';
+      try {
+        const response = await fetch('/synthesize', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ text: text.value, rate: Number(rate.value) })
+        });
+        if (!response.ok) {
+          const error = await response.json();
+          throw new Error(error.error || 'Synthesis failed.');
+        }
+        const blob = await response.blob();
+        if (audioUrl) URL.revokeObjectURL(audioUrl);
+        audioUrl = URL.createObjectURL(blob);
+        audio.src = audioUrl;
+        audio.hidden = false;
+        try {
+          await audio.play();
+          status.textContent = 'Playing speech.';
+        } catch {
+          status.textContent = 'Speech is ready. Press play below to listen.';
+        }
+      } catch (error) {
+        status.textContent = error.message || 'Unable to generate speech.';
+      } finally {
+        button.disabled = false;
+      }
+    });
+    audio.addEventListener('ended', () => { status.textContent = 'Playback finished.'; });
+    window.addEventListener('pagehide', () => {
+      if (audioUrl) URL.revokeObjectURL(audioUrl);
+    });
+  </script>
+</body>
+</html>

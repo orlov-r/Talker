@@ -2,6 +2,7 @@ __pycache__/
 *.pyc
 .venv/
 *.wav
+*.mp3
 *.sqlite*
 *.tar
 .env

@@ -24,6 +24,12 @@ service has no committed test suite; quiz checks are in `web/test_app.py`.
 
 ## Lesson app
 
+For the standalone Edge alternative, work in `talker-edge-tts/` and follow its
+[README](../talker-edge-tts/README.md). Run
+`python -m unittest discover -s talker-edge-tts -p test_server.py -v` for simulated
+HTTP checks. This service returns MP3 and requires internet for real synthesis;
+it is not connected to the lesson app or default Compose deployment.
+
 Implement in `web/`, with lesson JSON and trusted generators in `lessons/`.
 The minimal app and private content are implemented. Use the
 [chosen Flask, Jinja, and plain JavaScript stack](web-framework.md), and keep

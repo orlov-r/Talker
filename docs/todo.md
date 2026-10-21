@@ -6,6 +6,11 @@ and correction of outdated project guidance are complete.
 
 ## Audio correctness and availability
 
+- [ ] Support Edge TTS MP3 in the lesson app, including content-type/format
+  validation and cache identity for the selected engine and voice. The standalone
+  `talker-edge-tts/` container and manual MP3 test page are implemented; the default
+  lesson app and Compose still use RHVoice/WAV.
+
 - [ ] Validate actual WAV frame data before caching. Header parsing and a
   positive declared frame count currently allow truncated audio. Add regression
   tests for missing or truncated payloads and malformed upstream responses.

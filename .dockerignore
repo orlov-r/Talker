@@ -3,6 +3,7 @@
 **/__pycache__
 **/*.pyc
 **/*.wav
+**/*.mp3
 **/*.sqlite*
 *.tar
 .env

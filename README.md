@@ -31,6 +31,7 @@ The lesson interface is in Russian; learning content and speech are in Georgian.
 | Path | Purpose |
 |---|---|
 | [talker-rhvoice/](talker-rhvoice/README.md) | Existing RHVoice/Natia service, Docker image, and build/run scripts |
+| [talker-edge-tts/](talker-edge-tts/README.md) | Alternative online Edge TTS service and manual MP3 test page |
 | [web/](web/README.md) | Flask lesson app, UI, API, Dockerfile, and tests |
 | [lessons/](lessons/README.md) | Private lesson JSON and trusted number generator |
 | [lessons/questions/](lessons/questions/README.md) | Private reusable question definitions referenced by lessons |
@@ -75,6 +76,23 @@ curl.exe --fail http://127.0.0.1:8071/synthesize -H "Content-Type: application/j
 On Linux, use `curl` instead of `curl.exe`. Listen to `hello.wav` to assess
 pronunciation. See the [service README](talker-rhvoice/README.md) for API limits,
 container replacement, image transfer, source pinning, and voice license notes.
+
+## Try Edge TTS separately
+
+An alternative [Edge TTS container](talker-edge-tts/README.md) is implemented for
+manual voice comparisons. It requires internet for synthesis and returns MP3
+directly. The default voice is Georgian Eka; Giorgi can be selected at startup.
+Run from the root on Windows:
+
+```powershell
+.\talker-edge-tts\build.ps1
+.\talker-edge-tts\run.ps1
+```
+
+On Linux use `sh talker-edge-tts/build.sh`, followed by
+`sh talker-edge-tts/run.sh`. After a successful build/start, open
+[the Edge speech test page](http://127.0.0.1:8072/). RHVoice remains on port 8071.
+The lesson app and Compose still use RHVoice/WAV; MP3 integration is not implemented.
 
 ## Run the lesson app
 

@@ -118,6 +118,17 @@ lost transition responses. Audio checks ownership and the active cache key.
 
 ## Speech contract
 
+An independent [Edge TTS service](../talker-edge-tts/README.md) is also implemented
+for manual voice comparisons, with its own image and test page. It shares the
+`text`/`rate` request shape and request bounds below but returns `audio/mpeg`
+directly, capped at 4 MiB, rather than WAV. The voice is set by `EDGE_TTS_VOICE`
+(default `ka-GE-EkaNeural`); 100 maps to Edge's `+0%` rate. It serializes requests,
+limits synthesis to 60 seconds, and deletes temporary input/MP3 files on success
+and failure. Runtime requires outbound HTTPS/WebSocket access to Microsoft.
+Standalone scripts publish only loopback port 8072. No cache or persistent state
+is added. The lesson app's WAV contract and default Compose wiring remain
+RHVoice-only; using Edge there requires explicit MP3 integration.
+
 The existing speech API is unchanged: POST /synthesize accepts text and optional
 integer rate (50 to 200, default 100), returning audio/wav. Natia is fixed by the
 service; voice/version are not request fields. Text is limited to 3000 characters,
