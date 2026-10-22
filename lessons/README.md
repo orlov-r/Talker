@@ -114,8 +114,35 @@ answering, including during state recovery. Replay preserves the snapshot.
 `number()` chooses N uniformly from 1–20 and a random offset R from 0–3 among
 offsets for which N−R through N−R+3 stays within 1–20. These four consecutive
 numbers become choices, with N marked correct. `number_to_text()` converts
-integers 1–20 to Georgian words; translations are digits. `number-1-10` uses the
+integers 0–1000 to Georgian words; translations are digits. `number-1-10` uses the
 same algorithm bounded to 1–10, including all distractors.
+
+### Extended number and fraction generators
+
+The additional number lessons cover 0–100 and 0–1000. Each has two generator
+sources: semi-round numbers (multiples of five starting at 20) at level 1,
+and every integer including zero at level 2. For example,
+`number-20-100-semi-round` and `number-0-100` are the sources for Numbers to 100.
+The original 1–10/1–20 lesson remains available.
+
+Fraction lessons cover 0.00–9.99 and 0.00–99.99. Semi-round sources at level 1
+allow every whole part and hundredths ending in 0 or 5; level 2 allows every
+hundredth. For example, `fraction-9-99-semi-round` generates the easier pool.
+`fractional_number_to_text(whole, hundredths)` accepts two integers from 0–99
+and joins their Georgian names with a space, without “dot” or “hundredths”.
+Thus 3.05 is spoken as the names of 3 and 5; labels always retain two decimal
+digits, including 3.00. Integer parts avoid floating-point rounding.
+
+Semi-round choices use offsets 0, ±5, ±10, ±15 (seven candidates away from
+boundaries). All-number choices use 0, ±1, ±9, ±10, ±11, ±19, ±20, ±21.
+Out-of-range candidates are dropped; integer choices stay in the source range.
+Fraction choices are the Cartesian product of valid mutations of each part,
+using the same offset set for both parts. Whole parts stay in 0–9 or 0–99;
+hundredths stay in 0–99, with no carrying or wrapping. Each pool has at least
+four choices. The app retains the correct answer and samples three distractors.
+Two sources per lesson do not change the 7/10/15 questions per attempt.
+
+Georgian compound number forms follow the [Georgian number reference](https://omniglot.com/language/numbers/georgian.htm).
 
 ## Image assets
 

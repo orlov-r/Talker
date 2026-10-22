@@ -1,0 +1,16 @@
+{
+  "id": "fractions-to-99-99",
+  "title": "Дроби до 99.99",
+  "revision": 1,
+  "description": "Два набора: сотые с шагом 5 и все сотые. Части числа произносятся отдельно.",
+  "sources": [
+    {
+      "generator": "fraction-99-99-semi-round",
+      "level": 1
+    },
+    {
+      "generator": "fraction-99-99",
+      "level": 2
+    }
+  ]
+}

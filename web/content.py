@@ -216,6 +216,10 @@ LESSONS = {
         for name in (
             "basics.json",
             "numbers.json",
+            "numbers-to-100.json",
+            "numbers-to-1000.json",
+            "fractions-to-9-99.json",
+            "fractions-to-99-99.json",
             "animals.json",
             "city.json",
             "documents-state-government-law.json",

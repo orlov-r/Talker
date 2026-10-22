@@ -1,0 +1,16 @@
+{
+  "id": "numbers-to-1000",
+  "title": "Числа до 1000",
+  "revision": 1,
+  "description": "Два набора: числа с шагом 5 и все числа в диапазоне.",
+  "sources": [
+    {
+      "generator": "number-20-1000-semi-round",
+      "level": 1
+    },
+    {
+      "generator": "number-0-1000",
+      "level": 2
+    }
+  ]
+}

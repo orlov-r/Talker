@@ -10,7 +10,10 @@ from pathlib import Path
 from tempfile import TemporaryDirectory
 from unittest.mock import Mock, patch
 
-from lessons.generators import number, number_to_text
+from lessons.generators import (
+    number, number_to_text, fractional_number_to_text, integer_question,
+    fractional_question, SEMI_ROUND_OFFSETS, ALL_NUMBER_OFFSETS,
+)
 from web.app import create_app
 from web.audio import AudioCache, cache_key, synthesize_edge
 from web.content import (
@@ -290,6 +293,9 @@ class QuizTests(unittest.TestCase):
                         for q in snapshots
                     )
                 )
+                self.assertTrue(all(q["choiceLayout"] == "short" for q in snapshots))
+            elif lid.startswith(("numbers-to-", "fractions-to-")):
+                self.assertTrue(all(len(q["choices"]) == 4 for q in snapshots))
                 self.assertTrue(all(q["choiceLayout"] == "short" for q in snapshots))
             else:
                 pools = [
@@ -653,6 +659,10 @@ class ContentAndCacheTests(unittest.TestCase):
             [
                 "basics",
                 "numbers",
+                "numbers-to-100",
+                "numbers-to-1000",
+                "fractions-to-9-99",
+                "fractions-to-99-99",
                 "animals",
                 "city",
                 "documents-state-government-law",
@@ -662,7 +672,7 @@ class ContentAndCacheTests(unittest.TestCase):
             ],
         )
         self.assertEqual(
-            [len(l["sources"]) for l in LESSONS.values()], [1, 2] + [4] * 6
+            [len(l["sources"]) for l in LESSONS.values()], [1] + [2] * 5 + [4] * 6
         )
         self.assertEqual(len(LESSONS["basics"]["sources"][0]["choices"]), 11)
         for source in LESSONS["animals"]["sources"]:
@@ -700,6 +710,72 @@ class ContentAndCacheTests(unittest.TestCase):
                     self.assertIn(q["correctText"], easy_words)
                     self.assertLessEqual({c["text"] for c in q["choices"]}, easy_words)
 
+    def test_extended_number_names(self):
+        expected = {
+            0: "ნული", 21: "ოცდაერთი", 40: "ორმოცი", 59: "ორმოცდაცხრამეტი",
+            60: "სამოცი", 80: "ოთხმოცი", 99: "ოთხმოცდაცხრამეტი",
+            100: "ასი", 101: "ას ერთი", 200: "ორასი", 247: "ორას ორმოცდაშვიდი",
+            300: "სამასი", 400: "ოთხასი", 500: "ხუთასი", 600: "ექვსასი",
+            700: "შვიდასი", 800: "რვაასი", 900: "ცხრაასი",
+            999: "ცხრაას ოთხმოცდაცხრამეტი", 1000: "ათასი",
+        }
+        for value, text in expected.items():
+            self.assertEqual(number_to_text(value), text)
+        self.assertEqual(len({number_to_text(n) for n in range(1001)}), 1001)
+        self.assertEqual(fractional_number_to_text(3, 5), "სამი ხუთი")
+        self.assertEqual(fractional_number_to_text(0, 0), "ნული ნული")
+        self.assertEqual(fractional_number_to_text(99, 99),
+                         "ოთხმოცდაცხრამეტი ოთხმოცდაცხრამეტი")
+        for parts in [(-1, 0), (0, 100), (100, 0), (True, 5), (3, 1.5), ("3", 5)]:
+            with self.assertRaises(ValueError):
+                fractional_number_to_text(*parts)
+
+    def test_integer_mutations_and_bounds(self):
+        for maximum in (100, 1000):
+            for semi in (False, True):
+                minimum, step = (20, 5) if semi else (0, 1)
+                offsets = SEMI_ROUND_OFFSETS if semi else ALL_NUMBER_OFFSETS
+                for correct in range(minimum, maximum + 1, step):
+                    with patch("lessons.generators.random.randrange", return_value=correct) as draw:
+                        q = validate(integer_question(maximum, semi), generated=True)
+                    draw.assert_called_once_with(minimum, maximum + 1, step)
+                    self.assertEqual({int(c["translation"]) for c in q["choices"]},
+                                     {correct + d for d in offsets
+                                      if minimum <= correct + d <= maximum})
+                    self.assertGreaterEqual(len(q["choices"]), 4)
+                    self.assertEqual([c["translation"] for c in q["choices"] if c["isCorrect"]],
+                                     [str(correct)])
+
+    def test_fraction_mutations_and_bounds(self):
+        for maximum in (9, 99):
+            for semi in (False, True):
+                offsets = SEMI_ROUND_OFFSETS if semi else ALL_NUMBER_OFFSETS
+                for whole in (0, 4, maximum):
+                    for hundredths in range(0, 100, 5 if semi else 1):
+                        with patch("lessons.generators.random.randrange",
+                                   side_effect=[whole, hundredths]) as draw:
+                            q = validate(fractional_question(maximum, semi), generated=True)
+                        self.assertEqual(draw.call_args_list,
+                                         [((maximum + 1,),), ((0, 100, 5 if semi else 1),)])
+                        expected = {f"{whole + dw}.{hundredths + dh:02d}"
+                                    for dw in offsets for dh in offsets
+                                    if 0 <= whole + dw <= maximum and 0 <= hundredths + dh <= 99}
+                        self.assertEqual({c["translation"] for c in q["choices"]}, expected)
+                        self.assertGreaterEqual(len(expected), 4)
+                        self.assertEqual(len(q["choices"]), len(expected))
+                        self.assertEqual([c["translation"] for c in q["choices"] if c["isCorrect"]],
+                                         [f"{whole}.{hundredths:02d}"])
+
+    def test_new_number_lesson_levels(self):
+        for lid in ("numbers-to-100", "numbers-to-1000", "fractions-to-9-99", "fractions-to-99-99"):
+            lesson = LESSONS[lid]
+            self.assertEqual([s["level"] for s in lesson["sources"]], [1, 2])
+            self.assertEqual(eligible_sources("easy", lesson), lesson["sources"][:1])
+            self.assertEqual(eligible_sources("medium", lesson), lesson["sources"])
+            for q in questions("easy", lesson):
+                correct = next(c["translation"] for c in q["choices"] if c["id"] == q["correctChoiceId"])
+                self.assertEqual(int(correct.split(".")[-1]) % 5, 0)
+
     def test_short_number_range(self):
         for correct in range(1, 11):
             for offset in range(max(0, correct - 7), min(3, correct - 1) + 1):
@@ -732,7 +808,7 @@ class ContentAndCacheTests(unittest.TestCase):
                 self.assertEqual(marked[0]["text"], number_to_text(correct))
         self.assertEqual(number_to_text(1), "ერთი")
         self.assertEqual(number_to_text(20), "ოცი")
-        for value in [0, 21, True, 1.5, "1"]:
+        for value in [-1, 1001, True, 1.5, "1"]:
             with self.assertRaises(ValueError):
                 number_to_text(value)
         for marks in [[False] * 4, [True] * 4]:

@@ -42,9 +42,9 @@ Three screens provide selection, listening questions with feedback, and final
 score. Easy uses 7 questions at rate 80, Medium 10 at 100, and Hard 15 at 120.
 The first screen also selects Eka (default), Giorgi, or Natia; the server validates
 and retains that selection for the whole attempt.
-Eight private lesson definitions provide greetings (one pool of 11 expressions),
-numbers (two generators: 1–10 and 1–20), and six frequency topics (four pools of
-10 per topic). The thematic pools preserve the order of the private
+Private lesson definitions provide greetings (one pool of 11 expressions),
+number lessons (including integers through 1000 and fractions through 99.99),
+and six frequency topics (four pools of 10 per topic). The thematic pools preserve the order of the private
 [`dev/word-frequencies/`](../dev/word-frequencies/README.md) lists.
 The browser selects a lesson ID; the server resolves that ID through its fixed
 catalog and randomly selects only that lesson’s sources. Correct Georgian answer
@@ -55,13 +55,15 @@ Duplicate generator results are retried up to 100 times per question; after
 that, unused static vocabulary is preferred, or the uniqueness cycle resets and
 the last generated result is accepted. A rare early generator repeat is allowed.
 Greetings offer 11 distinct correct answers, so Hard starts a second cycle after
-11 answers. Numbers offers 20 distinct answers on Medium and Hard; each frequency
+11 answers. The original Numbers lesson offers 20 distinct answers on Medium and Hard; each frequency
 topic offers 40.
 Source references may set a positive integer `level`. Unmarked sources default
 to 1 if the lesson has no explicit level 1 source, otherwise to 2. Easy includes
 level 1 sources; Medium and Hard include all sources. The first pool of each
 frequency topic is explicitly marked level 1, giving Easy the first ten words.
-Numbers marks its 1–10 generator level 1; greetings uses its unmarked pool.
+The original Numbers lesson marks its 1–10 generator level 1; greetings uses its
+unmarked pool. Each additional number/fraction lesson marks its semi-round
+generator level 1 and its all-number generator level 2.
 The UI always shows every lesson.
 The start API rejects a difficulty with no eligible sources before replacing
 an existing attempt. The catalog reports each lesson's available levels.
@@ -77,9 +79,13 @@ Private choices contain Georgian `text`, optional `speechText` (defaults to
 sources choose the correct option at random; generated questions mark the correct
 Georgian text with `isCorrect: true`. Multiple markers must agree on that text.
 Static sources supply at least four choices; three other choices are sampled and shuffled with the correct answer once per snapshot.
-The correct choice supplies speech and feedback (`text (translation)`). Number
-choices are four consecutive integers within the selected 1–10 or 1–20 range,
-with Georgian names and digit translations. Choices have no authored IDs;
+The correct choice supplies speech and feedback (`text (translation)`). The original number
+choices are four consecutive integers within the selected 1–10 or 1–20 range.
+Additional generators offer bounded mutation pools; fractional choices combine
+whole-part and hundredths mutations. The app samples three distractors.
+Number choices use Georgian names and digit translations; fraction speech joins
+the names of the two parts without a decimal separator. See the
+[generator rules](../lessons/README.md#extended-number-and-fraction-generators). Choices have no authored IDs;
 snapshots assign temporary button IDs and retain
 the correct Georgian text, question ID and rate. Scoring compares trimmed Georgian
 texts so duplicate correct choices are all accepted.

@@ -30,8 +30,12 @@ then a new uniqueness cycle begins. Generators use bounded retries, so an early
 repeat has a small probability. Static vocabulary chooses
 an unused correct choice at random; a generator marks its own correct choice.
 Each question displays that choice and three sampled other choices, shuffled
-once per occurrence. Number choices form a consecutive four-number interval
-within the selected generator’s range (1–10 or 1–20). Levels override source rates.
+once per occurrence. The original number lesson uses consecutive four-number intervals within 1–10
+or 1–20. Additional lessons cover integers to 100/1000 and fractions to 9.99/99.99,
+with semi-round sources at level 1 and all-number sources at level 2. Their
+mutation pools stay within range; fractions combine mutations of both parts.
+See [generator rules](../lessons/README.md#extended-number-and-fraction-generators).
+Levels override source rates.
 Failed or invalid generator output is retried once;
 a second failure uses a random static pool from the lesson, ignoring difficulty
 and repeated answers. Valid generated questions with one to three choices are
