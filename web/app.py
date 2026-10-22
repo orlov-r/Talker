@@ -9,8 +9,15 @@ from pathlib import Path
 from flask import Flask, Response, abort, jsonify, render_template, request, session
 from werkzeug.exceptions import HTTPException
 
-from web.audio import AudioCache, cache_key, synthesize
+from web.audio import AudioCache, cache_key, synthesize, synthesize_edge
 from web.content import LESSONS, LEVELS, available_levels, questions
+
+
+VOICES = {
+    "edge-eka": "Эка · Edge TTS",
+    "edge-giorgi": "Гиорги · Edge TTS",
+    "rhvoice": "Натия · RHVoice",
+}
 
 
 def create_app(config=None):
@@ -25,6 +32,8 @@ def create_app(config=None):
         MAX_ATTEMPTS=256,
         SYNTHESIS_URL=os.environ.get("SYNTHESIS_URL", "http://127.0.0.1:8071"),
         SYNTHESIS_VERSION=os.environ.get("SYNTHESIS_VERSION", "local-v1"),
+        EDGE_EKA_URL=os.environ.get("EDGE_EKA_URL", "http://127.0.0.1:8072"),
+        EDGE_GIORGI_URL=os.environ.get("EDGE_GIORGI_URL", "http://127.0.0.1:8073"),
     )
     if config:
         app.config.update(config)
@@ -99,7 +108,10 @@ def create_app(config=None):
                 "total": len(a["questions"]),
             }
         q = a["questions"][a["index"]]
-        key = cache_key(q["speechText"], q["rate"], app.config["SYNTHESIS_VERSION"])
+        key = cache_key(
+            q["speechText"], q["rate"], app.config["SYNTHESIS_VERSION"], a["voice"]
+        )
+        suffix = ".wav" if a["voice"] == "rhvoice" else ""
         choices = []
         for choice in q["choices"]:
             public_choice = {"id": choice["id"], "label": choice["translation"]}
@@ -117,7 +129,7 @@ def create_app(config=None):
                 "id": q["id"],
                 "choices": choices,
                 "choiceLayout": q["choiceLayout"],
-                "audioUrl": f"/audio/{key}.wav?attempt={aid}",
+                "audioUrl": f"/audio/{key}{suffix}?attempt={aid}",
             },
             "feedback": a["feedback"],
         }
@@ -125,7 +137,11 @@ def create_app(config=None):
     @app.get("/")
     def index():
         return render_template(
-            "index.html", csrf=session["csrf"], levels=LEVELS, lessons=LESSONS.values()
+            "index.html",
+            csrf=session["csrf"],
+            levels=LEVELS,
+            lessons=LESSONS.values(),
+            voices=VOICES,
         )
 
     @app.get("/health")
@@ -136,6 +152,7 @@ def create_app(config=None):
     def lessons():
         return jsonify(
             levels=LEVELS,
+            voices=VOICES,
             lessons=[
                 {
                     "id": lesson["id"],
@@ -149,6 +166,9 @@ def create_app(config=None):
     @app.post("/api/attempts")
     def start():
         data = body()
+        voice = data.get("voice", "edge-eka")
+        if not isinstance(voice, str) or voice not in VOICES:
+            abort(400, "Выберите доступный голос.")
         if (
             not isinstance(data.get("level"), str)
             or data["level"] not in LEVELS
@@ -177,6 +197,7 @@ def create_app(config=None):
             aid = secrets.token_urlsafe(24)
             attempts[aid] = {
                 "owner": session["owner"],
+                "voice": voice,
                 "expires": now + app.config["ATTEMPT_TTL"],
                 "questions": snapshots,
                 "index": 0,
@@ -241,6 +262,7 @@ def create_app(config=None):
             return jsonify(envelope(aid, a))
 
     @app.get("/audio/<key>.wav")
+    @app.get("/audio/<key>")
     def audio(key):
         aid = request.args.get("attempt", "")
         with lock:
@@ -249,17 +271,42 @@ def create_app(config=None):
                 abort(404)
             q = a["questions"][a["index"]]
             if key != cache_key(
-                q["speechText"], q["rate"], app.config["SYNTHESIS_VERSION"]
+                q["speechText"], q["rate"], app.config["SYNTHESIS_VERSION"], a["voice"]
             ):
                 abort(404)
-        try:
+            voice = a["voice"]
+
+        def rhvoice_audio():
             producer = app.config.get("SYNTHESIZER", synthesize)
-            data = cache.get(
-                key,
+            fallback_key = cache_key(
+                q["speechText"], q["rate"], app.config["SYNTHESIS_VERSION"]
+            )
+            return cache.get(
+                fallback_key,
                 lambda: producer(
                     q["speechText"], q["rate"], app.config["SYNTHESIS_URL"]
                 ),
             )
+
+        try:
+            mimetype = "audio/wav"
+            if voice == "rhvoice":
+                data = rhvoice_audio()
+            else:
+                try:
+                    producer = app.config.get("EDGE_SYNTHESIZER", synthesize_edge)
+                    url = app.config[
+                        "EDGE_EKA_URL" if voice == "edge-eka" else "EDGE_GIORGI_URL"
+                    ]
+                    data = cache.get(
+                        key, lambda: producer(q["speechText"], q["rate"], url)
+                    )
+                    mimetype = "audio/mpeg"
+                except Exception:
+                    app.logger.warning(
+                        "Edge TTS failed; falling back to RHVoice", exc_info=True
+                    )
+                    data = rhvoice_audio()
         except Exception:
             app.logger.exception("Speech synthesis failed")
             abort(
@@ -268,7 +315,7 @@ def create_app(config=None):
             )
         with lock:
             owned(aid)["audioReady"].add(q["id"])
-        return Response(data, mimetype="audio/wav")
+        return Response(data, mimetype=mimetype)
 
     return app
 

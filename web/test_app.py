@@ -1,4 +1,4 @@
-"""Quiz contract checks using a simulated WAV, not the real Natia voice."""
+"""Quiz contract checks using simulated audio, not real voice synthesis."""
 
 import io
 import json
@@ -12,7 +12,7 @@ from unittest.mock import Mock, patch
 
 from lessons.generators import number, number_to_text
 from web.app import create_app
-from web.audio import AudioCache, cache_key
+from web.audio import AudioCache, cache_key, synthesize_edge
 from web.content import (
     LESSONS,
     available_levels,
@@ -53,7 +53,9 @@ class QuizTests(unittest.TestCase):
         return self.client.post(path, json=data, headers={"X-CSRF-Token": self.token})
 
     def start(self, level="easy", lesson="animals"):
-        response = self.post("/api/attempts", {"lessonId": lesson, "level": level})
+        response = self.post(
+            "/api/attempts", {"lessonId": lesson, "level": level, "voice": "rhvoice"}
+        )
         self.assertEqual(response.status_code, 201)
         return response.json
 
@@ -72,6 +74,130 @@ class QuizTests(unittest.TestCase):
             f"/api/attempts/{state['attemptId']}/next",
             {"questionId": state["question"]["id"]},
         )
+
+    def start_voice(self, voice):
+        response = self.post(
+            "/api/attempts", {"lessonId": "animals", "level": "easy", "voice": voice}
+        )
+        self.assertEqual(response.status_code, 201)
+        return response.json
+
+    def test_voice_selection_and_validation(self):
+        page = self.client.get("/").text
+        for voice in ("edge-eka", "edge-giorgi", "rhvoice"):
+            self.assertIn(f'value="{voice}"', page)
+        self.assertRegex(page, r'name="voice" value="edge-eka" checked')
+        response = self.post("/api/attempts", {"lessonId": "animals", "level": "easy"})
+        self.assertEqual(response.status_code, 201)
+        state = response.json
+        self.assertEqual(
+            self.app.extensions["attempts"][state["attemptId"]]["voice"], "edge-eka"
+        )
+        for voice in ("unknown", None, [], {}):
+            response = self.post(
+                "/api/attempts",
+                {"lessonId": "animals", "level": "easy", "voice": voice},
+            )
+            self.assertEqual(response.status_code, 400)
+            self.assertEqual(
+                self.client.get(f"/api/attempts/{state['attemptId']}").status_code, 200
+            )
+
+    def test_edge_voices_mp3_cache_and_ownership(self):
+        mp3 = b"ID3" + b"\0" * 20
+        producer = Mock(return_value=mp3)
+        self.app.config["EDGE_SYNTHESIZER"] = producer
+        for voice, setting in (
+            ("edge-eka", "EDGE_EKA_URL"),
+            ("edge-giorgi", "EDGE_GIORGI_URL"),
+        ):
+            state = self.start_voice(voice)
+            url = state["question"]["audioUrl"]
+            self.assertEqual(self.client.get(url).data, mp3)
+            self.assertEqual(self.client.get(url).mimetype, "audio/mpeg")
+            self.assertEqual(producer.call_args.args[1:], (80, self.app.config[setting]))
+            self.assertEqual(self.app.test_client().get(url).status_code, 404)
+            self.assertEqual(
+                self.client.get(url.replace("/audio/", "/audio/wrong")).status_code, 404
+            )
+            self.assertEqual(self.answer(state).status_code, 200)
+            # Version changes invalidate even a previously authorized audio URL.
+            self.app.config["SYNTHESIS_VERSION"] += "-new"
+            self.assertEqual(self.client.get(url).status_code, 404)
+        self.assertEqual(producer.call_count, 2)
+        self.assertEqual(self.calls, [])
+        self.assertNotEqual(
+            cache_key("a", 80, "v1", "edge-eka"),
+            cache_key("a", 80, "v1", "edge-giorgi"),
+        )
+        self.assertNotEqual(cache_key("a", 80, "v1", "edge-eka"), cache_key("a", 80, "v1"))
+
+    def test_edge_error_fallback_and_recovery(self):
+        producer = Mock(side_effect=[TimeoutError(), ValueError("bad MP3"), b"ID3audio"])
+        self.app.config["EDGE_SYNTHESIZER"] = producer
+        state = self.start_voice("edge-eka")
+        url = state["question"]["audioUrl"]
+        with self.assertLogs(self.app.logger, level="WARNING"):
+            for _ in range(2):
+                response = self.client.get(url)
+                self.assertEqual(response.status_code, 200)
+                self.assertEqual(response.mimetype, "audio/wav")
+                self.assertEqual(response.data, wav_bytes())
+        self.assertEqual(len(self.calls), 1)
+        response = self.client.get(url)
+        self.assertEqual(response.mimetype, "audio/mpeg")
+        self.assertEqual(self.client.get(url).data, b"ID3audio")
+        self.assertEqual(producer.call_count, 3)
+        self.assertEqual(self.answer(state).status_code, 200)
+        self.assertEqual(self.advance(state).json["position"], 2)
+        self.assertEqual(
+            self.app.extensions["attempts"][state["attemptId"]]["voice"], "edge-eka"
+        )
+
+    def test_both_engines_fail_then_retry(self):
+        self.app.config["EDGE_SYNTHESIZER"] = Mock(side_effect=OSError("offline"))
+        self.app.config["SYNTHESIZER"] = Mock(side_effect=OSError("offline"))
+        state = self.start_voice("edge-giorgi")
+        with self.assertLogs(self.app.logger, level="WARNING"):
+            self.assertEqual(
+                self.client.get(state["question"]["audioUrl"]).status_code, 502
+            )
+        self.assertEqual(self.answer(state).status_code, 409)
+        self.assertEqual(self.advance(state).status_code, 409)
+        self.app.config["SYNTHESIZER"] = wav_bytes
+        with self.assertLogs(self.app.logger, level="WARNING"):
+            self.assertEqual(
+                self.client.get(state["question"]["audioUrl"]).mimetype, "audio/wav"
+            )
+        self.assertEqual(self.answer(state).status_code, 200)
+
+    def test_edge_http_validation_and_bounds(self):
+        response = Mock()
+        response.headers.get_content_type.return_value = "audio/mpeg"
+        response.read.return_value = b"ID3audio"
+        with patch("web.audio.urllib.request.urlopen") as open_url:
+            open_url.return_value.__enter__.return_value = response
+            self.assertEqual(
+                synthesize_edge("გამარჯობა", 80, "http://edge:8080"), b"ID3audio"
+            )
+            req = open_url.call_args.args[0]
+            self.assertEqual(req.full_url, "http://edge:8080/synthesize")
+            self.assertEqual(json.loads(req.data), {"text": "გამარჯობა", "rate": 80})
+            self.assertEqual(open_url.call_args.kwargs["timeout"], 65)
+            response.read.return_value = b"\xff\xfb\x90\x00"
+            self.assertEqual(
+                synthesize_edge("a", 100, "http://edge"), response.read.return_value
+            )
+            for invalid in (b"", b"html error", b"ID3" + b"a" * (4 * 1024 * 1024)):
+                response.read.return_value = invalid
+                with self.assertRaises(ValueError):
+                    synthesize_edge("a", 100, "http://edge")
+            response.headers.get_content_type.return_value = "text/html"
+            with self.assertRaises(ValueError):
+                synthesize_edge("a", 100, "http://edge")
+            open_url.side_effect = TimeoutError()
+            with self.assertRaises(TimeoutError):
+                synthesize_edge("a", 100, "http://edge")
 
     def test_levels_and_complete_score(self):
         for level, count, rate in [

@@ -1,7 +1,7 @@
 # Talker
 
-Talker is a Georgian listening practice project using RHVoice and the Natia
-voice. The intended experience is to choose a lesson, listen to speech, answer
+Talker is a Georgian listening practice project using Edge TTS (Eka/Giorgi)
+and RHVoice (Natia). The experience is to choose a lesson, listen to speech, answer
 multiple-choice questions, and see a final score.
 
 ## Current status
@@ -25,6 +25,9 @@ The basic app has three screens: skill level and lesson selection, a listening
 question with four answer choices and feedback, and a final score. Accounts,
 statistics, and persistent attempts/results are outside the basic scope.
 The lesson interface is in Russian; learning content and speech are in Georgian.
+The first page offers Eka (the default), Giorgi, and Natia. Edge TTS requires
+internet and sends speech text to Microsoft; errors automatically fall back to
+RHVoice/Natia. The chosen voice stays fixed for the lesson.
 
 ## Repository layout
 
@@ -92,7 +95,7 @@ Run from the root on Windows:
 On Linux use `sh talker-edge-tts/build.sh`, followed by
 `sh talker-edge-tts/run.sh`. After a successful build/start, open
 [the Edge speech test page](http://127.0.0.1:8072/). RHVoice remains on port 8071.
-The lesson app and Compose still use RHVoice/WAV; MP3 integration is not implemented.
+Compose runs separate Eka and Giorgi instances of this image for the lesson app.
 
 ## Run the lesson app
 
@@ -107,7 +110,8 @@ Alternatively, set a random `SECRET_KEY` in an ignored `.env` file following
 docker compose up --build -d
 ```
 
-Compose exposes only the web app on loopback port 8070 and keeps RHVoice internal.
+Compose exposes only the web app on loopback port 8070 and keeps all three speech
+containers internal. The app handles Edge MP3 and RHVoice WAV, including fallback.
 Attempts and audio use bounded process memory. No database or saved results are
 used; restart loses quizzes and attempts expire after one hour. Use an HTTPS
 proxy for remote deployment. See [architecture](docs/architecture.md).
@@ -118,4 +122,4 @@ With web dependencies installed, run quiz checks from the root:
 python -m unittest discover -s web -p test_app.py -v
 ```
 
-Tests use simulated audio; they do not validate the real Natia voice.
+Tests use simulated audio; they do not validate real voices or pronunciation.

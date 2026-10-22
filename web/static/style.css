@@ -238,17 +238,22 @@ progress {
   gap: 16px;
   min-height: 72px;
 }
+.quiz-toolbar #feedback {
+  flex: 1;
+  min-width: 0;
+}
 #replay {
   flex-shrink: 0;
   font-size: 18px;
 }
-#audio-status:empty,
 #error:empty {
   display: none;
 }
-#audio-status {
+#feedback.audio-status {
   color: var(--muted);
-  margin: 8px 0;
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 1.6;
 }
 #choices[data-layout='short'] {
   grid-template-columns: repeat(4, minmax(0, 1fr));

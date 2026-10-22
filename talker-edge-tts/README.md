@@ -4,8 +4,10 @@ Standalone online Georgian speech synthesis using
 [`edge-tts`](https://github.com/rany2/edge-tts). This is an alternative manual
 speech service alongside [RHVoice/Natia](../talker-rhvoice/README.md).
 It returns MP3 directly, without FFmpeg or WAV conversion.
-The lesson app and default Compose deployment still use RHVoice and expect WAV;
-this service is not a drop-in replacement for their audio endpoint.
+The lesson app integrates MP3 playback. Compose runs two internal instances of
+this image, configured for Eka and Giorgi. The first page selects either voice
+or RHVoice/Natia, and the web app falls back to RHVoice if Edge fails. The speech
+service itself keeps its fixed-voice request contract and has no fallback logic.
 
 ## Build and run
 

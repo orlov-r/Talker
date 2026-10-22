@@ -21,6 +21,12 @@
           <span><small class="level-shortcut" aria-hidden="true">{{ loop.index }}</small><strong>{{ level.label }}</strong><small>Вопросов: {{ level.questionCount }}<br>Скорость речи: {{ level.rate }}%</small></span></label>
         {% endfor %}
         </div></fieldset>
+        <fieldset><legend>Голос</legend><div class="levels">
+        {% for id, label in voices.items() %}
+          <label><input type="radio" name="voice" value="{{ id }}" {% if id == 'edge-eka' %}checked{% endif %}>
+            <span><strong>{{ label }}</strong></span></label>
+        {% endfor %}
+        </div><small>При ошибке Edge TTS урок озвучит Натия. Edge TTS отправляет текст в онлайн-сервис Microsoft.</small></fieldset>
         <fieldset aria-keyshortcuts="Q A"><legend>Урок · Q↑ A↓</legend>
         {% for lesson in lessons %}
           <label class="lesson"><input type="radio" name="lessonId" value="{{ lesson.id }}" {% if loop.first %}checked{% endif %}>
@@ -38,7 +44,6 @@
       <div class="quiz-progress"><progress id="meter" aria-label="Прогресс урока"></progress><span id="progress"></span></div>
       <audio id="audio" aria-label="Аудиозапись вопроса"></audio>
       <div class="quiz-toolbar"><p id="feedback" role="status" lang="ka"></p><button id="replay" type="button" aria-keyshortcuts="R">Повторить (R)</button></div>
-      <p id="audio-status" role="status"></p>
       <div id="choices" aria-label="Варианты ответа"></div>
       <div class="quiz-actions"><button class="secondary" id="leave" type="button">Назад</button><p id="choice-text" lang="ka" role="status"></p><button id="next" type="button" aria-keyshortcuts="Space Enter" disabled>Далее →</button></div>
     </section>
@@ -47,6 +52,6 @@
       <button id="ok" type="button" aria-keyshortcuts="Space Enter">К выбору урока</button><small>Пробел / Enter — вернуться</small></section>
     <p id="error" role="alert"></p>
   </main>
-  <footer>Ваш урок. Ваш темп. <span>Озвучивает Natia.</span></footer>
+  <footer>Ваш урок. Ваш темп. <span>Эка, Гиорги и Натия.</span></footer>
 </body>
 </html>

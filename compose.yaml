@@ -7,11 +7,15 @@ services:
       - "127.0.0.1:8070:8080"
     environment:
       SYNTHESIS_URL: http://rhvoice:8080
+      EDGE_EKA_URL: http://edge-eka:8080
+      EDGE_GIORGI_URL: http://edge-giorgi:8080
       SYNTHESIS_VERSION: ${SYNTHESIS_VERSION:-local-v1}
       SECRET_KEY: ${SECRET_KEY:?Set SECRET_KEY in your environment or .env}
       COOKIE_SECURE: ${COOKIE_SECURE:-0}
     depends_on:
       - rhvoice
+      - edge-eka
+      - edge-giorgi
     read_only: true
     tmpfs:
       - /tmp:size=16m,mode=1777
@@ -24,5 +28,29 @@ services:
     read_only: true
     tmpfs:
       - /tmp:size=16m,mode=1777
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+  edge-eka:
+    build:
+      context: ./talker-edge-tts
+    image: edge-tts:local
+    platform: linux/amd64
+    environment:
+      EDGE_TTS_VOICE: ka-GE-EkaNeural
+    read_only: true
+    tmpfs:
+      - /tmp:size=64m,mode=1777
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+  edge-giorgi:
+    image: edge-tts:local
+    build:
+      context: ./talker-edge-tts
+    platform: linux/amd64
+    environment:
+      EDGE_TTS_VOICE: ka-GE-GiorgiNeural
+    read_only: true
+    tmpfs:
+      - /tmp:size=64m,mode=1777
     cap_drop: [ALL]
     security_opt: [no-new-privileges:true]

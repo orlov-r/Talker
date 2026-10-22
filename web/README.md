@@ -44,6 +44,11 @@ translation; translations also provide accessible image labels. Missing images
 fall back to the Russian translation, including browser image-loading failures.
 
 Three screens provide selection, listening/feedback, and final score.
+Selection includes Eka (default) and Giorgi via Edge TTS and Natia via RHVoice.
+The voice is fixed for each attempt. If Edge synthesis fails, times out, or
+returns invalid audio, the app automatically tries RHVoice at the same rate.
+If both services fail, audio stays unavailable and the question can be retried.
+Edge TTS sends speech text to Microsoft's online service.
 The interface, level and lesson names, accessibility labels, and API error
 messages are in Russian. Georgian learning content and speech remain Georgian.
 Audio tries autoplay with manual playback/replay as a fallback. Choices lock after
@@ -57,6 +62,9 @@ before answering.
 Level cards put question count and speech rate on separate lines.
 Replay and Next use compact controls. Audio failure leaves the current
 question open and disables choices until playback preparation succeeds.
+Audio preparation and playback messages occupy the correct-answer area, so
+showing and clearing the preparation message does not shift the choices.
+After answering, the correct answer remains visible during audio recovery.
 
 Keyboard shortcuts use physical key positions, including with Russian or
 Georgian keyboard layouts. On selection, 1/2/3 select Easy/Medium/Hard (including
@@ -122,11 +130,14 @@ Run from the root on Windows or Linux:
 docker compose up --build -d
 ```
 
-The web app binds to host loopback port 8070. RHVoice is internal at
-`http://rhvoice:8080` with no published speech port. Both containers run non-root
+The web app binds to host loopback port 8070. Speech is internal at
+`http://rhvoice:8080`, `http://edge-eka:8080`, and `http://edge-giorgi:8080`,
+with no published speech ports. The two Edge services use the same image with
+different startup voices. All containers run non-root
 with read-only filesystems and temporary `/tmp` mounts. Private `lessons/`
 content is copied into the web image but never exposed as static files.
-The first audio request may need a retry while RHVoice starts.
+The first audio request may need a retry while the services start.
+Edge requires outbound HTTPS/WebSocket access; RHVoice works offline.
 
 Expose the web app through your HTTPS proxy and set `COOKIE_SECURE=1` there.
 Keep it `0` for local HTTP. Do not add multiple web processes or replicas;
@@ -137,7 +148,9 @@ state is process-local.
 | Environment variable | Default | Purpose |
 |---|---|---|
 | `SYNTHESIS_URL` | `http://127.0.0.1:8071` | Trusted speech base URL; Compose uses the internal URL |
-| `SYNTHESIS_VERSION` | `local-v1` | Change when RHVoice/voice data changes |
+| `EDGE_EKA_URL` | `http://127.0.0.1:8072` | Edge instance configured for `ka-GE-EkaNeural` |
+| `EDGE_GIORGI_URL` | `http://127.0.0.1:8073` | Edge instance configured for `ka-GE-GiorgiNeural` |
+| `SYNTHESIS_VERSION` | `local-v1` | Change when any engine/voice data or URL voice assignment changes |
 | `SECRET_KEY` | Random per process | Cookie signing; explicitly required by Compose |
 | `COOKIE_SECURE` | `0` | Set `1` for HTTPS-only cookies |
 
@@ -147,9 +160,16 @@ quiz replaces that browser's previous attempt. Refresh returns to selection.
 Restart ends all attempts. No accounts, statistics, saved progress, or durable
 results are implemented.
 
-Audio uses an in-memory LRU cache of at most 128 WAVs, each limited to 4 MiB.
+For local development, the standalone Edge scripts start one voice at a time
+on port 8072; to use both voices together, use Compose or independently managed
+instances at the configured URLs. RHVoice alone remains sufficient for fallback.
+
+Audio uses an in-memory LRU cache of at most 128 audio entries, each limited to 4 MiB.
 Evicted audio is regenerated from its retained question snapshot. Keys hash
-text, Natia, rate, and synthesis version. Misses are serialized. WAV validation
+text, engine/voice selection, rate, and synthesis version. Misses are serialized.
+Fallback WAVs use the RHVoice cache key, so an Edge error is not cached and later
+requests can retry Edge. MP3 validation checks content type and an ID3/MPEG header;
+it does not decode frames. WAV validation
 checks headers and a nonzero declared frame count; rejecting truncated frame
 data is a [future enhancement](../docs/todo.md). No runtime files or database
 are created. A future persistent cache or SQLite database must use a volume.
@@ -163,13 +183,13 @@ The cookie contains only opaque owner and CSRF IDs, never answers or scores.
 | Endpoint | Request / response |
 |---|---|
 | `GET /health` | Web HTTP health only |
-| `GET /api/lessons` | `levels` settings and available `lessons` |
-| `POST /api/attempts` | `{level, lessonId}` to question envelope, HTTP 201 |
+| `GET /api/lessons` | `levels` settings, available `lessons`, and `voices` labels |
+| `POST /api/attempts` | `{level, lessonId, voice?}` to question envelope, HTTP 201; voice is `edge-eka` (default), `edge-giorgi`, or `rhvoice` |
 | `GET /api/attempts/{id}` | Current question/feedback or completion envelope |
 | `POST /api/attempts/{id}/answers` | `{questionId, choiceId}` to `{isCorrect, correctAnswerText, selectedChoiceId, choiceTexts}` |
 | `POST /api/attempts/{id}/next` | `{questionId}` to next/completion envelope |
 | `GET /api/attempts/{id}/result` | Completed attempt envelope |
-| `GET /audio/{key}.wav?attempt={id}` | Current question WAV with ownership check |
+| `GET /audio/{key}?attempt={id}` | Current question MP3 or fallback WAV with ownership check; RHVoice URLs retain `.wav` |
 
 Question envelopes contain `attemptId`, `complete: false`, `position`, `total`,
 `question: {id, audioUrl, choiceLayout, choices: [{id, label, image?}]}`, and `feedback` (initially
@@ -205,8 +225,9 @@ With dependencies installed, run from the root:
 python -m unittest discover -s web -p test_app.py -v
 ```
 
-Tests use simulated WAVs for level mapping, private fields, schema defaults,
+Tests use simulated WAVs/MP3s for voice selection, fallback/recovery, format checks,
+level mapping, private fields, schema defaults,
 ownership, expiry, retries, ordering, scoring, audio failure/retry, and cache
-identity/bounds/concurrency. They do not verify Natia or pronunciation.
+identity/bounds/concurrency. They do not verify real voices or pronunciation.
 Build/start Compose and complete a lesson at each level while listening to
 verify real voice playback, replay, feedback, and results.

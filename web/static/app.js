@@ -56,14 +56,24 @@ function choicesEnabled(enabled) {
     });
 }
 
+function audioStatus(message) {
+  const answered = Boolean(state.feedback);
+  $('feedback').textContent = answered
+    ? state.feedback.correctAnswerText
+    : message;
+  $('feedback').lang = answered ? 'ka' : 'ru';
+  $('feedback').classList.toggle('audio-status', !answered);
+}
+
 async function loadAudio() {
   audioReady = false;
   choicesEnabled(false);
-  $('audio-status').textContent = 'Подготовка аудио…';
+  audioStatus('Подготовка аудио…');
   const response = await fetch(state.question.audioUrl);
   if (!response.ok) {
-    $('audio-status').textContent =
-      'Аудио недоступно. Нажмите «Повторить», чтобы попробовать ещё раз.';
+    audioStatus(
+      'Аудио недоступно. Нажмите «Повторить», чтобы попробовать ещё раз.',
+    );
     throw new Error(
       'Не удалось подготовить аудио. Проверьте сервис озвучки и повторите воспроизведение.',
     );
@@ -82,10 +92,9 @@ async function loadAudio() {
   choicesEnabled(!state.feedback);
   try {
     await $('audio').play();
-    $('audio-status').textContent = '';
+    audioStatus('');
   } catch {
-    $('audio-status').textContent =
-      'Нажмите «Повторить», чтобы прослушать запись.';
+    audioStatus('Нажмите «Повторить», чтобы прослушать запись.');
   }
 }
 
@@ -101,7 +110,7 @@ function choiceHint(choiceId) {
 function feedback(value) {
   state.feedback = value;
   choicesEnabled(false);
-  $('feedback').textContent = value.correctAnswerText;
+  audioStatus('');
   $('choice-text').textContent = '';
   $('choices')
     .querySelectorAll('button')
@@ -214,6 +223,7 @@ $('start-form').onsubmit = (event) => {
         await api('/api/attempts', {
           lessonId: new FormData(event.target).get('lessonId'),
           level: new FormData(event.target).get('level'),
+          voice: new FormData(event.target).get('voice'),
         }),
       );
     } finally {

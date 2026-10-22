@@ -28,7 +28,8 @@ For the standalone Edge alternative, work in `talker-edge-tts/` and follow its
 [README](../talker-edge-tts/README.md). Run
 `python -m unittest discover -s talker-edge-tts -p test_server.py -v` for simulated
 HTTP checks. This service returns MP3 and requires internet for real synthesis;
-it is not connected to the lesson app or default Compose deployment.
+Compose runs two instances for the lesson app's Eka/Giorgi selection, with
+RHVoice fallback implemented in the web app.
 
 Implement in `web/`, with lesson JSON and trusted generators in `lessons/`.
 The minimal app and private content are implemented. Use the
@@ -55,7 +56,7 @@ generator references directly in lessons. Development resources belong in `dev/`
 including `dev/image-prompts.json`, and are excluded from the Docker build context.
 See [future enhancements](todo.md) for the remaining review proposals.
 
-Compose is defined in `compose.yaml`, with internal RHVoice networking. Document volume paths,
+Compose is defined in `compose.yaml`, with internal RHVoice and Edge networking. Document volume paths,
 configuration, temporary-state limits/cleanup, and HTTPS routing with the
 deployment configuration. If persistent storage is added later, document its
 volumes, migrations, and backup/restore then. Keep runtime SQLite, WAV caches,

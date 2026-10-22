@@ -1,6 +1,6 @@
 # Lesson architecture
 
-RHVoice/Natia and the minimal Flask lesson app are implemented. Compose defines
+RHVoice/Natia, Edge TTS (Eka/Giorgi), and the Flask lesson app are implemented. Compose defines
 their deployment. Accounts, statistics, and saved progress/results remain
 future work.
 
@@ -10,8 +10,9 @@ future work.
 flowchart LR
     B[Browser] --> W[Flask web app]
     W --> R[RHVoice / Natia]
+    W --> E[Edge TTS / Eka or Giorgi]
     W --> L[Private lesson JSON and generators]
-    W --> S[In-memory attempts and WAV cache]
+    W --> S[In-memory attempts and audio cache]
 ```
 
 `web/` owns the interface, API, content validation, attempts, answer checking,
@@ -28,8 +29,10 @@ Question `description` fields are private authoring notes, excluded from quiz
 responses and speech.
 
 Compose exposes only the web app on `127.0.0.1:8070`; speech is internal at
-`http://rhvoice:8080`. Standalone speech scripts still publish loopback port
-8071 for manual testing. Containers run non-root with read-only filesystems and
+`http://rhvoice:8080`, `http://edge-eka:8080`, and `http://edge-giorgi:8080`.
+Edge instances share an image with different startup voices. Standalone speech
+scripts publish loopback ports 8071 (RHVoice) and 8072 (Edge) for manual testing.
+Containers run non-root with read-only filesystems and
 temporary `/tmp` mounts. Use an HTTPS proxy for remote access and secure cookies
 for HTTPS. See [web setup/configuration](../web/README.md).
 
@@ -37,6 +40,8 @@ for HTTPS. See [web setup/configuration](../web/README.md).
 
 Three screens provide selection, listening questions with feedback, and final
 score. Easy uses 7 questions at rate 80, Medium 10 at 100, and Hard 15 at 120.
+The first screen also selects Eka (default), Giorgi, or Natia; the server validates
+and retains that selection for the whole attempt.
 Eight private lesson definitions provide greetings (one pool of 11 expressions),
 numbers (two generators: 1–10 and 1–20), and six frequency topics (four pools of
 10 per topic). The thematic pools preserve the order of the private
@@ -118,16 +123,20 @@ lost transition responses. Audio checks ownership and the active cache key.
 
 ## Speech contract
 
-An independent [Edge TTS service](../talker-edge-tts/README.md) is also implemented
-for manual voice comparisons, with its own image and test page. It shares the
+An independent [Edge TTS service](../talker-edge-tts/README.md) is integrated into
+Compose and the lesson app, with its own image and manual test page. It shares the
 `text`/`rate` request shape and request bounds below but returns `audio/mpeg`
 directly, capped at 4 MiB, rather than WAV. The voice is set by `EDGE_TTS_VOICE`
 (default `ka-GE-EkaNeural`); 100 maps to Edge's `+0%` rate. It serializes requests,
 limits synthesis to 60 seconds, and deletes temporary input/MP3 files on success
 and failure. Runtime requires outbound HTTPS/WebSocket access to Microsoft.
 Standalone scripts publish only loopback port 8072. No cache or persistent state
-is added. The lesson app's WAV contract and default Compose wiring remain
-RHVoice-only; using Edge there requires explicit MP3 integration.
+is added to the speech service. The web app serves Edge MP3 with `audio/mpeg`.
+On any Edge synthesis exception (including timeout or invalid response), it
+requests RHVoice WAV at the same rate and serves `audio/wav` through the same
+authorized audio URL. If both fail, HTTP 502 leaves the question unanswered.
+Each upstream request has its own 65-second timeout, so fallback can extend the
+total request duration. Browser playback uses the response's actual content type.
 
 The existing speech API is unchanged: POST /synthesize accepts text and optional
 integer rate (50 to 200, default 100), returning audio/wav. Natia is fixed by the
@@ -144,10 +153,13 @@ a new attempt replaces its previous one. Refresh returns to selection. Restart
 loses attempts. Multiple workers/replicas require shared state and remain outside
 minimal scope. No database or persistent results are used.
 
-The in-memory LRU audio cache holds at most 128 WAVs, each capped at 4 MiB. Keys
-hash deterministic JSON containing text, Natia, rate, and SYNTHESIS_VERSION.
-Update that configured version whenever RHVoice/voice data changes. Misses are
-serialized. Validation checks WAV headers and a nonzero declared frame count;
+The in-memory LRU audio cache holds at most 128 audio entries, each capped at 4 MiB.
+Keys hash deterministic JSON containing text, engine/voice selection, rate, and
+SYNTHESIS_VERSION. Update that version whenever any engine/voice data or URL
+voice assignment changes. Fallback WAVs use RHVoice keys; Edge failures are not
+cached, allowing later retrieval to retry Edge. Misses are serialized.
+MP3 validation checks content type and an ID3/MPEG header without frame decoding.
+WAV validation checks headers and a nonzero declared frame count;
 it does not yet reject truncated frame data (see [the planned fix](todo.md)).
 Evicted audio can be regenerated from the retained snapshot.
 Failure does not cache an error, score
