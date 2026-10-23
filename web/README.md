@@ -173,6 +173,13 @@ For local development, the standalone Edge scripts start one voice at a time
 on port 8072; to use both voices together, use Compose or independently managed
 instances at the configured URLs. RHVoice alone remains sufficient for fallback.
 
+After fetching the current audio, the browser requests next-question precaching
+in the background without waiting for it before playback or answering. The server
+warms only the immediate next snapshot using the same voice, fallback, and cache
+rules. Failures are silent in the UI; normal playback retries synthesis. Precaching
+never marks audio as retrieved for answering and returns no future question data.
+The last question needs no precache request.
+
 Audio uses an in-memory LRU cache of at most 128 audio entries, each limited to 4 MiB.
 Evicted audio is regenerated from its retained question snapshot. Keys hash
 text, engine/voice selection, rate, and synthesis version. Misses are serialized.
@@ -197,6 +204,7 @@ The cookie contains only opaque owner and CSRF IDs, never answers or scores.
 | `GET /api/attempts/{id}` | Current question/feedback or completion envelope |
 | `POST /api/attempts/{id}/answers` | `{questionId, choiceId}` to `{isCorrect, correctAnswerText, selectedChoiceId, choiceTexts}` |
 | `POST /api/attempts/{id}/next` | `{questionId}` to next/completion envelope |
+| `POST /api/attempts/{id}/precache` | `{questionId}` for the current question; warms next audio, returns empty HTTP 204 (also for the last question); stale/completed requests return 409 |
 | `GET /api/attempts/{id}/result` | Completed attempt envelope |
 | `GET /audio/{key}?attempt={id}` | Current question MP3 or fallback WAV with ownership check; RHVoice URLs retain `.wav` |
 

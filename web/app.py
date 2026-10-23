@@ -213,21 +213,31 @@ def create_app(config=None):
             quiz.require_complete(a)
             return jsonify(envelope(aid, a))
 
-    @app.get("/audio/<key>.wav")
-    @app.get("/audio/<key>")
-    def audio(key):
-        aid = request.args.get("attempt", "")
+    @app.post("/api/attempts/<aid>/precache")
+    def precache(aid):
+        data = body()
         with store.transaction():
             a = store.owned(aid, session["owner"])
-            if a["index"] == len(a["questions"]):
-                abort(404)
-            q = a["questions"][a["index"]]
-            if key != cache_key(
-                q["speechText"], q["rate"], app.config["SYNTHESIS_VERSION"], a["voice"]
+            index = a["index"]
+            if (
+                index == len(a["questions"])
+                or data.get("questionId") != a["questions"][index]["id"]
             ):
-                abort(404)
+                abort(409)
+            if index + 1 == len(a["questions"]):
+                return Response(status=204)
+            q = a["questions"][index + 1]
             voice = a["voice"]
+            key = cache_key(
+                q["speechText"], q["rate"], app.config["SYNTHESIS_VERSION"], voice
+            )
+        # Synthesis runs outside the attempt lock and never grants answer readiness.
+        cached_audio(q, voice, key)
+        with store.transaction():
+            store.owned(aid, session["owner"])
+        return Response(status=204)
 
+    def cached_audio(q, voice, key):
         def rhvoice_audio():
             producer = app.config.get("SYNTHESIZER", synthesize)
             fallback_key = cache_key(
@@ -265,6 +275,24 @@ def create_app(config=None):
                 502,
                 "Аудио недоступно. Проверьте сервис озвучки и повторите воспроизведение.",
             )
+        return data, mimetype
+
+    @app.get("/audio/<key>.wav")
+    @app.get("/audio/<key>")
+    def audio(key):
+        aid = request.args.get("attempt", "")
+        with store.transaction():
+            a = store.owned(aid, session["owner"])
+            if a["index"] == len(a["questions"]):
+                abort(404)
+            q = a["questions"][a["index"]]
+            if key != cache_key(
+                q["speechText"], q["rate"], app.config["SYNTHESIS_VERSION"], a["voice"]
+            ):
+                abort(404)
+            voice = a["voice"]
+
+        data, mimetype = cached_audio(q, voice, key)
         with store.transaction():
             store.owned(aid, session["owner"])["audioReady"].add(q["id"])
         return Response(data, mimetype=mimetype)

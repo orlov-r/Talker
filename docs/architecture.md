@@ -171,7 +171,13 @@ cached, allowing later retrieval to retry Edge. Misses are serialized.
 MP3 validation checks content type and an ID3/MPEG header without frame decoding.
 WAV validation checks headers and a nonzero declared frame count;
 it does not yet reject truncated frame data (see [the planned fix](todo.md)).
-Evicted audio can be regenerated from the retained snapshot.
+Evicted audio can be regenerated from the retained snapshot. After fetching current
+audio, the browser sends a background POST to `/api/attempts/{id}/precache` with
+the current question ID. Ownership, expiry, CSRF, and current ID are checked before
+warming only the next snapshot through the same cache and fallback logic, outside
+the attempt lock. The empty response exposes no future question data and does not
+grant audio readiness. Playback and answering do not wait for precaching; failures
+are retried on normal audio retrieval. No background worker or queue is added.
 Failure does not cache an error, score
 an answer, or advance. No cache files are written or committed. Future persistent
 audio or SQLite storage must use volumes.

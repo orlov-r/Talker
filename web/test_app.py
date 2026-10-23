@@ -129,6 +129,77 @@ class QuizTests(unittest.TestCase):
         self.assertEqual(response.status_code, 201)
         return response.json
 
+    def test_precache_reuses_audio_without_revealing_or_advancing(self):
+        for voice in ("rhvoice", "edge-eka", "edge-giorgi"):
+            producer = Mock(return_value=b"ID3audio")
+            self.app.config["EDGE_SYNTHESIZER"] = producer
+            state = self.start_voice(voice)
+            aid = state["attemptId"]
+            attempt = self.app.extensions["attempts"][aid]
+            url = f"/api/attempts/{aid}/precache"
+            data = {"questionId": state["question"]["id"]}
+            response = self.post(url, data)
+            self.assertEqual(response.status_code, 204)
+            self.assertEqual(response.data, b"")
+            self.assertEqual(attempt["index"], 0)
+            self.assertEqual(attempt["score"], 0)
+            self.assertEqual(attempt["audioReady"], set())
+            self.assertEqual(self.answer(state).status_code, 409)
+            self.client.get(state["question"]["audioUrl"])
+            self.answer(state)
+            next_state = self.advance(state).json
+            calls = (len(self.calls), producer.call_count)
+            self.assertEqual(
+                self.client.get(next_state["question"]["audioUrl"]).status_code, 200
+            )
+            self.assertEqual((len(self.calls), producer.call_count), calls)
+            self.assertEqual(self.post(url, data).status_code, 409)
+
+    def test_precache_authorization_expiry_and_last_question(self):
+        state = self.start()
+        aid = state["attemptId"]
+        url = f"/api/attempts/{aid}/precache"
+        data = {"questionId": state["question"]["id"]}
+        self.assertEqual(self.client.post(url, json=data).status_code, 403)
+        other = self.app.test_client()
+        other.get("/")
+        with other.session_transaction() as session:
+            token = session["csrf"]
+        self.assertEqual(
+            other.post(url, json=data, headers={"X-CSRF-Token": token}).status_code, 404
+        )
+        self.assertEqual(self.post(url, {}).status_code, 409)
+        attempt = self.app.extensions["attempts"][aid]
+        attempt["index"] = len(attempt["questions"]) - 1
+        data = {"questionId": attempt["questions"][-1]["id"]}
+        self.assertEqual(self.post(url, data).status_code, 204)
+        self.assertEqual(self.calls, [])
+        attempt["index"] += 1
+        self.assertEqual(self.post(url, data).status_code, 409)
+        attempt["expires"] = 0
+        self.assertEqual(self.post(url, data).status_code, 404)
+
+    def test_precache_failure_retries_and_version_invalidates(self):
+        state = self.start()
+        aid = state["attemptId"]
+        url = f"/api/attempts/{aid}/precache"
+        data = {"questionId": state["question"]["id"]}
+        producer = Mock(side_effect=TimeoutError())
+        self.app.config["SYNTHESIZER"] = producer
+        with self.assertLogs(self.app.logger, level="ERROR"):
+            self.assertEqual(self.post(url, data).status_code, 502)
+        attempt = self.app.extensions["attempts"][aid]
+        self.assertEqual(attempt["audioReady"], set())
+        self.assertEqual(attempt["index"], 0)
+        producer.side_effect = None
+        producer.return_value = wav_bytes()
+        self.assertEqual(self.post(url, data).status_code, 204)
+        self.assertEqual(self.post(url, data).status_code, 204)
+        self.assertEqual(producer.call_count, 2)
+        self.app.config["SYNTHESIS_VERSION"] = "updated"
+        self.assertEqual(self.post(url, data).status_code, 204)
+        self.assertEqual(producer.call_count, 3)
+
     def test_voice_selection_and_validation(self):
         page = self.client.get("/").text
         for voice in ("edge-eka", "edge-giorgi", "rhvoice"):

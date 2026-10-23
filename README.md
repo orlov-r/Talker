@@ -28,7 +28,8 @@ statistics, and persistent attempts/results are outside the basic scope.
 The lesson interface is in Russian; learning content and speech are in Georgian.
 The first page offers Eka (the default), Giorgi, and Natia. Edge TTS requires
 internet and sends speech text to Microsoft; errors automatically fall back to
-RHVoice/Natia. The chosen voice stays fixed for the lesson.
+RHVoice/Natia. The chosen voice stays fixed for the lesson. While each question
+is presented, the app warms the next question’s audio in the server cache.
 
 ## Repository layout
 

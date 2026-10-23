@@ -81,6 +81,14 @@ async function loadAudio() {
   if (audioUrl) URL.revokeObjectURL(audioUrl);
   audioUrl = URL.createObjectURL(await response.blob());
   $('audio').src = audioUrl;
+  if (state.position < state.total) {
+    // Warm only the server cache; failure is retried by normal next playback.
+    void fetch(`/api/attempts/${state.attemptId}/precache`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': csrf },
+      body: JSON.stringify({ questionId: state.question.id }),
+    }).catch(() => {});
+  }
   // Enable answers only after the browser has decoded playable audio.
   await new Promise((resolve, reject) => {
     $('audio').oncanplay = resolve;
