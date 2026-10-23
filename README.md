@@ -41,6 +41,7 @@ RHVoice/Natia. The chosen voice stays fixed for the lesson.
 | [lessons/questions/](lessons/questions/README.md) | Private reusable question definitions referenced by lessons |
 | [dev/](dev/README.md) | Development resources, including private image-generation prompts |
 | [docs/architecture.md](docs/architecture.md) | Container boundaries, API, storage, and quiz flow |
+| [docs/python-data-model.md](docs/python-data-model.md) | Python classes, private records, public projections, and synchronization |
 | [docs/web-framework.md](docs/web-framework.md) | Chosen web stack and framework comparison |
 | [docs/development.md](docs/development.md) | Development workflow and implementation sequence |
 | [docs/todo.md](docs/todo.md) | Future enhancements from the project review |

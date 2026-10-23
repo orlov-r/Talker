@@ -2,15 +2,15 @@
 
 import os
 import secrets
-import threading
-import time
 from pathlib import Path
 
 from flask import Flask, Response, abort, jsonify, render_template, request, session
 from werkzeug.exceptions import HTTPException
 
+from web import quiz
+from web.attempts import AttemptCapacity, AttemptStore, AttemptUnavailable
 from web.audio import AudioCache, cache_key, synthesize, synthesize_edge
-from web.content import LESSONS, LEVELS, available_levels, questions
+from web.content import LESSONS, LEVELS, available_levels
 
 
 VOICES = {
@@ -37,10 +37,10 @@ def create_app(config=None):
     )
     if config:
         app.config.update(config)
-    attempts = {}
-    lock = threading.RLock()
+    store = AttemptStore()
     cache = AudioCache()
-    app.extensions["attempts"] = attempts
+    app.extensions["attempts"] = store.attempts
+    app.extensions["attempt_store"] = store
 
     @app.before_request
     def protect():
@@ -83,21 +83,24 @@ def create_app(config=None):
         )
         return jsonify(error=message), exc.code
 
+    @app.errorhandler(AttemptUnavailable)
+    @app.errorhandler(AttemptCapacity)
+    @app.errorhandler(quiz.QuizConflict)
+    @app.errorhandler(quiz.InvalidSelection)
+    def domain_error(exc):
+        status = {
+            AttemptUnavailable: 404,
+            AttemptCapacity: 503,
+            quiz.QuizConflict: 409,
+            quiz.InvalidSelection: 400,
+        }[type(exc)]
+        return jsonify(error=str(exc)), status
+
     def body():
         data = request.get_json(silent=True)
         if not isinstance(data, dict):
             abort(400, "Ожидается объект JSON.")
         return data
-
-    def owned(aid):
-        now = time.monotonic()
-        for key in list(attempts):
-            if attempts[key]["expires"] <= now:
-                del attempts[key]
-        attempt = attempts.get(aid)
-        if not attempt or attempt["owner"] != session["owner"]:
-            abort(404, "Урок недоступен или время истекло. Начните новый урок.")
-        return attempt
 
     def envelope(aid, a):
         if a["index"] == len(a["questions"]):
@@ -167,106 +170,55 @@ def create_app(config=None):
     def start():
         data = body()
         voice = data.get("voice", "edge-eka")
-        if not isinstance(voice, str) or voice not in VOICES:
-            abort(400, "Выберите доступный голос.")
-        if (
-            not isinstance(data.get("level"), str)
-            or data["level"] not in LEVELS
-            or not isinstance(data.get("lessonId"), str)
-            or data["lessonId"] not in LESSONS
-        ):
-            abort(400, "Выберите доступный уровень и урок.")
-        with lock:
+        quiz.validate_selection(data.get("level"), data.get("lessonId"), voice, VOICES)
+        with store.transaction():
             try:
-                lesson = LESSONS[data["lessonId"]]
-                if not isinstance(lesson, dict):
-                    raise ValueError("Lesson must be an object")
-                snapshots = questions(data["level"], lesson)
+                snapshots = quiz.prepare_questions(data["level"], data["lessonId"])
             except ValueError:
                 app.logger.exception("Lesson preparation failed")
                 abort(400, "Не удалось подготовить вопросы урока. Попробуйте ещё раз.")
-            now = time.monotonic()
-            for key in list(attempts):
-                if (
-                    attempts[key]["expires"] <= now
-                    or attempts[key]["owner"] == session["owner"]
-                ):
-                    del attempts[key]
-            if len(attempts) >= app.config["MAX_ATTEMPTS"]:
-                abort(503, "Слишком много активных уроков. Попробуйте позже.")
-            aid = secrets.token_urlsafe(24)
-            attempts[aid] = {
-                "owner": session["owner"],
-                "voice": voice,
-                "expires": now + app.config["ATTEMPT_TTL"],
-                "questions": snapshots,
-                "index": 0,
-                "score": 0,
-                "feedback": None,
-                "audioReady": set(),
-            }
-            return jsonify(envelope(aid, attempts[aid])), 201
+            aid, attempt = store.create(
+                session["owner"],
+                voice,
+                snapshots,
+                ttl=app.config["ATTEMPT_TTL"],
+                capacity=app.config["MAX_ATTEMPTS"],
+            )
+            return jsonify(envelope(aid, attempt)), 201
 
     @app.get("/api/attempts/<aid>")
     def current(aid):
-        with lock:
-            return jsonify(envelope(aid, owned(aid)))
+        with store.transaction():
+            return jsonify(envelope(aid, store.owned(aid, session["owner"])))
 
     @app.post("/api/attempts/<aid>/answers")
     def answer(aid):
         data = body()
-        with lock:
-            a = owned(aid)
-            if a["index"] >= len(a["questions"]):
-                abort(409, "Урок завершён.")
-            q = a["questions"][a["index"]]
-            if data.get("questionId") != q["id"] or data.get("choiceId") not in [
-                c["id"] for c in q["choices"]
-            ]:
-                abort(409, "Недопустимый вопрос или вариант ответа.")
-            if q["id"] not in a["audioReady"]:
-                abort(409, "Прослушайте аудио перед ответом.")
-            if a["feedback"] is None:
-                selected = next(c for c in q["choices"] if c["id"] == data["choiceId"])
-                correct = selected["text"].strip() == q["correctText"]
-                a["score"] += int(correct)
-                a["feedback"] = {
-                    "isCorrect": correct,
-                    "correctAnswerText": q["correctAnswerText"],
-                    "selectedChoiceId": data["choiceId"],
-                    "choiceTexts": {c["id"]: c["text"] for c in q["choices"]},
-                }
-            return jsonify(a["feedback"])
+        with store.transaction():
+            a = store.owned(aid, session["owner"])
+            return jsonify(quiz.answer(a, data.get("questionId"), data.get("choiceId")))
 
     @app.post("/api/attempts/<aid>/next")
     def next_question(aid):
         data = body()
-        with lock:
-            a = owned(aid)
-            if (
-                a["index"] >= len(a["questions"])
-                or data.get("questionId") != a["questions"][a["index"]]["id"]
-                or a["feedback"] is None
-            ):
-                abort(409, "Ответьте на текущий вопрос, прежде чем продолжить.")
-            a["index"] += 1
-            a["feedback"] = None
+        with store.transaction():
+            a = store.owned(aid, session["owner"])
+            quiz.advance(a, data.get("questionId"))
             return jsonify(envelope(aid, a))
 
     @app.get("/api/attempts/<aid>/result")
     def result(aid):
-        with lock:
-            a = owned(aid)
-            if a["index"] != len(a["questions"]):
-                abort(409, "Урок ещё не завершён.")
+        with store.transaction():
+            a = store.owned(aid, session["owner"])
+            quiz.require_complete(a)
             return jsonify(envelope(aid, a))
 
     @app.get("/audio/<key>.wav")
     @app.get("/audio/<key>")
     def audio(key):
         aid = request.args.get("attempt", "")
-        with lock:
-            a = owned(aid)
+        with store.transaction():
+            a = store.owned(aid, session["owner"])
             if a["index"] == len(a["questions"]):
                 abort(404)
             q = a["questions"][a["index"]]
@@ -313,8 +265,8 @@ def create_app(config=None):
                 502,
                 "Аудио недоступно. Проверьте сервис озвучки и повторите воспроизведение.",
             )
-        with lock:
-            owned(aid)["audioReady"].add(q["id"])
+        with store.transaction():
+            store.owned(aid, session["owner"])["audioReady"].add(q["id"])
         return Response(data, mimetype=mimetype)
 
     return app

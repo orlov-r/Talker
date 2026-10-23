@@ -17,6 +17,10 @@ flowchart LR
 
 `web/` owns the interface, API, content validation, attempts, answer checking,
 scoring, and audio retrieval. `lessons/` owns private content and generators.
+Within `web/`, `attempts.py` owns storage and transaction synchronization,
+`quiz.py` owns quiz rules, and `app.py` handles HTTP and response projection.
+See [Python classes and data structures](python-data-model.md) for the records
+and class contracts.
 `talker-rhvoice/` remains the independent speech image and manual test page. Flask/Jinja
 and plain JavaScript run in one Waitress process with four threads. See
 [the stack decision](web-framework.md).

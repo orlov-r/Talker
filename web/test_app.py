@@ -15,6 +15,7 @@ from lessons.generators import (
     fractional_question, SEMI_ROUND_OFFSETS, ALL_NUMBER_OFFSETS,
 )
 from web.app import create_app
+from web import quiz
 from web.audio import AudioCache, cache_key, synthesize_edge
 from web.content import (
     LESSONS,
@@ -37,6 +38,49 @@ def wav_bytes(*args):
 
 
 class QuizTests(unittest.TestCase):
+    def test_concurrent_answers_score_once_and_next_advances_once(self):
+        state = self.start()
+        self.client.get(state["question"]["audioUrl"])
+        store = self.app.extensions["attempt_store"]
+        aid = state["attemptId"]
+        with self.client.session_transaction() as session:
+            owner = session["owner"]
+        q = store.attempts[aid]["questions"][0]
+
+        def answer_once(_):
+            with store.transaction():
+                return quiz.answer(store.owned(aid, owner), q["id"], q["correctChoiceId"])
+
+        with ThreadPoolExecutor(max_workers=4) as pool:
+            feedback = list(pool.map(answer_once, range(16)))
+        self.assertTrue(all(item == feedback[0] for item in feedback))
+        self.assertEqual(store.attempts[aid]["score"], 1)
+
+        def advance_once(_):
+            with store.transaction():
+                try:
+                    quiz.advance(store.owned(aid, owner), q["id"])
+                    return True
+                except quiz.QuizConflict:
+                    return False
+
+        with ThreadPoolExecutor(max_workers=4) as pool:
+            advanced = list(pool.map(advance_once, range(16)))
+        self.assertEqual(sum(advanced), 1)
+        self.assertEqual(store.attempts[aid]["index"], 1)
+
+    def test_expiry_during_synthesis_rechecks_attempt(self):
+        state = self.start()
+        aid = state["attemptId"]
+
+        def expire_during_synthesis(*args):
+            self.app.extensions["attempts"][aid]["expires"] = 0
+            return wav_bytes()
+
+        self.app.config["SYNTHESIZER"] = expire_during_synthesis
+        self.assertEqual(self.client.get(state["question"]["audioUrl"]).status_code, 404)
+        self.assertNotIn(aid, self.app.extensions["attempts"])
+
     def setUp(self):
         self.calls = []
 

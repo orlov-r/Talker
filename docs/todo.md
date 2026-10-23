@@ -21,9 +21,11 @@ and correction of outdated project guidance are complete.
 
 ## Backend structure and content validation
 
-- [ ] Extract attempt storage and quiz rules from `web/app.py` into small,
-  focused modules. Keep routes responsible for HTTP concerns and preserve
-  ownership, expiry, synchronization, scoring, and retry semantics.
+- [x] Extract attempt storage and quiz rules into `web/attempts.py` and
+  `web/quiz.py`. Routes retain HTTP concerns; ownership, expiry,
+  synchronization, scoring, and retry semantics are preserved.
+- [x] Document Python classes, data structures, private/public records, and
+  synchronization in [the Python data model](python-data-model.md).
 - [ ] Validate the entire lesson catalog at startup: metadata, duplicate lesson
   IDs, and detailed source diagnostics. Basic question/source validation, generator
   retries and static fallbacks are implemented; missing images use text. Report the

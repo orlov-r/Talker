@@ -4,6 +4,11 @@ Flask/Jinja and plain JavaScript implement anonymous listening lessons.
 Waitress runs production as one process with four threads; no frontend build or
 database is required.
 
+Routes and HTTP responses live in `app.py`; `attempts.py` owns bounded storage
+and transaction locking, and `quiz.py` owns selection and quiz transitions.
+See [Python classes and data structures](../docs/python-data-model.md) for
+record fields, locking requirements, and the content/audio modules.
+
 ## Lesson and levels
 
 | Level | Speech rate | Question count |
