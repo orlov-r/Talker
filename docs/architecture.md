@@ -50,6 +50,10 @@ Private lesson definitions provide greetings (one pool of 11 expressions),
 number lessons (including integers through 1000 and fractions through 99.99),
 and six frequency topics (four pools of 10 per topic). The thematic pools preserve the order of the private
 [`dev/word-frequencies/`](../dev/word-frequencies/README.md) lists.
+Five additional static lessons cover everyday street/shop expressions, personal
+pronouns, possessive and dative forms, question words, and short words. Their
+unmarked sources make the complete vocabulary eligible at every difficulty.
+Possessive and dative forms use separate pools within one lesson.
 The browser selects a lesson ID; the server resolves that ID through its fixed
 catalog and randomly selects only that lesson’s sources. Correct Georgian answer
 texts are tracked across the entire attempt and

@@ -1,21 +1,36 @@
 [
-  { "id": "basics" },
-  {
-    "title": "Числа",
-    "lessons": [
-      { "id": "numbers" },
-      { "id": "numbers-to-100" },
-      { "id": "numbers-to-1000" }
-    ]
-  },
   [
-    { "id": "fractions-to-9-99" },
-    { "id": "fractions-to-99-99" }
+    { "id": "basics" },
+    { "id": "basics2", "title": "Основы" }
   ],
-  { "id": "animals" },
-  { "id": "city" },
-  { "id": "documents-state-government-law" },
-  { "id": "food-products" },
-  { "id": "fruits-and-vegetables" },
-  { "id": "weather-and-nature" }
+  [
+    { "id": "personal-pronouns", "title": "Местоимения 1" },
+    { "id": "possessive-and-oblique-pronouns", "title": "Местоимения 2" }
+  ],
+  [
+    { "id": "question-words" },
+    { "id": "short-words" }
+  ],
+  [
+    { "id": "numbers-to-10" },
+    { "id": "numbers-to-20" },
+    { "id": "numbers-to-100" },
+    { "id": "numbers-to-1000" }
+  ],
+  [
+    { "id": "fractions-to-9-99", "title": "Цены до 9.99" },
+    { "id": "fractions-to-99-99", "title": "Цены до 99.99" }
+  ],
+  [
+    { "id": "weather-and-nature" },
+    { "id": "animals" }
+  ],
+  [
+    { "id": "city" },
+    { "id": "documents-state-government-law" }
+  ],
+  [
+    { "id": "food-products" },
+    { "id": "fruits-and-vegetables" }
+  ]
 ]

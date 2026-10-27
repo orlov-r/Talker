@@ -1,0 +1,26 @@
+{
+  "description": "Everyday street and shop vocabulary, excluding basics1. პარკი can mean either a park or a plastic bag; both meanings share one answer.",
+  "choiceLayout": "long",
+  "choices": [
+    { "text": "პარკი", "translation": "Парк/пакет" },
+    { "text": "მაღაზია", "translation": "Магазин" },
+    { "text": "აფთიაქი", "translation": "Аптека" },
+    { "text": "ბანკი", "translation": "Банк" },
+    { "text": "ქუჩა", "translation": "Улица" },
+    { "text": "გაჩერება", "translation": "Остановка" },
+    { "text": "შესასვლელი", "translation": "Вход" },
+    { "text": "გასასვლელი", "translation": "Выход" },
+    { "text": "ქვითარი", "translation": "Квитанция/чек" },
+    { "text": "ჩანთა", "translation": "Сумка" },
+    { "text": "გისმენთ", "translation": "Слушаю вас" },
+    { "text": "მობრძანდით", "translation": "Проходите (вежливо)" },
+    { "text": "ინებეთ", "translation": "Возьмите, пожалуйста" },
+    { "text": "ღიაა", "translation": "Открыто" },
+    { "text": "დაკეტილია", "translation": "Закрыто" },
+    { "text": "მინდა", "translation": "Хочу" },
+    { "text": "არ მინდა", "translation": "Не хочу" },
+    { "text": "ძვირია", "translation": "Дорого" },
+    { "text": "იაფია", "translation": "Дёшево" },
+    { "text": "რა ღირს", "translation": "Сколько стоит?" }
+  ]
+}

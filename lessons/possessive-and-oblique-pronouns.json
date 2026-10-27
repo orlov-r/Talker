@@ -1,0 +1,10 @@
+{
+  "id": "possessive-and-oblique-pronouns",
+  "title": "Притяжательные и косвенные формы",
+  "revision": 1,
+  "description": "Семь притяжательных местоимений и шесть личных местоимений в дательном падеже, включая მას и მათ. Два отдельных набора вариантов ответа.",
+  "sources": [
+    { "question": "possessive-pronouns", "level": 1 },
+    { "question": "dative-pronouns" }
+  ]
+}

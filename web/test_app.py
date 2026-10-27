@@ -46,8 +46,9 @@ class QuizTests(unittest.TestCase):
         self.assertEqual(
             listing[0], {"id": "basics", "title": "Приветствие", "description": ""}
         )
+        number_group = next(row for row in listing if row.get("title") == "Числа")
         self.assertEqual(
-            [item["id"] for item in listing[1]["lessons"]],
+            [item["id"] for item in number_group["lessons"]],
             ["numbers", "numbers-to-100", "numbers-to-1000"],
         )
         self.assertNotIn("sources", json.dumps(listing))
@@ -869,6 +870,11 @@ class ContentAndCacheTests(unittest.TestCase):
             list(LESSONS),
             [
                 "basics",
+                "basics2",
+                "personal-pronouns",
+                "possessive-and-oblique-pronouns",
+                "question-words",
+                "short-words",
                 "numbers",
                 "numbers-to-100",
                 "numbers-to-1000",
@@ -883,9 +889,9 @@ class ContentAndCacheTests(unittest.TestCase):
             ],
         )
         self.assertEqual(
-            [len(l["sources"]) for l in LESSONS.values()], [1] + [2] * 5 + [4] * 6
+            [len(l["sources"]) for l in LESSONS.values()],
+            [1, 1, 1, 2, 1, 1] + [2] * 5 + [4] * 6,
         )
-        self.assertEqual(len(LESSONS["basics"]["sources"][0]["choices"]), 11)
         for source in LESSONS["animals"]["sources"]:
             self.assertEqual(len(source["choices"]), 10)
             for choice in validate(source)["choices"]:
@@ -894,6 +900,41 @@ class ContentAndCacheTests(unittest.TestCase):
                         Path(__file__).parent / "static/choices" / choice["image"]
                     ).is_file()
                 )
+
+    def test_everyday_lessons_content_and_pronoun_distinctions(self):
+        def vocabulary(lesson_id):
+            return {
+                c["text"]: c["translation"]
+                for s in LESSONS[lesson_id]["sources"]
+                for c in s["choices"]
+            }
+
+        basics = vocabulary("basics2")
+        self.assertEqual(len(basics), 20)
+        self.assertTrue({"პარკი", "გისმენთ"} <= basics.keys())
+        self.assertTrue(basics.keys().isdisjoint(vocabulary("basics")))
+        self.assertEqual(
+            set(vocabulary("personal-pronouns")),
+            {"მე", "შენ", "ის", "ჩვენ", "თქვენ", "ისინი"},
+        )
+        pronouns = vocabulary("possessive-and-oblique-pronouns")
+        self.assertEqual(pronouns["მას"], "Ему / ей")
+        self.assertEqual(pronouns["მათ"], "Им")
+        self.assertEqual(pronouns["მათი"], "Их (принадлежность)")
+        for lesson_id, size in [
+            ("basics2", 20),
+            ("personal-pronouns", 6),
+            ("possessive-and-oblique-pronouns", 13),
+            ("question-words", 12),
+            ("short-words", 16),
+        ]:
+            with self.subTest(lesson=lesson_id):
+                lesson = LESSONS[lesson_id]
+                self.assertEqual(len(vocabulary(lesson_id)), size)
+                self.assertEqual(eligible_sources("easy", lesson), lesson["sources"])
+                for source in lesson["sources"]:
+                    labels = [c["translation"] for c in source["choices"]]
+                    self.assertEqual(len(labels), len(set(labels)))
 
     def test_frequency_lessons_preserve_order_and_easy_vocabulary(self):
         root = Path(__file__).resolve().parents[1]

@@ -1,0 +1,11 @@
+{
+  "id": "numbers-to-10",
+  "title": "Числа до 10",
+  "revision": 1,
+  "description": "Числа от 1 до 10",
+  "sources": [
+    {
+      "generator": "number-1-10"
+    }
+  ]
+}

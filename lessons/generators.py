@@ -115,6 +115,7 @@ def fractional_question(maximum_whole, semi_round=False):
 GENERATORS = {
     "number": number,
     "number-1-10": lambda: number(10),
+    "number-1-20": lambda: number(20),
     "number-20-100-semi-round": lambda: integer_question(100, True),
     "number-0-100": lambda: integer_question(100),
     "number-20-1000-semi-round": lambda: integer_question(1000, True),

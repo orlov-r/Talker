@@ -1,0 +1,12 @@
+{
+  "description": "Personal pronouns in the dative, not possessives. First- and second-person forms coincide with the nominative. Russian dative labels are learning cues; actual translation depends on the verb, e.g. მე მინდა means I want.",
+  "choiceLayout": "short",
+  "choices": [
+    { "text": "მე", "translation": "Мне" },
+    { "text": "შენ", "translation": "Тебе" },
+    { "text": "მას", "translation": "Ему/ей" },
+    { "text": "ჩვენ", "translation": "Нам" },
+    { "text": "თქვენ", "translation": "Вам/вам" },
+    { "text": "მათ", "translation": "Им" }
+  ]
+}

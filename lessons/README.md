@@ -19,6 +19,11 @@ order. Only the first pool is explicitly marked `"level": 1`, so Easy uses the
 first ten words; Medium and Hard use all forty. These curated selections use
 recorded word-form frequency, with the ranking limits documented at the source.
 Animals use pictures; the other topics use Russian text choices.
+The additional everyday and grammar lessons use complete static pools at every
+difficulty, including Basics 2, personal pronouns, and question words. The
+possessive/oblique lesson keeps possessives and dative personal pronouns in
+separate pools, so each question compares forms with the same grammatical role.
+In small pools, answers repeat only after all available words have been used.
 `კურდღელი` covers
 rabbit/hare; the choice label explicitly includes both Russian words.
 
@@ -26,6 +31,16 @@ For politeness, `ბოდიში` is presented as an apology (sorry), and `�
 as getting attention (excuse me). Their usage overlaps; these are learning cues,
 not exclusive translations. See the [Georgian teacher’s explanation](https://www.online-georgian.com/en/post/i-am-sorry-in-georgian)
 and [phrasebook examples](https://en.wikivoyage.org/wiki/Georgian_phrasebook).
+
+Pronoun forms and the speaker/listener/distant distinctions follow the
+[Georgian pronoun reference](https://www.georgian.se/kartuli/GeoGrammar/04Pronouns/01Pronouns.html).
+`მას` and `მათ` are dative personal forms; `მისი` and `მათი` are possessives.
+Russian dative labels are learning cues: the translation in a sentence depends
+on its verb. The possessive `თავისი` refers back to the third-person subject;
+see the [Georgian grammar exercise](https://grammar.emis.ge/exercisedetails/160).
+The question-word pool distinguishes selection (`რომელი`) from quality
+(`როგორი`), and location from direction. See the
+[question-word lesson](https://kahibaro.com/course/66-georgian/5962-question-words).
 
 ## Directory structure
 

@@ -1,0 +1,9 @@
+{
+  "id": "short-words",
+  "title": "Короткие слова",
+  "revision": 1,
+  "description": "16 частых коротких слов: место, указание, время, повторение и степень.",
+  "sources": [
+    { "question": "short-words" }
+  ]
+}

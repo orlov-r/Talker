@@ -1,0 +1,18 @@
+{
+  "description": "Basic Georgian question words. რომელი asks for selection, როგორი for a quality; სად asks location, საით direction, საიდან origin.",
+  "choiceLayout": "short",
+  "choices": [
+    { "text": "ვინ", "translation": "Кто?" },
+    { "text": "რა", "translation": "Что?" },
+    { "text": "სად", "translation": "Где?" },
+    { "text": "საიდან", "translation": "Откуда?" },
+    { "text": "საით", "translation": "Куда?" },
+    { "text": "როდის", "translation": "Когда?" },
+    { "text": "რატომ", "translation": "Почему?" },
+    { "text": "როგორ", "translation": "Как?" },
+    { "text": "რამდენი", "translation": "Сколько?" },
+    { "text": "რომელი", "translation": "Который?" },
+    { "text": "როგორი", "translation": "Какой?" },
+    { "text": "ვისი", "translation": "Чей?" }
+  ]
+}

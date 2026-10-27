@@ -23,7 +23,9 @@ Easy selects level 1 sources. Unmarked sources default to level 1 when the
 lesson has no explicit `level: 1` source, otherwise to level 2. Medium and Hard
 include all sources. All lessons stay visible; Easy uses the first ten words
 of each frequency lesson, numbers 1–10, and the greetings pool. Explicit higher levels
-remain excluded on Easy; the start API returns HTTP 400 if no source is eligible.
+remain excluded on Easy. The additional everyday and grammar lessons use their
+full static pools at every difficulty. The start API returns HTTP 400 if no
+source is eligible.
 Question JSON is resolved from
 private references in `lessons/questions/`; generators remain unchanged.
 Six thematic lessons each use four ten-word pools from the private

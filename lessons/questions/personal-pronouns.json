@@ -1,0 +1,12 @@
+{
+  "description": "Six neutral personal pronouns in the nominative. Third-person forms do not distinguish gender; თქვენ is plural or polite singular.",
+  "choiceLayout": "short",
+  "choices": [
+    { "text": "მე", "translation": "Я" },
+    { "text": "შენ", "translation": "Ты" },
+    { "text": "ის", "translation": "Он/она" },
+    { "text": "ჩვენ", "translation": "Мы" },
+    { "text": "თქვენ", "translation": "Вы/вы" },
+    { "text": "ისინი", "translation": "Они" }
+  ]
+}

@@ -1,0 +1,22 @@
+{
+  "description": "Frequent short words. აქ/ეს refer to the speaker, მანდ/ეგ to the listener, იქ/ის to a more distant place or object. Again and more are distinguished by Russian learning cues; usage can overlap.",
+  "choiceLayout": "short",
+  "choices": [
+    { "text": "აქ", "translation": "Здесь" },
+    { "text": "მანდ", "translation": "Там\n(у тебя)" },
+    { "text": "იქ", "translation": "Там\n(вдали)" },
+    { "text": "ეს", "translation": "Это\n(у меня)" },
+    { "text": "ეგ", "translation": "То\n(у тебя)" },
+    { "text": "ის", "translation": "То\n(вдали)" },
+    { "text": "ისევ", "translation": "Опять\nCнова" },
+    { "text": "კიდევ", "translation": "Ещё(больше)\nВсё ещё" },
+    { "text": "უკვე", "translation": "Уже" },
+    { "text": "ახლა", "translation": "Сейчас" },
+    { "text": "მერე", "translation": "Потом" },
+    { "text": "ადრე", "translation": "Раньше" },
+    { "text": "დღეს", "translation": "Сегодня" },
+    { "text": "ხვალ", "translation": "Завтра" },
+    { "text": "გუშინ", "translation": "Вчера" },
+    { "text": "ძალიან", "translation": "Очень" }
+  ]
+}

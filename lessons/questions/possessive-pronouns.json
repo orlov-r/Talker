@@ -1,0 +1,13 @@
+{
+  "description": "Possessive pronouns in citation form. თავისი refers back to a third-person subject, whereas მისი refers to another possessor. Russian labels stand for all genders and numbers.",
+  "choiceLayout": "short",
+  "choices": [
+    { "text": "ჩემი", "translation": "Мой" },
+    { "text": "შენი", "translation": "Твой" },
+    { "text": "მისი", "translation": "Его\n(чьё?)" },
+    { "text": "ჩვენი", "translation": "Наш" },
+    { "text": "თქვენი", "translation": "Ваш" },
+    { "text": "მათი", "translation": "Их\n(чьё?)" },
+    { "text": "თავისი", "translation": "Свой" }
+  ]
+}

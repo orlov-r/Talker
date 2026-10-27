@@ -8,7 +8,10 @@ multiple-choice questions, and see a final score.
 
 The speech service and minimal lesson app are implemented, with Docker Compose
 configuration. Example lessons include greetings, numbers, illustrated animals,
-and city vocabulary. Additional number lessons cover integers to 100 and 1000
+and city vocabulary. Five additional lessons cover everyday street/shop expressions,
+personal pronouns, possessive and dative forms, question words, and short words.
+Their full vocabulary is available at every difficulty.
+Additional number lessons cover integers to 100 and 1000
 and fractions to 9.99 and 99.99, with semi-round and all-number sources. Six thematic lessons each provide 40 words in four pools
 ordered by the private [word-frequency lists](dev/word-frequencies/README.md);
 Easy uses their first ten words.
