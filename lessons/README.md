@@ -36,7 +36,42 @@ generators; generator references stay directly in the lesson.
 
 Development resources live in [`dev/`](../dev/README.md), outside runtime lesson
 content. Keep READMEs focused on schema and a few examples; the JSON files are
-the authoritative catalog.
+the authoritative content. The selection list is maintained separately below.
+
+## Selection catalog
+
+[`catalog.json`](catalog.json) is the ordered selection list. Each entry is a
+lesson or a group; nested groups and duplicate lesson IDs are rejected:
+
+```json
+[
+  { "id": "basics" },
+  {
+    "title": "Числа",
+    "lessons": [
+      { "id": "numbers", "title": "До 20", "description": "Начальный диапазон" },
+      { "id": "numbers-to-100" }
+    ]
+  },
+  [
+    { "id": "fractions-to-9-99" },
+    { "id": "fractions-to-99-99" }
+  ]
+]
+```
+
+Lesson entries use the lesson's `id`, independent of its JSON filename.
+Optional `title` overrides the lesson title; optional `description` defaults to
+an empty string, without inheriting the private lesson description. A group can
+be a nonempty array of lesson entries or an object with a nonempty `lessons` list
+and optional `title` (empty by default). Groups have no other fields. A nonempty
+group title appears first in the horizontal row, before its lesson buttons;
+untitled groups have no heading. Group rows add no surrounding padding.
+Only listed lessons can be started. The server finds definitions in the JSON
+files directly in this directory and validates references at startup; IDs must be
+unique. Keep this catalog private alongside the lessons; the app exposes only
+resolved display metadata, never sources or answers. Restart the app after edits
+(rebuild the web image when using Compose).
 
 ## Implemented schema
 

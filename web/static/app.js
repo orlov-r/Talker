@@ -288,17 +288,28 @@ document.addEventListener('keydown', (event) => {
   const shortcut = event.code.startsWith('Key') ? event.code.slice(3) : '';
   let button;
   if (!$('start').hidden) {
-    const difficulty = /^(?:Digit|Numpad)([123])$/.exec(event.code);
+    const selection = /^(?:Digit|Numpad)([1-6])$/.exec(event.code);
     if (advance) button = $('begin');
-    else if (difficulty)
-      button = document.querySelectorAll('input[name="level"]')[
-        Number(difficulty[1]) - 1
-      ];
-    else if (shortcut === 'Q' || shortcut === 'A') {
-      const lessons = [...document.querySelectorAll('input[name="lessonId"]')];
-      const current = lessons.findIndex((lesson) => lesson.checked);
-      const direction = shortcut === 'Q' ? -1 : 1;
-      button = lessons[(current + direction + lessons.length) % lessons.length];
+    else if (selection) {
+      const number = Number(selection[1]) - 1;
+      const name = number < 3 ? 'level' : 'voice';
+      button = document.querySelectorAll(`input[name="${name}"]`)[number % 3];
+    } else if (['Q', 'A', 'Z', 'X'].includes(shortcut)) {
+      const rows = [...document.querySelectorAll('.lesson-row')];
+      const current = document.querySelector('input[name="lessonId"]:checked');
+      const row = current.closest('.lesson-row');
+      const siblings = [...row.querySelectorAll('input[name="lessonId"]')];
+      const column = siblings.indexOf(current);
+      const direction = shortcut === 'Q' || shortcut === 'Z' ? -1 : 1;
+      if (shortcut === 'Q' || shortcut === 'A') {
+        const target =
+          rows[(rows.indexOf(row) + direction + rows.length) % rows.length];
+        const lessons = target.querySelectorAll('input[name="lessonId"]');
+        button = lessons[Math.min(column, lessons.length - 1)];
+      } else {
+        button =
+          siblings[(column + direction + siblings.length) % siblings.length];
+      }
     }
   } else if (!$('result').hidden) {
     if (advance) button = $('ok');
@@ -321,5 +332,8 @@ document.addEventListener('keydown', (event) => {
     (!$('quiz').hidden && advance && !state.feedback)
   )
     return;
+  const target = button.closest('label') || button;
+  button.focus({ preventScroll: true });
+  target.scrollIntoView({ block: 'nearest', inline: 'nearest' });
   button.click();
 });

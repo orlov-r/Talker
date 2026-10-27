@@ -127,9 +127,26 @@ small {
   padding: 24px;
   margin-bottom: 24px;
 }
-.lesson-number {
-  font-size: 30px;
-  color: var(--accent);
+.begin-hint {
+  margin-bottom: 28px;
+}
+.lesson-row {
+  margin-bottom: 12px;
+}
+.lesson-group-items {
+  display: flex;
+  gap: 12px;
+  overflow-x: auto;
+}
+.lesson-group-title {
+  flex-shrink: 0;
+  align-self: center;
+}
+.lesson-group-items .lesson {
+  flex: 1 0 190px;
+  margin: 0;
+  padding: 18px;
+  gap: 12px;
 }
 button {
   font: inherit;
@@ -340,9 +357,6 @@ label.lesson input {
 label.lesson:has(input:checked) {
   border-color: var(--accent);
   background: #eaf2e8;
-}
-label.lesson .lesson-number {
-  flex-shrink: 0;
 }
 label.lesson > span:last-child > span {
   display: block;

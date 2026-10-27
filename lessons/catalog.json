@@ -1,0 +1,21 @@
+[
+  { "id": "basics" },
+  {
+    "title": "Числа",
+    "lessons": [
+      { "id": "numbers" },
+      { "id": "numbers-to-100" },
+      { "id": "numbers-to-1000" }
+    ]
+  },
+  [
+    { "id": "fractions-to-9-99" },
+    { "id": "fractions-to-99-99" }
+  ],
+  { "id": "animals" },
+  { "id": "city" },
+  { "id": "documents-state-government-law" },
+  { "id": "food-products" },
+  { "id": "fruits-and-vegetables" },
+  { "id": "weather-and-nature" }
+]

@@ -26,7 +26,11 @@ The basic app has three screens: skill level and lesson selection, a listening
 question with four answer choices and feedback, and a final score. Accounts,
 statistics, and persistent attempts/results are outside the basic scope.
 The lesson interface is in Russian; learning content and speech are in Georgian.
-The first page offers Eka (the default), Giorgi, and Natia. Edge TTS requires
+The first page offers Eka (the default), Giorgi, and Natia.
+The ordered selection list is configured in [lessons/catalog.json](lessons/catalog.json),
+with individual lessons and horizontal lesson groups. Selection shortcuts include
+1–3 for difficulty, 4–6 for voice, Q/A for rows, and Z/X within a group.
+Edge TTS requires
 internet and sends speech text to Microsoft; errors automatically fall back to
 RHVoice/Natia. The chosen voice stays fixed for the lesson. While each question
 is presented, the app warms the next question’s audio in the server cache.

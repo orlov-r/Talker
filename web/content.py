@@ -209,24 +209,64 @@ def questions(level, lesson=None):
     return result
 
 
-LESSONS = {
-    lesson["id"]: lesson
-    for lesson in (
-        load_lesson(LESSON_DIR / name)
-        for name in (
-            "basics.json",
-            "numbers.json",
-            "numbers-to-100.json",
-            "numbers-to-1000.json",
-            "fractions-to-9-99.json",
-            "fractions-to-99-99.json",
-            "animals.json",
-            "city.json",
-            "documents-state-government-law.json",
-            "food-products.json",
-            "fruits-and-vegetables.json",
-            "weather-and-nature.json",
-        )
-    )
-}
-LESSON = LESSONS["basics"]
+def load_catalog(path):
+    """Resolve an ordered list of lessons/groups without exposing content."""
+    entries = json.loads(path.read_text(encoding="utf-8"))
+    if not isinstance(entries, list) or not entries:
+        raise ValueError("Catalog requires a nonempty list")
+    definitions = {}
+    for lesson_path in sorted(path.parent.glob("*.json")):
+        if lesson_path == path:
+            continue
+        definition = json.loads(lesson_path.read_text(encoding="utf-8"))
+        identifier = definition.get("id")
+        if not isinstance(identifier, str) or not identifier or identifier in definitions:
+            raise ValueError("Lesson IDs must be nonempty and unique")
+        definitions[identifier] = lesson_path
+    lessons = {}
+
+    def text(entry, field, default, allow_empty=False):
+        value = entry.get(field, default)
+        if not isinstance(value, str) or (
+            field == "title" and not allow_empty and not value.strip()
+        ):
+            raise ValueError(f"Invalid catalog {field}")
+        return value
+
+    def resolve(entry, grouped=False):
+        if isinstance(entry, list):
+            entry = {"lessons": entry}
+        if not isinstance(entry, dict):
+            raise ValueError("Catalog entry must be an object or lesson array")
+        if "lessons" in entry:
+            if grouped or set(entry) - {"title", "lessons"}:
+                raise ValueError("Invalid catalog group")
+            children = entry["lessons"]
+            if not isinstance(children, list) or not children:
+                raise ValueError("Group requires lessons")
+            return {
+                "title": text(entry, "title", "", allow_empty=True).strip(),
+                "lessons": [resolve(child, grouped=True) for child in children],
+            }
+        identifier = entry.get("id")
+        if (
+            set(entry) - {"id", "title", "description"}
+            or not isinstance(identifier, str)
+            or identifier not in definitions
+            or identifier in lessons
+        ):
+            raise ValueError("Unknown, duplicate, or invalid catalog lesson")
+        lesson = load_lesson(definitions[identifier])
+        lessons[identifier] = lesson
+        return {
+            "id": identifier,
+            "title": text(entry, "title", lesson.get("title")),
+            "description": text(entry, "description", ""),
+        }
+
+    listing = [resolve(entry) for entry in entries]
+    return lessons, listing
+
+
+LESSONS, LESSON_LIST = load_catalog(LESSON_DIR / "catalog.json")
+LESSON = next(iter(LESSONS.values()))

@@ -23,20 +23,31 @@
         </div></fieldset>
         <fieldset><legend>Голос</legend><div class="levels">
         {% for id, label in voices.items() %}
-          <label><input type="radio" name="voice" value="{{ id }}" {% if id == 'edge-eka' %}checked{% endif %}>
-            <span><strong>{{ label }}</strong></span></label>
+          <label><input type="radio" name="voice" value="{{ id }}" aria-keyshortcuts="{{ loop.index + 3 }}" {% if id == 'edge-eka' %}checked{% endif %}>
+            <span><small class="level-shortcut" aria-hidden="true">{{ loop.index + 3 }}</small><strong>{{ label }}</strong></span></label>
         {% endfor %}
         </div><small>При ошибке Edge TTS урок озвучит Натия. Edge TTS отправляет текст в онлайн-сервис Microsoft.</small></fieldset>
-        <fieldset aria-keyshortcuts="Q A"><legend>Урок · Q↑ A↓</legend>
-        {% for lesson in lessons %}
-          <label class="lesson"><input type="radio" name="lessonId" value="{{ lesson.id }}" {% if loop.first %}checked{% endif %}>
-            <span class="lesson-number">{{ '%02d' % loop.index }}</span>
+        <button type="submit" id="begin" aria-keyshortcuts="Space Enter">Начать урок <span aria-hidden="true">→</span></button>
+        <small class="begin-hint">Пробел / Enter — начать урок</small>
+        {% macro lesson_card(lesson) %}
+          <label class="lesson"><input type="radio" name="lessonId" value="{{ lesson.id }}" {% if lesson.id == selected_lesson_id %}checked{% endif %}>
             <span><strong>{{ lesson.title }}</strong><span>{{ lesson.description }}</span></span>
           </label>
+        {% endmacro %}
+        <fieldset aria-keyshortcuts="Q A Z X"><legend>Урок · Q↑ A↓ · Z← X→</legend>
+        {% for item in lesson_list %}
+          <div class="lesson-row">
+          {% if item.lessons is defined %}
+              <div class="lesson-group-items" role="group" aria-label="{{ item.title or 'Уроки' }}">
+              {% if item.title %}<strong class="lesson-group-title">{{ item.title }}</strong>{% endif %}
+              {% for lesson in item.lessons %}{{ lesson_card(lesson) }}{% endfor %}
+              </div>
+          {% else %}
+            {{ lesson_card(item) }}
+          {% endif %}
+          </div>
         {% endfor %}
         </fieldset>
-        <button type="submit" id="begin" aria-keyshortcuts="Space Enter">Начать урок <span aria-hidden="true">→</span></button>
-        <small>Пробел / Enter — начать урок</small>
       </form>
       <p class="note">Регистрация не нужна. Урок доступен в течение часа; при обновлении страницы придётся начать заново.</p>
     </section>

@@ -68,7 +68,18 @@ frequency topic is explicitly marked level 1, giving Easy the first ten words.
 The original Numbers lesson marks its 1–10 generator level 1; greetings uses its
 unmarked pool. Each additional number/fraction lesson marks its semi-round
 generator level 1 and its all-number generator level 2.
-The UI always shows every lesson.
+The UI shows every lesson listed in the private `lessons/catalog.json`. This
+ordered list contains lesson entries or groups of lessons. A group is an array
+of lesson entries or an object with `lessons` and optional `title` (empty by
+default), without other fields. The server resolves
+IDs independently of filenames, rejects unknown/duplicate references and nested
+groups, and loads only listed lessons into its selectable catalog. Display titles
+default to the lesson title; display explanations default to empty. The selection
+page and API's `lessonList` expose only resolved display metadata. The API keeps
+its flat `lessons` list for lesson IDs and available levels. Groups form vertical
+rows with horizontal lesson cards and no extra surrounding padding. Nonempty
+group titles appear first in their row. Q/A move between rows and Z/X within a group.
+Difficulty uses 1–3, voices use 4–6, and shortcuts scroll their controls into view.
 The start API rejects a difficulty with no eligible sources before replacing
 an existing attempt. The catalog reports each lesson's available levels.
 

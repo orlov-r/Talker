@@ -10,7 +10,7 @@ from werkzeug.exceptions import HTTPException
 from web import quiz
 from web.attempts import AttemptCapacity, AttemptStore, AttemptUnavailable
 from web.audio import AudioCache, cache_key, synthesize, synthesize_edge
-from web.content import LESSONS, LEVELS, available_levels
+from web.content import LESSONS, LESSON_LIST, LEVELS, available_levels
 
 
 VOICES = {
@@ -143,7 +143,8 @@ def create_app(config=None):
             "index.html",
             csrf=session["csrf"],
             levels=LEVELS,
-            lessons=LESSONS.values(),
+            lesson_list=LESSON_LIST,
+            selected_lesson_id=next(iter(LESSONS)),
             voices=VOICES,
         )
 
@@ -164,6 +165,7 @@ def create_app(config=None):
                 }
                 for lesson in LESSONS.values()
             ],
+            lessonList=LESSON_LIST,
         )
 
     @app.post("/api/attempts")

@@ -19,9 +19,11 @@ from web import quiz
 from web.audio import AudioCache, cache_key, synthesize_edge
 from web.content import (
     LESSONS,
+    LESSON_LIST,
     available_levels,
     eligible_sources,
     load_lesson,
+    load_catalog,
     questions,
     validate,
 )
@@ -38,6 +40,100 @@ def wav_bytes(*args):
 
 
 class QuizTests(unittest.TestCase):
+    def test_selection_catalog_and_markup(self):
+        listing = self.client.get("/api/lessons").json["lessonList"]
+        self.assertEqual(listing, LESSON_LIST)
+        self.assertEqual(
+            listing[0], {"id": "basics", "title": "Приветствие", "description": ""}
+        )
+        self.assertEqual(
+            [item["id"] for item in listing[1]["lessons"]],
+            ["numbers", "numbers-to-100", "numbers-to-1000"],
+        )
+        self.assertNotIn("sources", json.dumps(listing))
+        html = self.client.get("/").get_data(as_text=True)
+        self.assertLess(html.index('id="begin"'), html.index('name="lessonId"'))
+        self.assertEqual(len(re.findall(r'name="lessonId"[^>]*checked', html)), 1)
+        self.assertNotIn("lesson-number", html)
+        for key in (4, 5, 6):
+            self.assertIn(f'aria-keyshortcuts="{key}"', html)
+        self.assertEqual(self.client.get("/lessons/catalog.json").status_code, 404)
+
+    def test_catalog_defaults_overrides_and_invalid_references(self):
+        with TemporaryDirectory() as directory:
+            root = Path(directory)
+            definition = {
+                "id": "example",
+                "title": "Default",
+                "description": "Private",
+                "sources": [{"generator": "number"}],
+            }
+            (root / "different-filename.json").write_text(
+                json.dumps(definition), encoding="utf-8"
+            )
+            path = root / "catalog.json"
+
+            def load(entries):
+                path.write_text(json.dumps(entries), encoding="utf-8")
+                return load_catalog(path)
+
+            lessons, listing = load([{"id": "example"}])
+            self.assertEqual(list(lessons), ["example"])
+            self.assertEqual(listing[0]["title"], "Default")
+            self.assertEqual(listing[0]["description"], "")
+            _, listing = load([
+                {
+                    "title": "Group",
+                    "lessons": [
+                        {"id": "example", "title": "Override", "description": "Hint"}
+                    ],
+                }
+            ])
+            self.assertEqual(listing[0]["lessons"][0]["title"], "Override")
+            self.assertEqual(listing[0]["lessons"][0]["description"], "Hint")
+            for group in (
+                [{"id": "example"}],
+                {"lessons": [{"id": "example"}]},
+                {"title": "", "lessons": [{"id": "example"}]},
+            ):
+                with self.subTest(group=group):
+                    _, listing = load([group])
+                    self.assertEqual(set(listing[0]), {"title", "lessons"})
+                    self.assertEqual(listing[0]["title"], "")
+                    self.assertEqual(listing[0]["lessons"][0]["id"], "example")
+            for entries in (
+                [],
+                {},
+                [{"id": "missing"}],
+                [{"id": "../example"}],
+                [{"id": "example"}, {"id": "example"}],
+                [{"title": "Group", "lessons": []}],
+                [[]],
+                [[[{"id": "example"}]]],
+                [{"title": None, "lessons": [{"id": "example"}]}],
+                [{"description": "Extra", "lessons": [{"id": "example"}]}],
+                [{"id": "example", "title": ""}],
+                [{"id": "example", "description": 1}],
+                [{
+                    "title": "Nested",
+                    "lessons": [{"title": "Inner", "lessons": [{"id": "example"}]}],
+                }],
+            ):
+                with self.subTest(entries=entries), self.assertRaises(ValueError):
+                    load(entries)
+
+    def test_group_title_is_first_inline_and_untitled_group_has_no_heading(self):
+        html = self.client.get("/").get_data(as_text=True)
+        groups = re.findall(
+            r'<div class="lesson-group-items"[^>]*>(.*?)</div>', html, re.S
+        )
+        self.assertEqual(len(groups), 2)
+        self.assertTrue(groups[0].lstrip().startswith(
+            '<strong class="lesson-group-title">Числа</strong>'
+        ))
+        self.assertNotIn("lesson-group-title", groups[1])
+        self.assertNotIn('<fieldset class="lesson-group">', html)
+
     def test_concurrent_answers_score_once_and_next_advances_once(self):
         state = self.start()
         self.client.get(state["question"]["audioUrl"])
@@ -204,7 +300,7 @@ class QuizTests(unittest.TestCase):
         page = self.client.get("/").text
         for voice in ("edge-eka", "edge-giorgi", "rhvoice"):
             self.assertIn(f'value="{voice}"', page)
-        self.assertRegex(page, r'name="voice" value="edge-eka" checked')
+        self.assertRegex(page, r'name="voice" value="edge-eka"[^>]*checked')
         response = self.post("/api/attempts", {"lessonId": "animals", "level": "easy"})
         self.assertEqual(response.status_code, 201)
         state = response.json

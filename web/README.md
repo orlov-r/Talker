@@ -78,8 +78,16 @@ After answering, the correct answer remains visible during audio recovery.
 Keyboard shortcuts use physical key positions, including with Russian or
 Georgian keyboard layouts. On selection, 1/2/3 select Easy/Medium/Hard (including
 the numeric keypad), with key numbers in the top-right corners of difficulty
-cards. Q selects the previous lesson and A the next, wrapping at
-either end. Space or Enter starts the selected lesson and returns from results
+cards. 4/5/6 select Eka/Giorgi/Natia, including the numeric keypad, with the same
+corner labels. Q selects the previous list row and A the next, wrapping at
+either end; Z/X select the previous/next lesson within the current group, also
+wrapping. Vertical navigation retains the column where possible. Individual
+lessons and groups form vertical rows; lessons inside a group remain horizontal,
+with an optional group title first in the row and no extra surrounding padding,
+with horizontal scrolling on narrow screens. The ordered list and optional title
+and explanation overrides come from [the private catalog](../lessons/README.md#selection-catalog).
+The start button appears before the lesson list. Every activated keyboard shortcut
+scrolls its target control into view. Space or Enter starts the selected lesson and returns from results
 to selection. These shortcuts also work while a selection radio has focus.
 During a quiz: Z/X/C/V for the horizontal row, A/S/Z/X for the 2×2
 grid (left to right, top to bottom). Small corner labels show the keys. R
@@ -199,7 +207,7 @@ The cookie contains only opaque owner and CSRF IDs, never answers or scores.
 | Endpoint | Request / response |
 |---|---|
 | `GET /health` | Web HTTP health only |
-| `GET /api/lessons` | `levels` settings, available `lessons`, and `voices` labels |
+| `GET /api/lessons` | `levels` settings, available flat `lessons`, grouped `lessonList` display metadata, and `voices` labels |
 | `POST /api/attempts` | `{level, lessonId, voice?}` to question envelope, HTTP 201; voice is `edge-eka` (default), `edge-giorgi`, or `rhvoice` |
 | `GET /api/attempts/{id}` | Current question/feedback or completion envelope |
 | `POST /api/attempts/{id}/answers` | `{questionId, choiceId}` to `{isCorrect, correctAnswerText, selectedChoiceId, choiceTexts}` |
