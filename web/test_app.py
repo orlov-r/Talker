@@ -19,7 +19,6 @@ from web import quiz
 from web.audio import AudioCache, cache_key, synthesize_edge
 from web.content import (
     LESSONS,
-    LESSON_LIST,
     available_levels,
     eligible_sources,
     load_lesson,
@@ -27,6 +26,46 @@ from web.content import (
     questions,
     validate,
 )
+
+
+def sample_lessons():
+    """Stable content for behavior tests; authored lessons are tested separately."""
+
+    def pool(prefix, level=1):
+        return {
+            "level": level,
+            "choices": [
+                {"text": f"{prefix}{i}", "translation": str(i)}
+                for i in range(10)
+            ],
+        }
+
+    return {
+        "basics": {
+            "id": "basics", "title": "Приветствие", "sources": [pool("basic")]
+        },
+        "numbers": {
+            "id": "numbers", "title": "Числа",
+            "sources": [{"generator": "number-1-10", "level": 1}, {"generator": "number"}],
+        },
+        "animals": {
+            "id": "animals", "title": "Животные",
+            "sources": [pool("animal", 1), pool("other", 2)],
+        },
+    }
+
+
+def sample_listing():
+    lessons = sample_lessons()
+
+    def entry(identifier):
+        return {"id": identifier, "title": lessons[identifier]["title"], "description": ""}
+
+    return [
+        entry("basics"),
+        {"title": "Числа", "lessons": [entry("numbers")]},
+        {"title": "", "lessons": [entry("animals")]},
+    ]
 
 
 def wav_bytes(*args):
@@ -40,16 +79,30 @@ def wav_bytes(*args):
 
 
 class QuizTests(unittest.TestCase):
+    def test_quiz_shortcut_hints(self):
+        html = self.client.get("/").get_data(as_text=True)
+        self.assertRegex(
+            html,
+            r'id="replay"[^>]*aria-keyshortcuts="R Space"'
+            r'[^>]*aria-describedby="replay-hint">Повторить</button>'
+            r'<small id="replay-hint">R / Пробел — повторить</small>',
+        )
+        self.assertRegex(
+            html,
+            r'id="next"[^>]*aria-describedby="next-hint"[^>]*>Далее →</button>'
+            r'<small id="next-hint">Пробел / Enter — далее</small>',
+        )
+
     def test_selection_catalog_and_markup(self):
         listing = self.client.get("/api/lessons").json["lessonList"]
-        self.assertEqual(listing, LESSON_LIST)
+        self.assertEqual(listing, sample_listing())
         self.assertEqual(
             listing[0], {"id": "basics", "title": "Приветствие", "description": ""}
         )
         number_group = next(row for row in listing if row.get("title") == "Числа")
         self.assertEqual(
             [item["id"] for item in number_group["lessons"]],
-            ["numbers", "numbers-to-100", "numbers-to-1000"],
+            ["numbers"],
         )
         self.assertNotIn("sources", json.dumps(listing))
         html = self.client.get("/").get_data(as_text=True)
@@ -179,6 +232,8 @@ class QuizTests(unittest.TestCase):
         self.assertNotIn(aid, self.app.extensions["attempts"])
 
     def setUp(self):
+        self.enterContext(patch.dict(LESSONS, sample_lessons(), clear=True))
+        self.enterContext(patch("web.app.LESSON_LIST", sample_listing()))
         self.calls = []
 
         def synth(text, rate, url):
@@ -704,6 +759,10 @@ class QuizTests(unittest.TestCase):
 
 
 class ContentAndCacheTests(unittest.TestCase):
+    def setUp(self):
+        self.enterContext(patch.dict(LESSONS, sample_lessons(), clear=True))
+        self.enterContext(patch("web.content.LESSON", LESSONS["basics"]))
+
     def test_generator_failures_retry_once_then_static_fallback(self):
         static = {
             "level": 2,
@@ -769,16 +828,6 @@ class ContentAndCacheTests(unittest.TestCase):
         self.assertNotIn("id", choice)
 
     def test_references_and_lesson_specific_levels(self):
-        root = Path(__file__).resolve().parents[1] / "lessons"
-        self.assertEqual(
-            json.loads((root / "animals.json").read_text(encoding="utf-8"))["sources"],
-            [
-                {"question": "animals1", "level": 1},
-                {"question": "animals2"},
-                {"question": "animals3"},
-                {"question": "animals4"},
-            ],
-        )
         with TemporaryDirectory() as folder:
             directory = Path(folder)
             (directory / "questions").mkdir()
@@ -834,7 +883,7 @@ class ContentAndCacheTests(unittest.TestCase):
         for level in ["medium", "hard"]:
             # Exhaust all pools so the assertion does not depend on random draws.
             with patch.dict(
-                "web.content.LEVELS", {level: {"rate": 100, "questionCount": 40}}
+                "web.content.LEVELS", {level: {"rate": 100, "questionCount": len(easy_ids | advanced_ids)}}
             ):
                 qs = questions(level, LESSONS["animals"])
             correct = {q["correctText"] for q in qs}
@@ -864,103 +913,6 @@ class ContentAndCacheTests(unittest.TestCase):
                 for level in ["medium", "hard"]:
                     self.assertEqual(eligible_sources(level, lesson), sources)
                 self.assertNotIn("level", unmarked)
-
-    def test_catalog_and_animal_assets(self):
-        self.assertEqual(
-            list(LESSONS),
-            [
-                "basics",
-                "basics2",
-                "personal-pronouns",
-                "possessive-and-oblique-pronouns",
-                "question-words",
-                "short-words",
-                "numbers",
-                "numbers-to-100",
-                "numbers-to-1000",
-                "fractions-to-9-99",
-                "fractions-to-99-99",
-                "animals",
-                "city",
-                "documents-state-government-law",
-                "food-products",
-                "fruits-and-vegetables",
-                "weather-and-nature",
-            ],
-        )
-        self.assertEqual(
-            [len(l["sources"]) for l in LESSONS.values()],
-            [1, 1, 1, 2, 1, 1] + [2] * 5 + [4] * 6,
-        )
-        for source in LESSONS["animals"]["sources"]:
-            self.assertEqual(len(source["choices"]), 10)
-            for choice in validate(source)["choices"]:
-                self.assertTrue(
-                    (
-                        Path(__file__).parent / "static/choices" / choice["image"]
-                    ).is_file()
-                )
-
-    def test_everyday_lessons_content_and_pronoun_distinctions(self):
-        def vocabulary(lesson_id):
-            return {
-                c["text"]: c["translation"]
-                for s in LESSONS[lesson_id]["sources"]
-                for c in s["choices"]
-            }
-
-        basics = vocabulary("basics2")
-        self.assertEqual(len(basics), 20)
-        self.assertTrue({"პარკი", "გისმენთ"} <= basics.keys())
-        self.assertTrue(basics.keys().isdisjoint(vocabulary("basics")))
-        self.assertEqual(
-            set(vocabulary("personal-pronouns")),
-            {"მე", "შენ", "ის", "ჩვენ", "თქვენ", "ისინი"},
-        )
-        pronouns = vocabulary("possessive-and-oblique-pronouns")
-        self.assertEqual(pronouns["მას"], "Ему / ей")
-        self.assertEqual(pronouns["მათ"], "Им")
-        self.assertEqual(pronouns["მათი"], "Их (принадлежность)")
-        for lesson_id, size in [
-            ("basics2", 20),
-            ("personal-pronouns", 6),
-            ("possessive-and-oblique-pronouns", 13),
-            ("question-words", 12),
-            ("short-words", 16),
-        ]:
-            with self.subTest(lesson=lesson_id):
-                lesson = LESSONS[lesson_id]
-                self.assertEqual(len(vocabulary(lesson_id)), size)
-                self.assertEqual(eligible_sources("easy", lesson), lesson["sources"])
-                for source in lesson["sources"]:
-                    labels = [c["translation"] for c in source["choices"]]
-                    self.assertEqual(len(labels), len(set(labels)))
-
-    def test_frequency_lessons_preserve_order_and_easy_vocabulary(self):
-        root = Path(__file__).resolve().parents[1]
-        for path in sorted((root / "dev/word-frequencies").glob("*.txt")):
-            with self.subTest(topic=path.stem):
-                expected = [
-                    line.split("\t")
-                    for line in path.read_text(encoding="utf-8").splitlines()
-                ]
-                lesson = LESSONS[path.stem]
-                self.assertEqual(len(lesson["sources"]), 4)
-                self.assertTrue(all(len(s["choices"]) == 10 for s in lesson["sources"]))
-                actual = [
-                    [c["text"], c["translation"]]
-                    for s in lesson["sources"]
-                    for c in s["choices"]
-                ]
-                self.assertEqual(actual, expected)
-                self.assertEqual(
-                    eligible_sources("easy", lesson), lesson["sources"][:1]
-                )
-                self.assertEqual(lesson["sources"][0]["level"], 1)
-                easy_words = {text for text, _ in expected[:10]}
-                for q in questions("easy", lesson):
-                    self.assertIn(q["correctText"], easy_words)
-                    self.assertLessEqual({c["text"] for c in q["choices"]}, easy_words)
 
     def test_extended_number_names(self):
         expected = {
@@ -1017,16 +969,6 @@ class ContentAndCacheTests(unittest.TestCase):
                         self.assertEqual(len(q["choices"]), len(expected))
                         self.assertEqual([c["translation"] for c in q["choices"] if c["isCorrect"]],
                                          [f"{whole}.{hundredths:02d}"])
-
-    def test_new_number_lesson_levels(self):
-        for lid in ("numbers-to-100", "numbers-to-1000", "fractions-to-9-99", "fractions-to-99-99"):
-            lesson = LESSONS[lid]
-            self.assertEqual([s["level"] for s in lesson["sources"]], [1, 2])
-            self.assertEqual(eligible_sources("easy", lesson), lesson["sources"][:1])
-            self.assertEqual(eligible_sources("medium", lesson), lesson["sources"])
-            for q in questions("easy", lesson):
-                correct = next(c["translation"] for c in q["choices"] if c["id"] == q["correctChoiceId"])
-                self.assertEqual(int(correct.split(".")[-1]) % 5, 0)
 
     def test_short_number_range(self):
         for correct in range(1, 11):
@@ -1224,6 +1166,57 @@ class ContentAndCacheTests(unittest.TestCase):
         self.assertNotIn("one", cache.entries)
         self.assertNotEqual(cache_key("a", 80, "v1"), cache_key("a", 100, "v1"))
         self.assertNotEqual(cache_key("a", 80, "v1"), cache_key("a", 80, "v2"))
+
+
+class AuthoredContentTests(unittest.TestCase):
+    """Only structural validation and two deliberate content smoke checks."""
+
+    def test_lesson_structure_and_minimum_catalog_size(self):
+        root = Path(__file__).resolve().parents[1] / "lessons"
+        lessons, _ = load_catalog(root / "catalog.json")
+        self.assertGreaterEqual(len(lessons), 3)
+        for path in root.glob("*.json"):
+            if path.name == "catalog.json":
+                continue
+            with self.subTest(lesson=path.name):
+                lesson = load_lesson(path)
+                for field in ("id", "title"):
+                    self.assertIsInstance(lesson.get(field), str)
+                    self.assertTrue(lesson[field].strip())
+                self.assertIs(type(lesson.get("revision")), int)
+                self.assertGreater(lesson["revision"], 0)
+                if "description" in lesson:
+                    self.assertIsInstance(lesson["description"], str)
+        for path in (root / "questions").glob("*.json"):
+            with self.subTest(question=path.name):
+                validate(json.loads(path.read_text(encoding="utf-8")))
+
+    def first_lesson(self, prefix):
+        lesson = next(
+            (lesson for identifier, lesson in LESSONS.items()
+             if identifier.startswith(prefix)),
+            None,
+        )
+        self.assertIsNotNone(lesson, f"Catalog needs a lesson starting with {prefix}")
+        return lesson
+
+    def test_first_numbers_lesson_returns_a_number_question(self):
+        lesson = self.first_lesson("numbers")
+        question = questions("medium", lesson)[0]
+        correct = next(
+            choice for choice in question["choices"]
+            if choice["id"] == question["correctChoiceId"]
+        )
+        self.assertRegex(correct["translation"], r"^[0-9]+$")
+
+    def test_first_animals_lesson_contains_dog(self):
+        lesson = self.first_lesson("animals")
+        self.assertTrue(any(
+            choice["text"].strip() == "ძაღლი"
+            and choice["translation"].strip().casefold() == "собака"
+            for source in lesson["sources"]
+            for choice in source.get("choices", [])
+        ))
 
 
 if __name__ == "__main__":

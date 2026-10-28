@@ -1,8 +1,6 @@
 [
-  [
-    { "id": "basics" },
-    { "id": "basics2", "title": "Основы" }
-  ],
+  { "id": "basics" },
+  { "id": "basics2", "title": "Основы" },
   [
     { "id": "personal-pronouns", "title": "Местоимения 1" },
     { "id": "possessive-and-oblique-pronouns", "title": "Местоимения 2" }
@@ -12,8 +10,7 @@
     { "id": "short-words" }
   ],
   [
-    { "id": "numbers-to-10" },
-    { "id": "numbers-to-20" },
+    { "id": "numbers-to-20", "title": "Числа до 10/до 20" },
     { "id": "numbers-to-100" },
     { "id": "numbers-to-1000" }
   ],

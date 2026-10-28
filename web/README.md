@@ -93,7 +93,9 @@ scrolls its target control into view. Space or Enter starts the selected lesson 
 to selection. These shortcuts also work while a selection radio has focus.
 During a quiz: Z/X/C/V for the horizontal row, A/S/Z/X for the 2×2
 grid (left to right, top to bottom). Small corner labels show the keys. R
-activates “Повторить (R)”; Space or Enter advances only after answering.
+replays at any time; Space replays before answering and advances after answering.
+Enter advances only after answering. Small hints below Replay and Next show their
+shortcuts; Replay's hint updates after answering to show R alone.
 Held keys, modifier combinations, busy requests and text inputs do not trigger
 quiz actions. After answering, option shortcuts inspect the Georgian text
 without submitting again.
@@ -250,11 +252,19 @@ With dependencies installed, run from the root:
 
 ```sh
 python -m unittest discover -s web -p test_app.py -v
+node --test web/test_shortcuts.js
 ```
 
 Tests use simulated WAVs/MP3s for voice selection, fallback/recovery, format checks,
 level mapping, private fields, schema defaults,
 ownership, expiry, retries, ordering, scoring, audio failure/retry, and cache
 identity/bounds/concurrency. They do not verify real voices or pronunciation.
+Behavior tests use fixed in-memory lesson fixtures, so manual edits to authored
+content do not change their expectations. Real content checks validate lesson,
+question and catalog structure, require at least three selectable lessons, check
+that the first catalog lesson whose ID starts with `numbers` returns a numeric
+question, and that the first starting with `animals` contains `ძაღლი` translated
+as `собака` (ignoring case). They do not freeze lesson order, titles, group counts,
+vocabulary sizes, or the rest of the translations.
 Build/start Compose and complete a lesson at each level while listening to
 verify real voice playback, replay, feedback, and results.

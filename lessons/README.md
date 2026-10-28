@@ -88,6 +88,14 @@ unique. Keep this catalog private alongside the lessons; the app exposes only
 resolved display metadata, never sources or answers. Restart the app after edits
 (rebuild the web image when using Compose).
 
+Manual content edits are supported without updating fixed vocabulary snapshots
+in tests. Content checks validate JSON structure and require at least three
+selectable lessons. In catalog order, the first lesson with an ID starting with
+`numbers` must return a numeric question, and the first starting with `animals`
+must contain `ძაღლი` with the translation `собака` (case-insensitive).
+Other vocabulary, display titles, ordering and grouping may be edited freely.
+Run the [web tests](../web/README.md#validation) after editing.
+
 ## Implemented schema
 
 A lesson defines `id`, `title`, `description`, `revision`, and `sources`.

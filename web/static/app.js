@@ -115,8 +115,15 @@ function choiceHint(choiceId) {
   return choice.image ? choice.label : '';
 }
 
+function replayShortcut() {
+  const keys = state.feedback ? 'R' : 'R / Пробел';
+  $('replay-hint').textContent = `${keys} — повторить`;
+  $('replay').setAttribute('aria-keyshortcuts', state.feedback ? 'R' : 'R Space');
+}
+
 function feedback(value) {
   state.feedback = value;
+  replayShortcut();
   choicesEnabled(false);
   audioStatus('');
   $('choice-text').textContent = '';
@@ -149,6 +156,7 @@ async function render(value) {
     return;
   }
   screen('quiz');
+  replayShortcut();
   $('progress').textContent = `${value.position} / ${value.total}`;
   $('meter').max = value.total;
   $('meter').value = value.position - 1;
@@ -314,13 +322,13 @@ document.addEventListener('keydown', (event) => {
   } else if (!$('result').hidden) {
     if (advance) button = $('ok');
   } else if (!$('quiz').hidden) {
-    button = advance
-      ? $('next')
-      : shortcut === 'R'
-        ? $('replay')
-        : [...$('choices').querySelectorAll('button')].find(
-            (item) => item.dataset.shortcut === shortcut,
-          );
+    if (shortcut === 'R' || (event.code === 'Space' && !state.feedback))
+      button = $('replay');
+    else if (advance) button = $('next');
+    else
+      button = [...$('choices').querySelectorAll('button')].find(
+        (item) => item.dataset.shortcut === shortcut,
+      );
   }
   if (!button) return;
   // Suppress native activation so the shortcut performs exactly one action.
@@ -329,7 +337,7 @@ document.addEventListener('keydown', (event) => {
     event.repeat ||
     busy ||
     button.disabled ||
-    (!$('quiz').hidden && advance && !state.feedback)
+    (!$('quiz').hidden && button === $('next') && !state.feedback)
   )
     return;
   const target = button.closest('label') || button;

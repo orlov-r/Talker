@@ -259,6 +259,13 @@ progress {
   flex: 1;
   min-width: 0;
 }
+.control-with-hint {
+  flex-shrink: 0;
+  text-align: center;
+}
+.control-with-hint small {
+  max-width: 150px;
+}
 #replay {
   flex-shrink: 0;
   font-size: 18px;

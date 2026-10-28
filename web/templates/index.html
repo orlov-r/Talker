@@ -13,12 +13,11 @@
   <main>
     <section id="start">
       <h1>Слушайте понемногу.<br>Двигайтесь вперёд.</h1>
-      <p class="intro">Узнавайте на слух грузинские приветствия, числа и названия животных. Выберите урок и удобный темп.</p>
       <form id="start-form">
         <fieldset><legend>Уровень сложности</legend><div class="levels">
         {% for id, level in levels.items() %}
           <label><input type="radio" name="level" value="{{ id }}" aria-keyshortcuts="{{ loop.index }}" {% if loop.first %}checked{% endif %}>
-          <span><small class="level-shortcut" aria-hidden="true">{{ loop.index }}</small><strong>{{ level.label }}</strong><small>Вопросов: {{ level.questionCount }}<br>Скорость речи: {{ level.rate }}%</small></span></label>
+          <span><small class="level-shortcut" aria-hidden="true">{{ loop.index }}</small><strong>{{ level.label }}</strong><small>Вопросов: {{ level.questionCount }}<br>Скорость речи: {{ level.rate }}%<br>{% if loop.first %}Только базовые слова{% else %}&nbsp;{% endif %}</small></span></label>
         {% endfor %}
         </div></fieldset>
         <fieldset><legend>Голос</legend><div class="levels">
@@ -26,15 +25,15 @@
           <label><input type="radio" name="voice" value="{{ id }}" aria-keyshortcuts="{{ loop.index + 3 }}" {% if id == 'edge-eka' %}checked{% endif %}>
             <span><small class="level-shortcut" aria-hidden="true">{{ loop.index + 3 }}</small><strong>{{ label }}</strong></span></label>
         {% endfor %}
-        </div><small>При ошибке Edge TTS урок озвучит Натия. Edge TTS отправляет текст в онлайн-сервис Microsoft.</small></fieldset>
+        </div></fieldset>
         <button type="submit" id="begin" aria-keyshortcuts="Space Enter">Начать урок <span aria-hidden="true">→</span></button>
-        <small class="begin-hint">Пробел / Enter — начать урок</small>
+        <small class="begin-hint">Пробел/Enter — начать урок</small>
         {% macro lesson_card(lesson) %}
           <label class="lesson"><input type="radio" name="lessonId" value="{{ lesson.id }}" {% if lesson.id == selected_lesson_id %}checked{% endif %}>
             <span><strong>{{ lesson.title }}</strong><span>{{ lesson.description }}</span></span>
           </label>
         {% endmacro %}
-        <fieldset aria-keyshortcuts="Q A Z X"><legend>Урок · Q↑ A↓ · Z← X→</legend>
+        <fieldset aria-keyshortcuts="Q A Z X"><legend>Урок · Q↑ A↓ Z← X→</legend>
         {% for item in lesson_list %}
           <div class="lesson-row">
           {% if item.lessons is defined %}
@@ -49,20 +48,19 @@
         {% endfor %}
         </fieldset>
       </form>
-      <p class="note">Регистрация не нужна. Урок доступен в течение часа; при обновлении страницы придётся начать заново.</p>
     </section>
     <section id="quiz" hidden>
       <div class="quiz-progress"><progress id="meter" aria-label="Прогресс урока"></progress><span id="progress"></span></div>
       <audio id="audio" aria-label="Аудиозапись вопроса"></audio>
-      <div class="quiz-toolbar"><p id="feedback" role="status" lang="ka"></p><button id="replay" type="button" aria-keyshortcuts="R">Повторить (R)</button></div>
+      <div class="quiz-toolbar"><p id="feedback" role="status" lang="ka"></p><div class="control-with-hint"><button id="replay" type="button" aria-keyshortcuts="R Space" aria-describedby="replay-hint">Повторить</button><small id="replay-hint">R / Пробел — повторить</small></div></div>
       <div id="choices" aria-label="Варианты ответа"></div>
-      <div class="quiz-actions"><button class="secondary" id="leave" type="button">Назад</button><p id="choice-text" lang="ka" role="status"></p><button id="next" type="button" aria-keyshortcuts="Space Enter" disabled>Далее →</button></div>
+      <div class="quiz-actions"><button class="secondary" id="leave" type="button">Назад</button><p id="choice-text" lang="ka" role="status"></p><div class="control-with-hint"><button id="next" type="button" aria-keyshortcuts="Space Enter" aria-describedby="next-hint" disabled>Далее →</button><small id="next-hint">Пробел / Enter — далее</small></div></div>
     </section>
     <section id="result" hidden><p class="eyebrow">УРОК ЗАВЕРШЁН</p><h1>Хорошая тренировка!</h1>
       <p id="score" class="score"></p><p class="intro">Правильных ответов. Возвращайтесь, чтобы потренироваться ещё.</p>
-      <button id="ok" type="button" aria-keyshortcuts="Space Enter">К выбору урока</button><small>Пробел / Enter — вернуться</small></section>
+      <button id="ok" type="button" aria-keyshortcuts="Space Enter">К выбору урока</button><small>Пробел/Enter — вернуться</small></section>
     <p id="error" role="alert"></p>
   </main>
-  <footer>Ваш урок. Ваш темп. <span>Эка, Гиорги и Натия.</span></footer>
+  <footer>Регистрация не нужна. Сайт использует cookie и может собирать анонимную статистику.<br>Урок доступен в течение часа; при обновлении страницы придётся начать заново.<br>Edge TTS отправляет текст в онлайн-сервис Microsoft.</footer>
 </body>
 </html>

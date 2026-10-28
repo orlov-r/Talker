@@ -120,7 +120,8 @@ or keyboard focus before answering. Feedback reveals the four Georgian texts
 for inspection between Back and Next by hover, keyboard focus or tap; picture
 choice hints then include the Russian translation in parentheses. This area is
 present before answering to keep controls in place. Option keyboard shortcuts
-follow the visual layout (Z/X/C/V or A/S/Z/X); R replays, Space/Enter advances
+follow the visual layout (Z/X/C/V or A/S/Z/X); R replays, Space replays before
+answering, and Space/Enter advances
 after answering. Animal images use the style of Niko Pirosmani, saved as
 512×512 JPGs at quality 75 and named after the English word. Private generation
 prompts live in `dev/image-prompts.json`. Feedback also
