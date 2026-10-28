@@ -50,8 +50,10 @@ behavior from future enhancements in `docs/todo.md`.
 
 ## Naming and copy
 
-- Generate animal lesson illustrations in the style of Niko Pirosmani. Follow
+- Save new lesson images as 256×256 JPGs at quality 75. Follow
   `lessons/README.md` for composition, output format and private prompt storage.
+  Documentation does not prescribe an illustration style. Do not modify existing
+  images without an explicit instruction.
 
 - When introducing names, identifiers, filenames, or user-facing text proposed
   in a prompt, flag likely spelling, grammar, style, or clarity problems and

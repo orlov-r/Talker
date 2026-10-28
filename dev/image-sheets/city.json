@@ -1,0 +1,788 @@
+{
+  "tool": "built-in image_gen",
+  "layout": {
+    "columns": 4,
+    "rows": 2,
+    "order": "row-major"
+  },
+  "output": {
+    "size": [
+      256,
+      256
+    ],
+    "format": "JPEG",
+    "quality": 75
+  },
+  "sheets": [
+    {
+      "file": "city-1.png",
+      "prompt": "Create a production sprite sheet for a Georgian vocabulary learning app. Exactly EIGHT independent minimalist colorful CLIPART illustrations on a pure white opaque background, arranged in a mathematically regular grid of FOUR columns and TWO rows. Wide canvas 2:1 aspect ratio, ideally 2048x1024 pixels. Each cell is a square of identical size; cell centers at x=12.5%,37.5%,62.5%,87.5% and y=25%,75%. Each illustration contained completely within its own cell with at least 12% white padding on all sides. No visible grid, no dividers, no frames, no text, no letters, no numbers, no labels, no watermarks. Clean flat shapes, saturated but harmonious colors, very little detail, crisp silhouettes, consistent subtle dark outlines; NOT photorealistic, no painterly texture. Clearly readable at 256x256. Each cell is an independent isolated icon, never a continuous scene. Include all 8 in precisely the specified row-major order. TOP row column 1: a single blue passenger car, side three-quarter view. TOP row column 2: an isolated curving gray asphalt road segment with white dashed center markings, no buildings or sidewalks. TOP row column 3: a compact whole city skyline of many colorful varied tall and low buildings. TOP row column 4: a small Georgian church with stone walls, conical central dome and a cross. BOTTOM row column 1: an outdoor produce market stall with striped awning, crates of fruit and vegetables. BOTTOM row column 2: a single detached cozy house with red roof and door. BOTTOM row column 3: a school building with a large school bell and a school backpack in front, no writing. BOTTOM row column 4: a large red location pin pinpointing a small house on a folded street map.",
+      "images": [
+        {
+          "file": "car.jpg",
+          "subject": "a single blue passenger car, side three-quarter view",
+          "row": 1,
+          "column": 1,
+          "cellBounds": [
+            0,
+            0,
+            472,
+            435
+          ],
+          "cropBounds": [
+            25,
+            141,
+            462,
+            362
+          ]
+        },
+        {
+          "file": "road.jpg",
+          "subject": "an isolated curving gray asphalt road segment with white dashed center markings, no buildings or sidewalks",
+          "row": 1,
+          "column": 2,
+          "cellBounds": [
+            472,
+            0,
+            875,
+            435
+          ],
+          "cropBounds": [
+            483,
+            81,
+            849,
+            395
+          ]
+        },
+        {
+          "file": "city.jpg",
+          "subject": "a compact whole city skyline of many colorful varied tall and low buildings",
+          "row": 1,
+          "column": 3,
+          "cellBounds": [
+            875,
+            0,
+            1346,
+            435
+          ],
+          "cropBounds": [
+            902,
+            68,
+            1331,
+            396
+          ]
+        },
+        {
+          "file": "church.jpg",
+          "subject": "a small Georgian church with stone walls, conical central dome and a cross",
+          "row": 1,
+          "column": 4,
+          "cellBounds": [
+            1346,
+            0,
+            1774,
+            435
+          ],
+          "cropBounds": [
+            1361,
+            36,
+            1747,
+            407
+          ]
+        },
+        {
+          "file": "market.jpg",
+          "subject": "an outdoor produce market stall with striped awning, crates of fruit and vegetables",
+          "row": 2,
+          "column": 1,
+          "cellBounds": [
+            0,
+            435,
+            440,
+            887
+          ],
+          "cropBounds": [
+            26,
+            471,
+            431,
+            825
+          ]
+        },
+        {
+          "file": "house.jpg",
+          "subject": "a single detached cozy house with red roof and door",
+          "row": 2,
+          "column": 2,
+          "cellBounds": [
+            440,
+            435,
+            884,
+            887
+          ],
+          "cropBounds": [
+            449,
+            489,
+            877,
+            822
+          ]
+        },
+        {
+          "file": "school.jpg",
+          "subject": "a school building with a large school bell and a school backpack in front, no writing",
+          "row": 2,
+          "column": 3,
+          "cellBounds": [
+            884,
+            435,
+            1339,
+            887
+          ],
+          "cropBounds": [
+            892,
+            465,
+            1332,
+            842
+          ]
+        },
+        {
+          "file": "address.jpg",
+          "subject": "a large red location pin pinpointing a small house on a folded street map",
+          "row": 2,
+          "column": 4,
+          "cellBounds": [
+            1339,
+            435,
+            1774,
+            887
+          ],
+          "cropBounds": [
+            1346,
+            464,
+            1762,
+            831
+          ]
+        }
+      ],
+      "sourceSize": [
+        1774,
+        887
+      ]
+    },
+    {
+      "file": "city-2.png",
+      "prompt": "Create a production sprite sheet for a Georgian vocabulary learning app. Exactly EIGHT independent minimalist colorful CLIPART illustrations on a pure white opaque background, arranged in a mathematically regular grid of FOUR columns and TWO rows. Wide canvas 2:1 aspect ratio, ideally 2048x1024 pixels. Each cell is a square of identical size; cell centers at x=12.5%,37.5%,62.5%,87.5% and y=25%,75%. Each illustration contained completely within its own cell with at least 12% white padding on all sides. No visible grid, no dividers, no frames, no text, no letters, no numbers, no labels, no watermarks. Clean flat shapes, saturated but harmonious colors, very little detail, crisp silhouettes, consistent subtle dark outlines; NOT photorealistic, no painterly texture. Clearly readable at 256x256. Each cell is an independent isolated icon, never a continuous scene. Include all 8 in precisely the specified row-major order. TOP row column 1: cutaway view into ONE apartment interior, sofa, lamp and kitchen nook enclosed in a building facade. TOP row column 2: cinema screen with film reel and red theater seats, no masks. TOP row column 3: a small standalone retail storefront with striped awning and shopping bag, no food crates. TOP row column 4: a university building with a large graduation mortarboard clearly above its roof. BOTTOM row column 1: one plain generic modern multistory office building, no special symbols. BOTTOM row column 2: a bank building with columns and a large gold coin emblem on the pediment, no currency letters. BOTTOM row column 3: a street receding between two rows of colorful houses, with roadway and sidewalks. BOTTOM row column 4: a public green park with mature trees, a winding path and bench.",
+      "images": [
+        {
+          "file": "apartment.jpg",
+          "subject": "cutaway view into ONE apartment interior, sofa, lamp and kitchen nook enclosed in a building facade",
+          "row": 1,
+          "column": 1,
+          "cellBounds": [
+            0,
+            0,
+            441,
+            436
+          ],
+          "cropBounds": [
+            45,
+            46,
+            410,
+            412
+          ]
+        },
+        {
+          "file": "cinema.jpg",
+          "subject": "cinema screen with film reel and red theater seats, no masks",
+          "row": 1,
+          "column": 2,
+          "cellBounds": [
+            441,
+            0,
+            883,
+            436
+          ],
+          "cropBounds": [
+            473,
+            78,
+            854,
+            404
+          ]
+        },
+        {
+          "file": "shop.jpg",
+          "subject": "a small standalone retail storefront with striped awning and shopping bag, no food crates",
+          "row": 1,
+          "column": 3,
+          "cellBounds": [
+            883,
+            0,
+            1308,
+            436
+          ],
+          "cropBounds": [
+            912,
+            86,
+            1289,
+            404
+          ]
+        },
+        {
+          "file": "university.jpg",
+          "subject": "a university building with a large graduation mortarboard clearly above its roof",
+          "row": 1,
+          "column": 4,
+          "cellBounds": [
+            1308,
+            0,
+            1774,
+            436
+          ],
+          "cropBounds": [
+            1327,
+            49,
+            1765,
+            399
+          ]
+        },
+        {
+          "file": "building.jpg",
+          "subject": "one plain generic modern multistory office building, no special symbols",
+          "row": 2,
+          "column": 1,
+          "cellBounds": [
+            0,
+            436,
+            436,
+            887
+          ],
+          "cropBounds": [
+            29,
+            460,
+            419,
+            821
+          ]
+        },
+        {
+          "file": "bank.jpg",
+          "subject": "a bank building with columns and a large gold coin emblem on the pediment, no currency letters",
+          "row": 2,
+          "column": 2,
+          "cellBounds": [
+            436,
+            436,
+            893,
+            887
+          ],
+          "cropBounds": [
+            453,
+            467,
+            872,
+            815
+          ]
+        },
+        {
+          "file": "street.jpg",
+          "subject": "a street receding between two rows of colorful houses, with roadway and sidewalks",
+          "row": 2,
+          "column": 3,
+          "cellBounds": [
+            893,
+            436,
+            1312,
+            887
+          ],
+          "cropBounds": [
+            915,
+            493,
+            1292,
+            830
+          ]
+        },
+        {
+          "file": "park.jpg",
+          "subject": "a public green park with mature trees, a winding path and bench",
+          "row": 2,
+          "column": 4,
+          "cellBounds": [
+            1312,
+            436,
+            1774,
+            887
+          ],
+          "cropBounds": [
+            1333,
+            463,
+            1755,
+            834
+          ]
+        }
+      ],
+      "sourceSize": [
+        1774,
+        887
+      ]
+    },
+    {
+      "file": "city-3.png",
+      "prompt": "Create a production sprite sheet for a Georgian vocabulary learning app. Exactly EIGHT independent minimalist colorful CLIPART illustrations on a pure white opaque background, arranged in a mathematically regular grid of FOUR columns and TWO rows. Wide canvas 2:1 aspect ratio, ideally 2048x1024 pixels. Each cell is a square of identical size; cell centers at x=12.5%,37.5%,62.5%,87.5% and y=25%,75%. Each illustration contained completely within its own cell with at least 12% white padding on all sides. No visible grid, no dividers, no frames, no text, no letters, no numbers, no labels, no watermarks. Clean flat shapes, saturated but harmonious colors, very little detail, crisp silhouettes, consistent subtle dark outlines; NOT photorealistic, no painterly texture. Clearly readable at 256x256. Each cell is an independent isolated icon, never a continuous scene. Include all 8 in precisely the specified row-major order. TOP row column 1: a hotel facade with a large bed pictogram sign and suitcase at entrance. TOP row column 2: a theatrical stage with open red curtains and two large comedy tragedy masks. TOP row column 3: an arched stone bridge crossing a blue river. TOP row column 4: a broad paved pedestrian city square with central fountain and small buildings at far edges. BOTTOM row column 1: a classical museum facade with columns and a framed painting and sculpture bust clearly visible. BOTTOM row column 2: a small residential neighborhood block of several similar low houses clustered along intersecting lanes, compact isometric view. BOTTOM row column 3: a cultivated garden with orderly colorful flower beds, small fruit tree and watering can, no park bench. BOTTOM row column 4: a blue subway train at the bottom of stairs leading underground, clear ground cross-section.",
+      "images": [
+        {
+          "file": "hotel.jpg",
+          "subject": "a hotel facade with a large bed pictogram sign and suitcase at entrance",
+          "row": 1,
+          "column": 1,
+          "cellBounds": [
+            0,
+            0,
+            440,
+            446
+          ],
+          "cropBounds": [
+            39,
+            34,
+            402,
+            425
+          ]
+        },
+        {
+          "file": "theatre.jpg",
+          "subject": "a theatrical stage with open red curtains and two large comedy tragedy masks",
+          "row": 1,
+          "column": 2,
+          "cellBounds": [
+            440,
+            0,
+            882,
+            446
+          ],
+          "cropBounds": [
+            478,
+            41,
+            853,
+            405
+          ]
+        },
+        {
+          "file": "bridge.jpg",
+          "subject": "an arched stone bridge crossing a blue river",
+          "row": 1,
+          "column": 3,
+          "cellBounds": [
+            882,
+            0,
+            1331,
+            446
+          ],
+          "cropBounds": [
+            912,
+            129,
+            1308,
+            412
+          ]
+        },
+        {
+          "file": "square.jpg",
+          "subject": "a broad paved pedestrian city square with central fountain and small buildings at far edges",
+          "row": 1,
+          "column": 4,
+          "cellBounds": [
+            1331,
+            0,
+            1774,
+            446
+          ],
+          "cropBounds": [
+            1355,
+            67,
+            1749,
+            415
+          ]
+        },
+        {
+          "file": "museum.jpg",
+          "subject": "a classical museum facade with columns and a framed painting and sculpture bust clearly visible",
+          "row": 2,
+          "column": 1,
+          "cellBounds": [
+            0,
+            446,
+            431,
+            887
+          ],
+          "cropBounds": [
+            32,
+            470,
+            408,
+            825
+          ]
+        },
+        {
+          "file": "neighborhood.jpg",
+          "subject": "a small residential neighborhood block of several similar low houses clustered along intersecting lanes, compact isometric view",
+          "row": 2,
+          "column": 2,
+          "cellBounds": [
+            431,
+            446,
+            894,
+            887
+          ],
+          "cropBounds": [
+            454,
+            469,
+            877,
+            853
+          ]
+        },
+        {
+          "file": "garden.jpg",
+          "subject": "a cultivated garden with orderly colorful flower beds, small fruit tree and watering can, no park bench",
+          "row": 2,
+          "column": 3,
+          "cellBounds": [
+            894,
+            446,
+            1331,
+            887
+          ],
+          "cropBounds": [
+            912,
+            469,
+            1307,
+            826
+          ]
+        },
+        {
+          "file": "subway.jpg",
+          "subject": "a blue subway train at the bottom of stairs leading underground, clear ground cross-section",
+          "row": 2,
+          "column": 4,
+          "cellBounds": [
+            1331,
+            446,
+            1774,
+            887
+          ],
+          "cropBounds": [
+            1355,
+            468,
+            1748,
+            844
+          ]
+        }
+      ],
+      "sourceSize": [
+        1774,
+        887
+      ]
+    },
+    {
+      "file": "city-4.png",
+      "prompt": "Create a production sprite sheet for a Georgian vocabulary learning app. Exactly EIGHT independent minimalist colorful CLIPART illustrations on a pure white opaque background, arranged in a mathematically regular grid of FOUR columns and TWO rows. Wide canvas 2:1 aspect ratio, ideally 2048x1024 pixels. Each cell is a square of identical size; cell centers at x=12.5%,37.5%,62.5%,87.5% and y=25%,75%. Each illustration contained completely within its own cell with at least 12% white padding on all sides. No visible grid, no dividers, no frames, no text, no letters, no numbers, no labels, no watermarks. Clean flat shapes, saturated but harmonious colors, very little detail, crisp silhouettes, consistent subtle dark outlines; NOT photorealistic, no painterly texture. Clearly readable at 256x256. Each cell is an independent isolated icon, never a continuous scene. Include all 8 in precisely the specified row-major order. TOP row column 1: a library shelf full of colorful books with one large open book in front. TOP row column 2: a post office represented by a small building with a large envelope pictogram and a blue letterbox. TOP row column 3: a railway station with clock tower, platform canopy, tracks and train. TOP row column 4: an empty roadside bus shelter with bench and a pole bearing a bus pictogram, NO actual vehicle. BOTTOM row column 1: a single large colorful city bus in three-quarter view, no shelter. BOTTOM row column 2: a small cafe facade with two outdoor chairs and table and large steaming coffee cup pictogram. BOTTOM row column 3: a restaurant facade with large plate fork and knife pictogram, no coffee cup. BOTTOM row column 4: an airport terminal with control tower and airplane taking off above.",
+      "images": [
+        {
+          "file": "library.jpg",
+          "subject": "a library shelf full of colorful books with one large open book in front",
+          "row": 1,
+          "column": 1,
+          "cellBounds": [
+            0,
+            0,
+            437,
+            444
+          ],
+          "cropBounds": [
+            29,
+            61,
+            417,
+            414
+          ]
+        },
+        {
+          "file": "post-office.jpg",
+          "subject": "a post office represented by a small building with a large envelope pictogram and a blue letterbox",
+          "row": 1,
+          "column": 2,
+          "cellBounds": [
+            437,
+            0,
+            886,
+            444
+          ],
+          "cropBounds": [
+            458,
+            61,
+            868,
+            413
+          ]
+        },
+        {
+          "file": "station.jpg",
+          "subject": "a railway station with clock tower, platform canopy, tracks and train",
+          "row": 1,
+          "column": 3,
+          "cellBounds": [
+            886,
+            0,
+            1332,
+            444
+          ],
+          "cropBounds": [
+            904,
+            15,
+            1310,
+            426
+          ]
+        },
+        {
+          "file": "bus-stop.jpg",
+          "subject": "an empty roadside bus shelter with bench and a pole bearing a bus pictogram, NO actual vehicle",
+          "row": 1,
+          "column": 4,
+          "cellBounds": [
+            1332,
+            0,
+            1774,
+            444
+          ],
+          "cropBounds": [
+            1354,
+            100,
+            1753,
+            403
+          ]
+        },
+        {
+          "file": "bus.jpg",
+          "subject": "a single large colorful city bus in three-quarter view, no shelter",
+          "row": 2,
+          "column": 1,
+          "cellBounds": [
+            0,
+            444,
+            451,
+            887
+          ],
+          "cropBounds": [
+            18,
+            524,
+            443,
+            846
+          ]
+        },
+        {
+          "file": "cafe.jpg",
+          "subject": "a small cafe facade with two outdoor chairs and table and large steaming coffee cup pictogram",
+          "row": 2,
+          "column": 2,
+          "cellBounds": [
+            451,
+            444,
+            883,
+            887
+          ],
+          "cropBounds": [
+            459,
+            467,
+            868,
+            852
+          ]
+        },
+        {
+          "file": "restaurant.jpg",
+          "subject": "a restaurant facade with large plate fork and knife pictogram, no coffee cup",
+          "row": 2,
+          "column": 3,
+          "cellBounds": [
+            883,
+            444,
+            1331,
+            887
+          ],
+          "cropBounds": [
+            899,
+            462,
+            1317,
+            825
+          ]
+        },
+        {
+          "file": "airport.jpg",
+          "subject": "an airport terminal with control tower and airplane taking off above",
+          "row": 2,
+          "column": 4,
+          "cellBounds": [
+            1331,
+            444,
+            1774,
+            887
+          ],
+          "cropBounds": [
+            1345,
+            474,
+            1759,
+            849
+          ]
+        }
+      ],
+      "sourceSize": [
+        1774,
+        887
+      ]
+    },
+    {
+      "file": "city-5.png",
+      "prompt": "Create a production sprite sheet for a Georgian vocabulary learning app. Exactly EIGHT independent minimalist colorful CLIPART illustrations on a pure white opaque background, arranged in a mathematically regular grid of FOUR columns and TWO rows. Wide canvas 2:1 aspect ratio, ideally 2048x1024 pixels. Each cell is a square of identical size; cell centers at x=12.5%,37.5%,62.5%,87.5% and y=25%,75%. Each illustration contained completely within its own cell with at least 12% white padding on all sides. No visible grid, no dividers, no frames, no text, no letters, no numbers, no labels, no watermarks. Clean flat shapes, saturated but harmonious colors, very little detail, crisp silhouettes, consistent subtle dark outlines; NOT photorealistic, no painterly texture. Clearly readable at 256x256. Each cell is an independent isolated icon, never a continuous scene. Include all 8 in precisely the specified row-major order. TOP row column 1: a single yellow taxi car with checker stripe and blank roof light, no letters. TOP row column 2: a hospital building with red medical cross, ambulance parked in front. TOP row column 3: close-up apartment building entrance with open communal door, a few steps and visible staircase going up inside, no living room. TOP row column 4: a pharmacy storefront with large GREEN cross and medicine capsule and small medicine bottle. BOTTOM row column 1: one vertical traffic signal on a pole, red amber green lights. BOTTOM row column 2: a broad supermarket facade with automatic doors and a large shopping cart filled with groceries in front. BOTTOM row column 3: a parking lot seen obliquely from above, three cars inside clearly marked parking bays, no letters. BOTTOM row column 4: a pedestrian paved sidewalk with curb beside narrow edge of gray road, walking person on pavement and small street tree; pavement is the main subject.",
+      "images": [
+        {
+          "file": "taxi.jpg",
+          "subject": "a single yellow taxi car with checker stripe and blank roof light, no letters",
+          "row": 1,
+          "column": 1,
+          "cellBounds": [
+            0,
+            0,
+            441,
+            433
+          ],
+          "cropBounds": [
+            18,
+            100,
+            422,
+            338
+          ]
+        },
+        {
+          "file": "hospital.jpg",
+          "subject": "a hospital building with red medical cross, ambulance parked in front",
+          "row": 1,
+          "column": 2,
+          "cellBounds": [
+            441,
+            0,
+            890,
+            433
+          ],
+          "cropBounds": [
+            460,
+            68,
+            874,
+            410
+          ]
+        },
+        {
+          "file": "entrance.jpg",
+          "subject": "close-up apartment building entrance with open communal door, a few steps and visible staircase going up inside, no living room",
+          "row": 1,
+          "column": 3,
+          "cellBounds": [
+            890,
+            0,
+            1330,
+            433
+          ],
+          "cropBounds": [
+            907,
+            28,
+            1313,
+            416
+          ]
+        },
+        {
+          "file": "pharmacy.jpg",
+          "subject": "a pharmacy storefront with large GREEN cross and medicine capsule and small medicine bottle",
+          "row": 1,
+          "column": 4,
+          "cellBounds": [
+            1330,
+            0,
+            1774,
+            433
+          ],
+          "cropBounds": [
+            1348,
+            34,
+            1755,
+            386
+          ]
+        },
+        {
+          "file": "traffic-light.jpg",
+          "subject": "one vertical traffic signal on a pole, red amber green lights",
+          "row": 2,
+          "column": 1,
+          "cellBounds": [
+            0,
+            433,
+            395,
+            887
+          ],
+          "cropBounds": [
+            168,
+            452,
+            287,
+            850
+          ]
+        },
+        {
+          "file": "supermarket.jpg",
+          "subject": "a broad supermarket facade with automatic doors and a large shopping cart filled with groceries in front",
+          "row": 2,
+          "column": 2,
+          "cellBounds": [
+            395,
+            433,
+            889,
+            887
+          ],
+          "cropBounds": [
+            459,
+            485,
+            872,
+            849
+          ]
+        },
+        {
+          "file": "parking.jpg",
+          "subject": "a parking lot seen obliquely from above, three cars inside clearly marked parking bays, no letters",
+          "row": 2,
+          "column": 3,
+          "cellBounds": [
+            889,
+            433,
+            1330,
+            887
+          ],
+          "cropBounds": [
+            906,
+            457,
+            1314,
+            850
+          ]
+        },
+        {
+          "file": "sidewalk.jpg",
+          "subject": "a pedestrian paved sidewalk with curb beside narrow edge of gray road, walking person on pavement and small street tree; pavement is the main subject",
+          "row": 2,
+          "column": 4,
+          "cellBounds": [
+            1330,
+            433,
+            1774,
+            887
+          ],
+          "cropBounds": [
+            1347,
+            450,
+            1755,
+            855
+          ]
+        }
+      ],
+      "sourceSize": [
+        1774,
+        887
+      ]
+    }
+  ]
+}

@@ -18,7 +18,7 @@ Each lesson references four pools of ten consecutive entries in the supplied
 order. Only the first pool is explicitly marked `"level": 1`, so Easy uses the
 first ten words; Medium and Hard use all forty. These curated selections use
 recorded word-form frequency, with the ranking limits documented at the source.
-Animals use pictures; the other topics use Russian text choices.
+Animals and city vocabulary use pictures; the other topics use Russian text choices.
 The additional everyday and grammar lessons use complete static pools at every
 difficulty, including Basics 2, personal pronouns, and question words. The
 possessive/oblique lesson keeps possessives and dative personal pronouns in
@@ -161,7 +161,7 @@ Choices need no IDs. Duplicate texts and translations are allowed; all choices
 whose trimmed Georgian text matches the correct text are accepted. Multiple
 generator markers must agree on that text. Images use
 lowercase English words as filenames with a `.jpg` extension (hyphens may join
-multiword names). Do not add style qualifiers such as `pirosmani`.
+multiword names). Do not add style qualifiers.
 Buttons show an image when present, otherwise the translation. The translation
 also supplies accessible image text. Missing images are nonfatal: the Russian
 translation is shown instead, including if image loading fails in the browser.
@@ -233,13 +233,12 @@ Georgian compound number forms follow the [Georgian number reference](https://om
 
 ## Image assets
 
-Generate animal illustrations **in the style of Niko Pirosmani**: naive Georgian
-folk oil painting, flat forms, expressive eyes, restrained earthy colors, visible
-paint texture, and a simple dark background. Show one recognizable full animal,
-centered with margin, without text, borders or watermarks. Apply this style to
-future animal images too.
+Documentation does not prescribe an illustration style. For animal illustrations,
+show one recognizable full animal, centered with margin, without text, borders
+or watermarks.
 
-Save every choice image as **512×512 pixels, JPG, quality 75**. Use the
+Save new choice images as **256×256 pixels, JPG, quality 75**. Do not modify
+existing images without an explicit instruction. Use the
 corresponding English word as the basename, e.g. `dog.jpg`; omit style qualifiers.
 Store generation prompts separately in
 [`dev/image-prompts.json`](../dev/image-prompts.json), keyed by image filename.

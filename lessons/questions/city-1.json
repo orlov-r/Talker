@@ -4,43 +4,53 @@
   "choices": [
     {
       "text": "მანქანა",
-      "translation": "Машина"
+      "translation": "Машина",
+      "image": "car.jpg"
     },
     {
       "text": "გზა",
-      "translation": "Дорога"
+      "translation": "Дорога",
+      "image": "road.jpg"
     },
     {
       "text": "ქალაქი",
-      "translation": "Город"
+      "translation": "Город",
+      "image": "city.jpg"
     },
     {
       "text": "ეკლესია",
-      "translation": "Церковь"
+      "translation": "Церковь",
+      "image": "church.jpg"
     },
     {
       "text": "ბაზარი",
-      "translation": "Рынок"
+      "translation": "Рынок",
+      "image": "market.jpg"
     },
     {
       "text": "სახლი",
-      "translation": "Дом"
+      "translation": "Дом",
+      "image": "house.jpg"
     },
     {
       "text": "სკოლა",
-      "translation": "Школа"
+      "translation": "Школа",
+      "image": "school.jpg"
     },
     {
       "text": "მისამართი",
-      "translation": "Адрес"
+      "translation": "Адрес",
+      "image": "address.jpg"
     },
     {
       "text": "ბინა",
-      "translation": "Квартира"
+      "translation": "Квартира",
+      "image": "apartment.jpg"
     },
     {
       "text": "კინო",
-      "translation": "Кино/кинотеатр"
+      "translation": "Кино/кинотеатр",
+      "image": "cinema.jpg"
     }
   ]
 }

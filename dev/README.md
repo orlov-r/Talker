@@ -12,5 +12,9 @@ recorded word-form frequency. Its README documents the source and ranking limits
 [`image-prompts.json`](image-prompts.json) stores private illustration prompts,
 keyed by image filename, for assets such as `dog.jpg`. Generated choice images
 belong in `web/static/choices/`; prompts remain here. Follow the
-[image authoring instructions](../lessons/README.md#image-assets) for style,
-composition, dimensions, and encoding.
+[image authoring instructions](../lessons/README.md#image-assets) for composition,
+dimensions, and encoding.
+
+[`image-sheets/city.json`](image-sheets/city.json) records the city illustration
+sheet prompts and row/column mapping. Original sheets are kept beside it;
+individual cropped JPGs are served from `web/static/choices/`.

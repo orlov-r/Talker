@@ -7,8 +7,8 @@ multiple-choice questions, and see a final score.
 ## Current status
 
 The speech service and minimal lesson app are implemented, with Docker Compose
-configuration. Example lessons include greetings, numbers, illustrated animals,
-and city vocabulary. Five additional lessons cover everyday street/shop
+configuration. Example lessons include greetings, numbers, and illustrated
+animal and city vocabulary. Five additional lessons cover everyday street/shop
 expressions, personal pronouns, possessive and dative forms, question words, and
 short words. Their full vocabulary is available at every difficulty. Additional
 number lessons cover integers to 100 and 1000 and fractions to 9.99 and 99.99,

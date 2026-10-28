@@ -31,9 +31,9 @@ references in `lessons/questions/`, inline objects, or numeric arrays; see the
 [authoring rules](../lessons/README.md#implemented-schema). Six thematic lessons
 each use four ten-word pools from the private [word-frequency
 lists](../dev/word-frequencies/README.md), preserving their order. They are
-curated selections sorted by recorded word-form frequency. Animal illustrations
-use the style of Niko Pirosmani. Correct answer texts do not repeat until the
-available answers are exhausted, then a new uniqueness cycle begins. Generators
+curated selections sorted by recorded word-form frequency. Correct answer texts
+do not repeat until the available answers are exhausted, then a new uniqueness
+cycle begins. Generators
 use bounded retries, so an early repeat has a small probability. Static
 vocabulary chooses an unused correct choice at random; a generator marks its own
 correct choice. Each question displays that choice and three sampled other
@@ -101,10 +101,14 @@ Held keys, modifier combinations, busy requests and text inputs do not trigger
 quiz actions. After answering, option shortcuts inspect the Georgian text
 without submitting again.
 
-Choice images are 512×512 JPGs encoded at quality 75, named after the English
-word (e.g. `dog.jpg`). Prompts live separately in
+New choice images must be 256×256 JPGs encoded at quality 75, named after the
+English word (e.g. `dog.jpg`). Documentation does not prescribe an illustration
+style. Do not modify existing images without an explicit instruction.
+Prompts live separately in
 [`dev/image-prompts.json`](../dev/image-prompts.json); see
 [image authoring](../lessons/README.md#image-assets).
+City vocabulary uses individual pictures cropped from generation sheets; the
+original sheets and their layout remain private in `dev/image-sheets/`.
 
 ## Local setup
 

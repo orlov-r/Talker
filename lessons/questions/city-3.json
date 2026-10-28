@@ -4,43 +4,53 @@
   "choices": [
     {
       "text": "მუზეუმი",
-      "translation": "Музей"
+      "translation": "Музей",
+      "image": "museum.jpg"
     },
     {
       "text": "უბანი",
-      "translation": "Район/квартал"
+      "translation": "Район/квартал",
+      "image": "neighborhood.jpg"
     },
     {
       "text": "ბაღი",
-      "translation": "Сад"
+      "translation": "Сад",
+      "image": "garden.jpg"
     },
     {
       "text": "მეტრო",
-      "translation": "Метро"
+      "translation": "Метро",
+      "image": "subway.jpg"
     },
     {
       "text": "ბიბლიოთეკა",
-      "translation": "Библиотека"
+      "translation": "Библиотека",
+      "image": "library.jpg"
     },
     {
       "text": "ფოსტა",
-      "translation": "Почта"
+      "translation": "Почта",
+      "image": "post-office.jpg"
     },
     {
       "text": "სადგური",
-      "translation": "Станция/вокзал"
+      "translation": "Станция/вокзал",
+      "image": "station.jpg"
     },
     {
       "text": "გაჩერება",
-      "translation": "Остановка"
+      "translation": "Остановка",
+      "image": "bus-stop.jpg"
     },
     {
       "text": "ავტობუსი",
-      "translation": "Автобус"
+      "translation": "Автобус",
+      "image": "bus.jpg"
     },
     {
       "text": "კაფე",
-      "translation": "Кафе"
+      "translation": "Кафе",
+      "image": "cafe.jpg"
     }
   ]
 }

@@ -4,43 +4,53 @@
   "choices": [
     {
       "text": "რესტორანი",
-      "translation": "Ресторан"
+      "translation": "Ресторан",
+      "image": "restaurant.jpg"
     },
     {
       "text": "აეროპორტი",
-      "translation": "Аэропорт"
+      "translation": "Аэропорт",
+      "image": "airport.jpg"
     },
     {
       "text": "ტაქსი",
-      "translation": "Такси"
+      "translation": "Такси",
+      "image": "taxi.jpg"
     },
     {
       "text": "საავადმყოფო",
-      "translation": "Больница"
+      "translation": "Больница",
+      "image": "hospital.jpg"
     },
     {
       "text": "სადარბაზო",
-      "translation": "Подъезд"
+      "translation": "Подъезд",
+      "image": "entrance.jpg"
     },
     {
       "text": "აფთიაქი",
-      "translation": "Аптека"
+      "translation": "Аптека",
+      "image": "pharmacy.jpg"
     },
     {
       "text": "შუქნიშანი",
-      "translation": "Светофор"
+      "translation": "Светофор",
+      "image": "traffic-light.jpg"
     },
     {
       "text": "სუპერმარკეტი",
-      "translation": "Супермаркет"
+      "translation": "Супермаркет",
+      "image": "supermarket.jpg"
     },
     {
       "text": "ავტოსადგომი",
-      "translation": "Автостоянка"
+      "translation": "Автостоянка",
+      "image": "parking.jpg"
     },
     {
       "text": "ტროტუარი",
-      "translation": "Тротуар"
+      "translation": "Тротуар",
+      "image": "sidewalk.jpg"
     }
   ]
 }

@@ -130,8 +130,10 @@ between Back and Next by hover, keyboard focus or tap; picture choice hints then
 include the Russian translation in parentheses. This area is present before
 answering to keep controls in place. Option keyboard shortcuts follow the visual
 layout (Z/X/C/V or A/S/Z/X); R replays, Space replays before answering, and
-Space/Enter advances after answering. Animal images use the style of Niko
-Pirosmani, saved as 512×512 JPGs at quality 75 and named after the English word.
+Space/Enter advances after answering. New choice images must be 256×256 JPGs
+at quality 75, named after the English word. Documentation does not prescribe
+an illustration style. Do not modify existing images without an explicit
+instruction.
 Private generation prompts live in `dev/image-prompts.json`. Feedback also
 includes the submitted choice ID so its green tick or red cross survives state
 recovery, and `correctChoiceIds` for every displayed choice with the correct text.

@@ -4,43 +4,53 @@
   "choices": [
     {
       "text": "მაღაზია",
-      "translation": "Магазин"
+      "translation": "Магазин",
+      "image": "shop.jpg"
     },
     {
       "text": "უნივერსიტეტი",
-      "translation": "Университет"
+      "translation": "Университет",
+      "image": "university.jpg"
     },
     {
       "text": "შენობა",
-      "translation": "Здание"
+      "translation": "Здание",
+      "image": "building.jpg"
     },
     {
       "text": "ბანკი",
-      "translation": "Банк"
+      "translation": "Банк",
+      "image": "bank.jpg"
     },
     {
       "text": "ქუჩა",
-      "translation": "Улица"
+      "translation": "Улица",
+      "image": "street.jpg"
     },
     {
       "text": "პარკი",
-      "translation": "Парк"
+      "translation": "Парк",
+      "image": "park.jpg"
     },
     {
       "text": "სასტუმრო",
-      "translation": "Гостиница"
+      "translation": "Гостиница",
+      "image": "hotel.jpg"
     },
     {
       "text": "თეატრი",
-      "translation": "Театр"
+      "translation": "Театр",
+      "image": "theatre.jpg"
     },
     {
       "text": "ხიდი",
-      "translation": "Мост"
+      "translation": "Мост",
+      "image": "bridge.jpg"
     },
     {
       "text": "მოედანი",
-      "translation": "Площадь"
+      "translation": "Площадь",
+      "image": "square.jpg"
     }
   ]
 }
