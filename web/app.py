@@ -4,13 +4,13 @@ import os
 import secrets
 from pathlib import Path
 
-from flask import Flask, Response, abort, jsonify, render_template, request, session
+from flask import Flask, Response, abort, jsonify, render_template, request, session, url_for
 from werkzeug.exceptions import HTTPException
 
 from web import quiz
 from web.attempts import AttemptCapacity, AttemptStore, AttemptUnavailable
 from web.audio import AudioCache, cache_key, synthesize, synthesize_edge
-from web.content import LESSONS, LESSON_LIST, LEVELS, available_levels
+from web.content import LESSONS, LESSON_LIST, LEVELS, available_levels, study_words
 
 
 VOICES = {
@@ -187,6 +187,42 @@ def create_app(config=None):
                 capacity=app.config["MAX_ATTEMPTS"],
             )
             return jsonify(envelope(aid, attempt)), 201
+
+    def study_selection(lesson_id):
+        voice = request.args.get("voice", "edge-eka")
+        level = request.args.get("level", "easy")
+        quiz.validate_selection(level, lesson_id, voice, VOICES)
+        return study_words(LESSONS[lesson_id]), voice, LEVELS[level]["rate"]
+
+    @app.get("/api/lessons/<lesson_id>/study")
+    def study(lesson_id):
+        words, voice, _ = study_selection(lesson_id)
+        public = []
+        for index, word in enumerate(words):
+            item = {k: word[k] for k in ("text", "translation", "level")}
+            item["audioUrl"] = url_for(
+                "study_audio",
+                lesson_id=lesson_id,
+                index=index,
+                voice=voice,
+                level=request.args.get("level", "easy"),
+            )
+            if "image" in word and (
+                Path(app.static_folder) / "choices" / word["image"]
+            ).is_file():
+                item["image"] = "/static/choices/" + word["image"]
+            public.append(item)
+        return jsonify(title=LESSONS[lesson_id]["title"], words=public)
+
+    @app.get("/api/lessons/<lesson_id>/study/<int:index>/audio")
+    def study_audio(lesson_id, index):
+        words, voice, rate = study_selection(lesson_id)
+        if index >= len(words):
+            abort(404)
+        q = {"speechText": words[index]["speechText"], "rate": rate}
+        key = cache_key(q["speechText"], rate, app.config["SYNTHESIS_VERSION"], voice)
+        data, mimetype = cached_audio(q, voice, key)
+        return Response(data, mimetype=mimetype)
 
     @app.get("/api/attempts/<aid>")
     def current(aid):

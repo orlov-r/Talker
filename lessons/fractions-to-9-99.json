@@ -11,6 +11,10 @@
     {
       "generator": "fraction-9-99",
       "level": 2
+    },
+    {
+      "question": [ 0.10, 1.15, 2.05, 3.14 ],
+      "studyOnly": true
     }
   ]
 }

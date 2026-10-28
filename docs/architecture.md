@@ -42,50 +42,58 @@ for HTTPS. See [web setup/configuration](../web/README.md).
 
 ## Lesson flow and content
 
-Three screens provide selection, listening questions with feedback, and final
-score. Easy uses 7 questions at rate 80, Medium 10 at 100, and Hard 15 at 120.
-The first screen also selects Eka (default), Giorgi, or Natia; the server validates
-and retains that selection for the whole attempt.
+Four screens provide selection, vocabulary study, listening questions with
+feedback, and final score. Study exposes only static vocabulary, including
+sources marked `studyOnly: true`, through `/api/lessons/{id}/study`. It shows
+Georgian text, translations, optional pictures, green level 1 rows, and
+individual playback with the selected voice/rate. Indexed study audio shares the
+bounded cache and fallback, needs no attempt, and cannot mark quiz audio as
+ready or affect scoring. Inline question objects and numeric arrays are resolved
+privately alongside file references. Easy uses 7 questions at rate 80, Medium 10
+at 100, and Hard 15 at 120. The first screen also selects Eka (default), Giorgi,
+or Natia; the server validates and retains that selection for the whole attempt.
 Private lesson definitions provide greetings (one pool of 11 expressions),
 number lessons (including integers through 1000 and fractions through 99.99),
-and six frequency topics (four pools of 10 per topic). The thematic pools preserve the order of the private
-[`dev/word-frequencies/`](../dev/word-frequencies/README.md) lists.
-Five additional static lessons cover everyday street/shop expressions, personal
+and six frequency topics (four pools of 10 per topic). The thematic pools
+preserve the order of the private
+[`dev/word-frequencies/`](../dev/word-frequencies/README.md) lists. Five
+additional static lessons cover everyday street/shop expressions, personal
 pronouns, possessive and dative forms, question words, and short words. Their
 unmarked sources make the complete vocabulary eligible at every difficulty.
-Possessive and dative forms use separate pools within one lesson.
-The browser selects a lesson ID; the server resolves that ID through its fixed
-catalog and randomly selects only that lesson’s sources. Correct Georgian answer
-texts are tracked across the entire attempt and
-not repeated until available answers are exhausted. Exhausted static sources
-are excluded for the current uniqueness cycle, then the set of used texts resets.
-Duplicate generator results are retried up to 100 times per question; after
-that, unused static vocabulary is preferred, or the uniqueness cycle resets and
-the last generated result is accepted. A rare early generator repeat is allowed.
-Greetings offer 11 distinct correct answers, so Hard starts a second cycle after
-11 answers. The original Numbers lesson offers 20 distinct answers on Medium and Hard; each frequency
-topic offers 40.
-Source references may set a positive integer `level`. Unmarked sources default
-to 1 if the lesson has no explicit level 1 source, otherwise to 2. Easy includes
-level 1 sources; Medium and Hard include all sources. The first pool of each
+Possessive and dative forms use separate pools within one lesson. The browser
+selects a lesson ID; the server resolves that ID through its fixed catalog and
+randomly selects only that lesson’s sources. Correct Georgian answer texts are
+tracked across the entire attempt and not repeated until available answers are
+exhausted. Exhausted static sources are excluded for the current uniqueness
+cycle, then the set of used texts resets. Duplicate generator results are
+retried up to 100 times per question; after that, unused static vocabulary is
+preferred, or the uniqueness cycle resets and the last generated result is
+accepted. A rare early generator repeat is allowed. Greetings offer 11 distinct
+correct answers, so Hard starts a second cycle after 11 answers. The original
+Numbers lesson offers 20 distinct answers on Medium and Hard; each frequency
+topic offers 40. Source references may set a positive integer `level`.
+`studyOnly: true` excludes a source from quiz selection and generator failure
+fallbacks; it defaults to false. Unmarked sources default to 1 if the lesson has
+no explicit level 1 source, otherwise to 2. Easy includes level 1 sources;
+Medium and Hard include all positive-level sources. The first pool of each
 frequency topic is explicitly marked level 1, giving Easy the first ten words.
 The original Numbers lesson marks its 1–10 generator level 1; greetings uses its
 unmarked pool. Each additional number/fraction lesson marks its semi-round
-generator level 1 and its all-number generator level 2.
-The UI shows every lesson listed in the private `lessons/catalog.json`. This
-ordered list contains lesson entries or groups of lessons. A group is an array
-of lesson entries or an object with `lessons` and optional `title` (empty by
-default), without other fields. The server resolves
-IDs independently of filenames, rejects unknown/duplicate references and nested
-groups, and loads only listed lessons into its selectable catalog. Display titles
-default to the lesson title; display explanations default to empty. The selection
-page and API's `lessonList` expose only resolved display metadata. The API keeps
-its flat `lessons` list for lesson IDs and available levels. Groups form vertical
-rows with horizontal lesson cards and no extra surrounding padding. Nonempty
-group titles appear first in their row. Q/A move between rows and Z/X within a group.
-Difficulty uses 1–3, voices use 4–6, and shortcuts scroll their controls into view.
-The start API rejects a difficulty with no eligible sources before replacing
-an existing attempt. The catalog reports each lesson's available levels.
+generator level 1 and its all-number generator level 2. The UI shows every
+lesson listed in the private `lessons/catalog.json`. This ordered list contains
+lesson entries or groups of lessons. A group is an array of lesson entries or an
+object with `lessons` and optional `title` (empty by default), without other
+fields. The server resolves IDs independently of filenames, rejects
+unknown/duplicate references and nested groups, and loads only listed lessons
+into its selectable catalog. Display titles default to the lesson title; display
+explanations default to empty. The selection page and API's `lessonList` expose
+only resolved display metadata. The API keeps its flat `lessons` list for lesson
+IDs and available levels. Groups form vertical rows with horizontal lesson cards
+and no extra surrounding padding. Nonempty group titles appear first in their
+row. Q/A move between rows and Z/X within a group. Difficulty uses 1–3, voices
+use 4–6, and shortcuts scroll their controls into view. The start API rejects a
+difficulty with no eligible sources before replacing an existing attempt. The
+catalog reports each lesson's available levels.
 
 Each occurrence is resolved once into an attempt snapshot. Playback tries
 autoplay with manual fallback and unlimited replay. Four choices lock on
@@ -95,39 +103,39 @@ leaves the current question open and blocks answers until audio retrieval succee
 
 Private choices contain Georgian `text`, optional `speechText` (defaults to
 `text`), Russian `translation`, and an optional local image filename. Static
-sources choose the correct option at random; generated questions mark the correct
-Georgian text with `isCorrect: true`. Multiple markers must agree on that text.
-Static sources supply at least four choices; three other choices are sampled and shuffled with the correct answer once per snapshot.
-The correct choice supplies speech and feedback (`text (translation)`). The original number
+sources choose the correct option at random; generated questions mark the
+correct Georgian text with `isCorrect: true`. Multiple markers must agree on
+that text. Static sources supply at least four choices; three other choices are
+sampled and shuffled with the correct answer once per snapshot. The correct
+choice supplies speech and feedback (`text (translation)`). The original number
 choices are four consecutive integers within the selected 1–10 or 1–20 range.
 Additional generators offer bounded mutation pools; fractional choices combine
-whole-part and hundredths mutations. The app samples three distractors.
-Number choices use Georgian names and digit translations; fraction speech joins
-the names of the two parts without a decimal separator. See the
-[generator rules](../lessons/README.md#extended-number-and-fraction-generators). Choices have no authored IDs;
-snapshots assign temporary button IDs and retain
-the correct Georgian text, question ID and rate. Scoring compares trimmed Georgian
-texts so duplicate correct choices are all accepted.
-Buttons show images or translations; absent or failed images fall back to Russian
-translations. Before replacing an attempt, the server validates static content
-and eligible sources and prepares every question snapshot. Generator exceptions
-and invalid values are retried once, then a random static pool from the same
-lesson is used, ignoring difficulty and repeat avoidance. Without static content,
-start returns HTTP 400 and preserves the active attempt. Valid nonempty generated
-questions with fewer than four choices are padded with duplicate choices.
-Picture choices show Russian hints on hover
-or keyboard focus before answering. Feedback reveals the four Georgian texts
-for inspection between Back and Next by hover, keyboard focus or tap; picture
-choice hints then include the Russian translation in parentheses. This area is
-present before answering to keep controls in place. Option keyboard shortcuts
-follow the visual layout (Z/X/C/V or A/S/Z/X); R replays, Space replays before
-answering, and Space/Enter advances
-after answering. Animal images use the style of Niko Pirosmani, saved as
-512×512 JPGs at quality 75 and named after the English word. Private generation
-prompts live in `dev/image-prompts.json`. Feedback also
+whole-part and hundredths mutations. The app samples three distractors. Number
+choices use Georgian names and digit translations; fraction speech joins the
+names of the two parts without a decimal separator. See the [generator
+rules](../lessons/README.md#extended-number-and-fraction-generators). Choices
+have no authored IDs; snapshots assign temporary button IDs and retain the
+correct Georgian text, question ID and rate. Scoring compares trimmed Georgian
+texts so duplicate correct choices are all accepted. Buttons show images or
+translations; absent or failed images fall back to Russian translations. Before
+replacing an attempt, the server validates static content and eligible sources
+and prepares every question snapshot. Generator exceptions and invalid values
+are retried once, then a random static pool from the same lesson is used,
+ignoring difficulty and repeat avoidance but excluding study-only sources.
+Without static content, start returns HTTP 400 and preserves the active attempt.
+Valid nonempty generated questions with fewer than four choices are padded with
+duplicate choices. Picture choices show Russian hints on hover or keyboard focus
+before answering. Feedback reveals the four Georgian texts for inspection
+between Back and Next by hover, keyboard focus or tap; picture choice hints then
+include the Russian translation in parentheses. This area is present before
+answering to keep controls in place. Option keyboard shortcuts follow the visual
+layout (Z/X/C/V or A/S/Z/X); R replays, Space replays before answering, and
+Space/Enter advances after answering. Animal images use the style of Niko
+Pirosmani, saved as 512×512 JPGs at quality 75 and named after the English word.
+Private generation prompts live in `dev/image-prompts.json`. Feedback also
 includes the submitted choice ID so its green tick or red cross survives state
-recovery. Source rates remain future work. See
-[lesson authoring](../lessons/README.md).
+recovery. Source rates remain future work. See [lesson
+authoring](../lessons/README.md).
 
 ## Implemented web API and security
 
@@ -136,10 +144,13 @@ Endpoints provide lesson listing, attempt creation/current state, answers,
 explicit progression, final results, and authorized current-question audio.
 
 Before answering, the browser gets only the current question ID, choices, and
-audio URL. Speech text, answer keys, and scores remain in memory. Feedback
-reveals the submitted question's correct answer and displayed choice texts. Signed session cookies
-hold only opaque owner and CSRF IDs. Every POST checks `X-CSRF-Token`; requests
-have a 4096-byte bound. Cookies are HttpOnly, SameSite=Lax, and optionally Secure.
+audio URL. Quiz speech text, answer keys, and scores remain in memory. The
+separate study API intentionally exposes static vocabulary, without answer
+markers or author notes, and resolves speech overrides only on the server.
+Feedback reveals the submitted question's correct answer and displayed choice
+texts. Signed session cookies hold only opaque owner and CSRF IDs. Every POST
+checks `X-CSRF-Token`; requests have a 4096-byte bound. Cookies are HttpOnly,
+SameSite=Lax, and optionally Secure.
 
 Every attempt operation checks ownership and expiry. A lock synchronizes
 answer/progression mutations. The first valid answer is final; repeats return

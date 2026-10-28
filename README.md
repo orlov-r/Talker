@@ -8,35 +8,40 @@ multiple-choice questions, and see a final score.
 
 The speech service and minimal lesson app are implemented, with Docker Compose
 configuration. Example lessons include greetings, numbers, illustrated animals,
-and city vocabulary. Five additional lessons cover everyday street/shop expressions,
-personal pronouns, possessive and dative forms, question words, and short words.
-Their full vocabulary is available at every difficulty.
-Additional number lessons cover integers to 100 and 1000
-and fractions to 9.99 and 99.99, with semi-round and all-number sources. Six thematic lessons each provide 40 words in four pools
-ordered by the private [word-frequency lists](dev/word-frequencies/README.md);
-Easy uses their first ten words.
-The selected lesson randomly draws from its own pools, avoiding repeated correct
+and city vocabulary. Five additional lessons cover everyday street/shop
+expressions, personal pronouns, possessive and dative forms, question words, and
+short words. Their full vocabulary is available at every difficulty. Additional
+number lessons cover integers to 100 and 1000 and fractions to 9.99 and 99.99,
+with semi-round and all-number sources. Six thematic lessons each provide 40
+words in four pools ordered by the private [word-frequency
+lists](dev/word-frequencies/README.md); Easy uses their first ten words. The
+selected lesson randomly draws from its own pools, avoiding repeated correct
 answer texts until the available answers are exhausted. Easy gives 7 questions
-at speech rate 80, Medium gives 10 at 100, and Hard gives 15 at 120. The app checks answers and
-calculates scores on the server by Georgian text, accepting duplicate correct
-choices. Lesson start validates questions; broken generators retry once and fall
-back to static content when available. Missing pictures show Russian text.
-Easy includes level 1 sources; Medium and Hard include all sources. Unmarked
-sources default to level 1 if the lesson has no explicit `level: 1` source,
-otherwise to level 2. All lessons remain visible at every difficulty.
+at speech rate 80, Medium gives 10 at 100, and Hard gives 15 at 120. The app
+checks answers and calculates scores on the server by Georgian text, accepting
+duplicate correct choices. Lesson start validates questions; broken generators
+retry once and fall back to static content when available. Missing pictures show
+Russian text. Easy includes level 1 sources; Medium and Hard include all
+positive-level sources. Unmarked sources default to level 1 if the lesson has no
+explicit `level: 1` quiz source, otherwise to level 2. All lessons remain visible at
+every difficulty.
 
-The basic app has three screens: skill level and lesson selection, a listening
-question with four answer choices and feedback, and a final score. Accounts,
-statistics, and persistent attempts/results are outside the basic scope.
-The lesson interface is in Russian; learning content and speech are in Georgian.
-The first page offers Eka (the default), Giorgi, and Natia.
-The ordered selection list is configured in [lessons/catalog.json](lessons/catalog.json),
-with individual lessons and horizontal lesson groups. Selection shortcuts include
-1–3 for difficulty, 4–6 for voice, Q/A for rows, and Z/X within a group.
-Edge TTS requires
-internet and sends speech text to Microsoft; errors automatically fall back to
-RHVoice/Natia. The chosen voice stays fixed for the lesson. While each question
-is presented, the app warms the next question’s audio in the server cache.
+The app provides lesson selection, a vocabulary study page, listening questions
+with four answer choices and feedback, and a final score. The «Обучение» button
+opens all static words for the selected topic with pictures, Georgian text,
+translations, and individual playback. Level 1 words are green when study words
+have different levels; sources marked `studyOnly: true` appear only in study,
+including static vocabulary added to integer number lessons. Accounts,
+statistics, and persistent attempts/results are outside the basic scope. The
+lesson interface is in Russian; learning content and speech are in Georgian. The
+first page offers Eka (the default), Giorgi, and Natia. The ordered selection
+list is configured in [lessons/catalog.json](lessons/catalog.json), with
+individual lessons and horizontal lesson groups. Selection shortcuts include 1–3
+for difficulty, 4–6 for voice, Q/A for rows, and Z/X within a group. Edge TTS
+requires internet and sends speech text to Microsoft; errors automatically fall
+back to RHVoice/Natia. The chosen voice stays fixed for the lesson. While each
+question is presented, the app warms the next question’s audio in the server
+cache.
 
 ## Repository layout
 

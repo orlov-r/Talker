@@ -78,11 +78,15 @@ remain [future work](todo.md).
 `LESSON` aliases the basics lesson for the default `questions()` argument.
 `VOICES` maps supported voice IDs to display labels in `web/app.py`.
 
-Authored sources reference either a `question` basename or a `generator` name,
-with optional positive integer `level`. Loading replaces question references
-with validated question dictionaries; generator references remain dictionaries.
-The default level depends on the other sources in that lesson. See
-[lesson authoring](../lessons/README.md) for the content contract.
+Authored sources contain a `question` basename, inline question object, numeric
+array, or a `generator` name, with optional positive integer `level`.
+`studyOnly: true` excludes a source from quiz selection and fallback; it
+defaults to false. `study_words()` projects static vocabulary in source order
+with resolved levels and speech text; the HTTP projection excludes speech
+overrides and adds indexed audio URLs. Loading replaces question references with
+validated question dictionaries; generator references remain dictionaries. The
+default level depends on the other sources in that lesson. See [lesson
+authoring](../lessons/README.md) for the content contract.
 
 A question contains `choices` (a list of dictionaries) and `choiceLayout`
 (`"long"` or `"short"`, default `"long"`). Choice fields are:

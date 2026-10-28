@@ -26,7 +26,7 @@
             <span><small class="level-shortcut" aria-hidden="true">{{ loop.index + 3 }}</small><strong>{{ label }}</strong></span></label>
         {% endfor %}
         </div></fieldset>
-        <button type="submit" id="begin" aria-keyshortcuts="Space Enter">Начать урок <span aria-hidden="true">→</span></button>
+        <div class="study-actions"><button type="submit" id="begin" aria-keyshortcuts="Space Enter">Начать урок <span aria-hidden="true">→</span></button><button type="button" id="open-study" class="secondary">Обучение</button></div>
         <small class="begin-hint">Пробел/Enter — начать урок</small>
         {% macro lesson_card(lesson) %}
           <label class="lesson"><input type="radio" name="lessonId" value="{{ lesson.id }}" {% if lesson.id == selected_lesson_id %}checked{% endif %}>
@@ -48,6 +48,14 @@
         {% endfor %}
         </fieldset>
       </form>
+    </section>
+    <section id="study" hidden aria-labelledby="study-title">
+      <div class="study-actions"><button type="button" id="study-back" class="secondary">Назад</button><button type="button" id="study-begin">Начать урок →</button></div>
+      <h1 id="study-title">Обучение</h1>
+      <p id="study-level-hint" hidden>Слова базового уровня отмечены зелёным.</p>
+      <p id="study-empty" hidden>В этой теме пока нет обучения.</p>
+      <div class="study-table-wrap"><table id="study-table"><thead><tr><th id="study-image-heading" scope="col" hidden></th><th scope="col">Грузинское слово</th><th scope="col">Перевод</th><th scope="col">Озвучка</th></tr></thead><tbody id="study-words"></tbody></table></div>
+      <audio id="study-audio" aria-label="Произношение слова"></audio>
     </section>
     <section id="quiz" hidden>
       <div class="quiz-progress"><progress id="meter" aria-label="Прогресс урока"></progress><span id="progress"></span></div>

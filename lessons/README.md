@@ -98,23 +98,48 @@ Run the [web tests](../web/README.md#validation) after editing.
 
 ## Implemented schema
 
-A lesson defines `id`, `title`, `description`, `revision`, and `sources`.
-A source is `{ "question": "animals1", "level": 1 }` or
-`{ "generator": "number" }`. Question references use a basename without `.json`,
-matching `[a-z][a-z0-9-]*`; paths and nested references are not supported.
-Question JSON contains the question object described below. Generators are
-trusted registry entries, never browser-provided code or arbitrary paths.
+A lesson defines `id`, `title`, `description`, `revision`, and `sources`. A
+source is `{ "question": "animals1", "level": 1 }` or `{ "generator": "number"
+}`. The `question` value can also be an inline question object (`{"question":
+{"choices": [...]}}`) or a numeric array, for example `{"question": [0, 1, 2,
+3.05], "studyOnly": true}`. These examples with `...` are schema illustrations;
+actual static pools need at least four choices. Numeric arrays produce
+short-layout choices with Georgian names and digit translations. Integers range
+from 0 to 1000; fractional literals range from 0.00 to 99.99 with at most two
+decimal places. Fractions use the same two-part speech as the generators and
+show two decimal places; `3` is an integer and `3.0` is spoken as a fraction.
+Strings and booleans are rejected. Question references use a basename without
+`.json`, matching `[a-z][a-z0-9-]*`; paths and nested references are not
+supported. Question JSON contains the question object described below.
+Generators are trusted registry entries, never browser-provided code or
+arbitrary paths.
 
-Each source reference may specify a positive integer `level`. Unmarked sources
-default to level 1 when the lesson has no explicit `level: 1` source; otherwise
-they default to level 2. The level belongs to the lesson reference, so different lessons may
-assign different levels to the same question. Easy selects only level 1;
-Medium and Hard include every level. This also applies to generator references.
-Each frequency lesson explicitly marks its first pool level 1. Numbers marks
-the 1–10 generator level 1; greetings includes its unmarked pool on Easy.
-Lessons remain visible at every
-difficulty. Explicit levels are preserved; if every source explicitly has a
-higher level, the start API rejects Easy with HTTP 400.
+Each source reference may specify a positive integer `level`. A separate boolean
+`studyOnly` defaults to false. Sources with `studyOnly: true` never enter
+quizzes or generator failure fallbacks, independently of their level. All static
+choices, including study-only sources, appear on the study page in authored
+order. Generators do not produce study rows. Level 1 rows are green, using the
+same implicit-level rules as quizzes. Study playback uses the selected voice and
+difficulty rate without creating or advancing an attempt. Unmarked sources
+default to level 1 when the lesson has no explicit `level: 1` quiz source; otherwise
+they default to level 2. The level belongs to the lesson reference, so different
+lessons may assign different levels to the same question. Easy selects only
+level 1; Medium and Hard include every positive level. This also applies to
+generator references. Each frequency lesson explicitly marks its first pool
+level 1. Numbers marks the 1–10 generator level 1; greetings includes its
+unmarked pool on Easy. Lessons remain visible at every difficulty. Explicit
+levels are preserved; if every source explicitly has a higher level, the start
+API rejects Easy with HTTP 400.
+
+The `studyOnly` attribute belongs to the source reference, just like `level`,
+and works with file references, inline objects, and numeric arrays. For example:
+
+```json
+{ "question": [1, 2, 3, 4], "studyOnly": true, "level": 1 }
+```
+
+Study-only sources do not affect implicit levels of quiz sources. Level 0 is
+invalid; all sources use positive levels, including study-only vocabulary.
 
 A question has `choiceLayout` (`"short"`: four squares in a row; `"long"`, the
 default: 2×2 grid) and at least four `choices` for static pools:
@@ -143,24 +168,25 @@ translation is shown instead, including if image loading fails in the browser.
 
 ## Selection and playback
 
-The app randomly selects an eligible source for each of the difficulty's 7, 10 or 15 questions.
-For static questions it randomly chooses a correct option whose Georgian text
-has not already been correct in this attempt. Generated questions supply their
-correct option; duplicate correct texts cause a retry. Exhausted static pools
-are excluded. After all static answers are exhausted, uniqueness resets and a
-new cycle begins. Generators get up to 100 proposals per question. If these
-cannot supply an unused correct answer, unused static vocabulary is preferred;
-if none remains, uniqueness resets and the last valid generated question is used.
-A generator that raises an exception or returns invalid data is called again
-once. After a second failure, a random static question from the same lesson is
-used, ignoring difficulty and previously used answers. Without a static fallback,
-lesson start returns an error and preserves the active attempt. Nonempty valid
-generated questions with fewer than four choices are padded with duplicates.
-Static content and eligible sources are validated before the attempt starts.
-The uniqueness retry limit bounds generator work and permits a very small chance
-of repeating a generated answer before its full output space is exhausted.
-For example, a lesson with fewer unique answers than the requested question
-count starts a new cycle after those answers are exhausted.
+The app randomly selects an eligible source for each of the difficulty's 7, 10
+or 15 questions. For static questions it randomly chooses a correct option whose
+Georgian text has not already been correct in this attempt. Generated questions
+supply their correct option; duplicate correct texts cause a retry. Exhausted
+static pools are excluded. After all static answers are exhausted, uniqueness
+resets and a new cycle begins. Generators get up to 100 proposals per question.
+If these cannot supply an unused correct answer, unused static vocabulary is
+preferred; if none remains, uniqueness resets and the last valid generated
+question is used. A generator that raises an exception or returns invalid data
+is called again once. After a second failure, a random static question from the
+same lesson is used, ignoring difficulty and previously used answers, but
+excluding study-only sources. Without a static fallback, lesson start returns an
+error and preserves the active attempt. Nonempty valid generated questions with
+fewer than four choices are padded with duplicates. Static content and eligible
+sources are validated before the attempt starts. The uniqueness retry limit
+bounds generator work and permits a very small chance of repeating a generated
+answer before its full output space is exhausted. For example, a lesson with
+fewer unique answers than the requested question count starts a new cycle after
+those answers are exhausted.
 
 The correct option plus three sampled other choices are shuffled once and saved
 in the attempt. Its `speechText` is spoken. After answering, feedback shows
@@ -178,10 +204,13 @@ same algorithm bounded to 1–10, including all distractors.
 ### Extended number and fraction generators
 
 The additional number lessons cover 0–100 and 0–1000. Each has two generator
-sources: semi-round numbers (multiples of five starting at 20) at level 1,
-and every integer including zero at level 2. For example,
-`number-20-100-semi-round` and `number-0-100` are the sources for Numbers to 100.
-The original 1–10/1–20 lesson remains available.
+sources: semi-round numbers (multiples of five starting at 20) at level 1, and
+every integer including zero at level 2. For example, `number-20-100-semi-round`
+and `number-0-100` are the sources for Numbers to 100. The 1–10 and 1–20 lessons
+remain available. Their study-only numeric arrays contain every integer from 1
+through the limit. The to-100 lesson adds multiples of ten from 0 through 100
+and 99; the to-1000 lesson adds multiples of 100 from 0 through 1000 and 999.
+These study-only pools leave generator selection unchanged.
 
 Fraction lessons cover 0.00–9.99 and 0.00–99.99. Semi-round sources at level 1
 allow every whole part and hundredths ending in 0 or 5; level 2 allows every

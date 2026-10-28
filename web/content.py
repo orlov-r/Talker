@@ -4,9 +4,10 @@ import copy
 import json
 import random
 import re
+from decimal import Decimal
 from pathlib import Path
 
-from lessons.generators import GENERATORS
+from lessons.generators import GENERATORS, fractional_number_to_text, number_to_text
 
 LEVELS = {
     "easy": {"label": "Лёгкий", "rate": 80, "questionCount": 7},
@@ -26,6 +27,7 @@ def load_lesson(path):
             "question",
             "generator",
             "level",
+            "studyOnly",
         }:
             raise ValueError(f"{path}: invalid source reference")
         if ("question" in source) == ("generator" in source):
@@ -33,16 +35,26 @@ def load_lesson(path):
         source_level(source)
         if "question" in source:
             name = source["question"]
-            if not isinstance(name, str) or not re.fullmatch(r"[a-z][a-z0-9-]*", name):
+            if isinstance(name, dict):
+                question = validate(name)
+            elif isinstance(name, list):
+                question = validate(number_pool(name))
+            elif isinstance(name, str) and re.fullmatch(r"[a-z][a-z0-9-]*", name):
+                question_path = (question_dir / f"{name}.json").resolve()
+                if question_path.parent != question_dir:
+                    raise ValueError(f"{path}: question must stay in questions directory")
+                question = validate(
+                    json.loads(question_path.read_text(encoding="utf-8"))
+                )
+            else:
                 raise ValueError(f"{path}: invalid question reference")
-            question_path = (question_dir / f"{name}.json").resolve()
-            if question_path.parent != question_dir:
-                raise ValueError(f"{path}: question must stay in questions directory")
-            question = validate(json.loads(question_path.read_text(encoding="utf-8")))
             # Keep an omitted level implicit so its default is lesson-specific.
             question.pop("level", None)
+            question.pop("studyOnly", None)
             if "level" in source:
                 question["level"] = source_level(source)
+            if "studyOnly" in source:
+                question["studyOnly"] = study_only(source)
             resolved.append(question)
         else:
             if (
@@ -62,6 +74,18 @@ def source_level(source, default=2):
     return value
 
 
+def study_only(source):
+    value = source.get("studyOnly", False)
+    if type(value) is not bool:
+        raise ValueError("Source studyOnly must be a boolean")
+    return value
+
+
+def default_source_level(sources):
+    has_level_one = any(s.get("level") == 1 and not study_only(s) for s in sources)
+    return 2 if has_level_one else 1
+
+
 def eligible_sources(level, lesson):
     if not isinstance(lesson, dict):
         raise ValueError("Lesson must be an object")
@@ -70,8 +94,61 @@ def eligible_sources(level, lesson):
         isinstance(s, dict) for s in sources
     ):
         raise ValueError("Lesson requires sources")
-    default = 2 if any(s.get("level") == 1 for s in sources) else 1
-    return [s for s in sources if source_level(s, default) == 1 or level != "easy"]
+    for source in sources:
+        source_level(source)
+        study_only(source)
+    default = default_source_level(sources)
+    return [
+        s for s in sources
+        if not study_only(s)
+        and (source_level(s, default) == 1 or level != "easy")
+    ]
+
+
+def number_pool(values):
+    """Convert authored numeric literals to a static vocabulary pool."""
+    choices = []
+    for value in values:
+        if type(value) not in (int, float):
+            raise ValueError("Numeric questions require numbers")
+        if type(value) is int:
+            text, label = number_to_text(value), str(value)
+        else:
+            decimal = Decimal(str(value))
+            if (
+                not decimal.is_finite()
+                or not 0 <= decimal < 100
+                or decimal * 100 != (decimal * 100).to_integral_value()
+            ):
+                raise ValueError(
+                    "Fractions require 0.00–99.99 with at most two decimals"
+                )
+            whole, hundredths = divmod(int(decimal * 100), 100)
+            text = fractional_number_to_text(whole, hundredths)
+            label = f"{whole}.{hundredths:02d}"
+        choices.append({"text": text, "translation": label})
+    return {"choiceLayout": "short", "choices": choices}
+
+
+def study_words(lesson):
+    """Project static vocabulary in source order, without quiz answer markers."""
+    default = default_source_level(lesson["sources"])
+    words = []
+    for source in lesson["sources"]:
+        if "generator" in source:
+            continue
+        level = source_level(source, default)
+        for choice in source["choices"]:
+            word = {
+                "text": choice["text"],
+                "translation": choice["translation"],
+                "speechText": choice.get("speechText", choice["text"]),
+                "level": level,
+            }
+            if "image" in choice:
+                word["image"] = choice["image"]
+            words.append(word)
+    return words
 
 
 def available_levels(lesson):
@@ -150,7 +227,9 @@ def questions(level, lesson=None):
     static = [validate(s) for s in sources if "generator" not in s]
     generators = [s for s in sources if "generator" in s]
     # Fallback may ignore difficulty and previously used answers.
-    fallback = [validate(s) for s in lesson["sources"] if "generator" not in s]
+    fallback = [
+        validate(s) for s in eligible_sources("medium", lesson) if "generator" not in s
+    ]
     if not static and not generators:
         raise ValueError("Lesson requires at least one source")
     for i in range(settings["questionCount"]):

@@ -370,6 +370,54 @@ label.lesson > span:last-child > span {
   color: var(--muted);
   font-size: 14px;
 }
+.study-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.study-actions .secondary {
+  margin: 0;
+}
+.study-table-wrap {
+  overflow-x: auto;
+}
+#study-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: white;
+}
+#study-table th,
+#study-table td {
+  padding: 12px;
+  text-align: left;
+  border-bottom: 1px solid #d9dfd7;
+}
+#study-table td[lang='ka'] {
+  font-size: 20px;
+}
+#study-table .study-basic {
+  background: #e1f3e7;
+  color: #175c34;
+}
+#study-table .study-picture {
+  width: 100px;
+  padding: 6px;
+  background: white;
+  border: 1px solid #d9dfd7;
+  opacity: 1;
+  color: var(--ink);
+}
+#study-table .study-picture img {
+  display: block;
+  width: 100%;
+  aspect-ratio: 1;
+  object-fit: contain;
+  border-radius: 6px;
+}
+#study-table .study-picture:hover {
+  filter: none;
+}
 @media (max-width: 600px) {
   header > span,
   footer > span {
@@ -409,5 +457,15 @@ label.lesson > span:last-child > span {
   }
   .quiz-toolbar {
     min-height: 80px;
+  }
+  #study-table th,
+  #study-table td {
+    padding: 8px;
+  }
+  #study-table .study-picture {
+    width: 64px;
+  }
+  #study-table td[lang='ka'] {
+    font-size: 17px;
   }
 }

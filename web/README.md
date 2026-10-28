@@ -17,42 +17,42 @@ record fields, locking requirements, and the content/audio modules.
 | Medium | 100 | 10 |
 | Hard | 120 | 15 |
 
-Example lessons include «Приветствие», «Числа», and «Животные». Each attempt randomly
-selects sources only from the chosen lesson; the level still sets 7/10/15 answers.
-Easy selects level 1 sources. Unmarked sources default to level 1 when the
-lesson has no explicit `level: 1` source, otherwise to level 2. Medium and Hard
-include all sources. All lessons stay visible; Easy uses the first ten words
-of each frequency lesson, numbers 1–10, and the greetings pool. Explicit higher levels
-remain excluded on Easy. The additional everyday and grammar lessons use their
-full static pools at every difficulty. The start API returns HTTP 400 if no
-source is eligible.
-Question JSON is resolved from
-private references in `lessons/questions/`; generators remain unchanged.
-Six thematic lessons each use four ten-word pools from the private
-[word-frequency lists](../dev/word-frequencies/README.md), preserving their order.
-They are curated selections sorted by recorded word-form frequency.
-Animal illustrations use the style of Niko Pirosmani.
-Correct answer texts do not repeat until the available answers are exhausted,
-then a new uniqueness cycle begins. Generators use bounded retries, so an early
-repeat has a small probability. Static vocabulary chooses
-an unused correct choice at random; a generator marks its own correct choice.
-Each question displays that choice and three sampled other choices, shuffled
-once per occurrence. The original number lesson uses consecutive four-number intervals within 1–10
-or 1–20. Additional lessons cover integers to 100/1000 and fractions to 9.99/99.99,
-with semi-round sources at level 1 and all-number sources at level 2. Their
-mutation pools stay within range; fractions combine mutations of both parts.
-See [generator rules](../lessons/README.md#extended-number-and-fraction-generators).
-Levels override source rates.
-Failed or invalid generator output is retried once;
-a second failure uses a random static pool from the lesson, ignoring difficulty
+Example lessons include «Приветствие», «Числа», and «Животные». Each attempt
+randomly selects sources only from the chosen lesson; the level still sets
+7/10/15 answers. Easy selects level 1 sources. Unmarked sources default to level
+1 when the lesson has no explicit `level: 1` quiz source, otherwise to level 2.
+Medium and Hard include all positive-level sources; `studyOnly: true` marks
+sources used only for study. All lessons stay visible; Easy uses the first ten
+words of each frequency lesson, numbers 1–10, and the greetings pool. Explicit
+higher levels remain excluded on Easy. The additional everyday and grammar
+lessons use their full static pools at every difficulty. The start API returns
+HTTP 400 if no source is eligible. Question JSON is resolved from private
+references in `lessons/questions/`, inline objects, or numeric arrays; see the
+[authoring rules](../lessons/README.md#implemented-schema). Six thematic lessons
+each use four ten-word pools from the private [word-frequency
+lists](../dev/word-frequencies/README.md), preserving their order. They are
+curated selections sorted by recorded word-form frequency. Animal illustrations
+use the style of Niko Pirosmani. Correct answer texts do not repeat until the
+available answers are exhausted, then a new uniqueness cycle begins. Generators
+use bounded retries, so an early repeat has a small probability. Static
+vocabulary chooses an unused correct choice at random; a generator marks its own
+correct choice. Each question displays that choice and three sampled other
+choices, shuffled once per occurrence. The original number lesson uses
+consecutive four-number intervals within 1–10 or 1–20. Additional lessons cover
+integers to 100/1000 and fractions to 9.99/99.99, with semi-round sources at
+level 1 and all-number sources at level 2. Their mutation pools stay within
+range; fractions combine mutations of both parts. See [generator
+rules](../lessons/README.md#extended-number-and-fraction-generators). Levels
+override source rates. Failed or invalid generator output is retried once; a
+second failure uses a random static pool from the lesson, ignoring difficulty
 and repeated answers. Valid generated questions with one to three choices are
 padded to four with duplicates. If no fallback exists, start returns HTTP 400
 and keeps the active attempt. Static content and eligible sources are checked
-before replacing an attempt.
-`choiceLayout: "short"` uses four square buttons in a row; `"long"` (default)
-uses a 2×2 grid. Buttons show a local image when supplied, otherwise the Russian
-translation; translations also provide accessible image labels. Missing images
-fall back to the Russian translation, including browser image-loading failures.
+before replacing an attempt. `choiceLayout: "short"` uses four square buttons in
+a row; `"long"` (default) uses a 2×2 grid. Buttons show a local image when
+supplied, otherwise the Russian translation; translations also provide
+accessible image labels. Missing images fall back to the Russian translation,
+including browser image-loading failures.
 
 Three screens provide selection, listening/feedback, and final score.
 Selection includes Eka (default) and Giorgi via Edge TTS and Natia via RHVoice.
@@ -202,6 +202,20 @@ checks headers and a nonzero declared frame count; rejecting truncated frame
 data is a [future enhancement](../docs/todo.md). No runtime files or database
 are created. A future persistent cache or SQLite database must use a volume.
 
+## Vocabulary study
+
+«Обучение», next to «Начать урок», opens the selected topic’s static vocabulary.
+The table shows a disabled picture button when an image exists, Georgian text,
+translation, and a speaker button. The untitled picture column appears only when
+at least one study word has an image. Green level 1 highlighting and its
+explanation appear only when the study words have different levels. Rows from
+sources marked `studyOnly: true` appear only here and are excluded from quizzes
+and generator fallbacks. All static sources are shown regardless of selected
+difficulty; generator-only topics show an empty-state message. «Назад» retains
+the selection, and «Начать урок» starts the selected quiz. Playback uses the
+selected voice and difficulty rate through the existing bounded cache and
+Edge/RHVoice fallback, without creating attempts.
+
 ## API
 
 `GET /` sets a signed anonymous session cookie and renders a CSRF meta token.
@@ -212,6 +226,8 @@ The cookie contains only opaque owner and CSRF IDs, never answers or scores.
 |---|---|
 | `GET /health` | Web HTTP health only |
 | `GET /api/lessons` | `levels` settings, available flat `lessons`, grouped `lessonList` display metadata, and `voices` labels |
+| `GET /api/lessons/{id}/study?voice=edge-eka&level=easy` | `{title, words: [{text, translation, level, image?, audioUrl}]}`; static vocabulary only |
+| `GET /api/lessons/{id}/study/{index}/audio?voice=edge-eka&level=easy` | MP3 or fallback WAV for the indexed static word; invalid selection 400, unknown index 404, synthesis failure 502 |
 | `POST /api/attempts` | `{level, lessonId, voice?}` to question envelope, HTTP 201; voice is `edge-eka` (default), `edge-giorgi`, or `rhvoice` |
 | `GET /api/attempts/{id}` | Current question/feedback or completion envelope |
 | `POST /api/attempts/{id}/answers` | `{questionId, choiceId}` to `{isCorrect, correctAnswerText, selectedChoiceId, choiceTexts}` |
@@ -221,16 +237,18 @@ The cookie contains only opaque owner and CSRF IDs, never answers or scores.
 | `GET /audio/{key}?attempt={id}` | Current question MP3 or fallback WAV with ownership check; RHVoice URLs retain `.wav` |
 
 Question envelopes contain `attemptId`, `complete: false`, `position`, `total`,
-`question: {id, audioUrl, choiceLayout, choices: [{id, label, image?}]}`, and `feedback` (initially
-null). Completion envelopes contain `attemptId`, `complete: true`, `score`,
-and `total`. Choice `label` is the Russian translation. IDs are temporary button
-identifiers,
-assigned by the server; private choices need no IDs. Scoring compares trimmed
-Georgian text, accepting every displayed choice with the correct text. Feedback
-includes
-`choiceTexts`, a map from the four displayed IDs to Georgian texts, only after
-answering; current-state recovery includes the same map. Future questions,
-speech overrides, and answer keys are not returned.
+`question: {id, audioUrl, choiceLayout, choices: [{id, label, image?}]}`, and
+`feedback` (initially null). Completion envelopes contain `attemptId`,
+`complete: true`, `score`, and `total`. Choice `label` is the Russian
+translation. IDs are temporary button identifiers, assigned by the server;
+private choices need no IDs. Scoring compares trimmed Georgian text, accepting
+every displayed choice with the correct text. Feedback includes `choiceTexts`, a
+map from the four displayed IDs to Georgian texts, only after answering;
+current-state recovery includes the same map. Future quiz questions, speech
+overrides, and answer keys are not returned. Study endpoints intentionally
+expose static vocabulary without quiz markers, generator output, or author
+notes; audio accepts only server-resolved word indices, never arbitrary browser
+text.
 
 The first valid answer is final; retries return the original feedback without
 rescoring. Next requires its answered current ID; duplicate next returns 409.

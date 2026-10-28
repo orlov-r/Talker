@@ -26,7 +26,8 @@ async function api(path, data) {
 
 function screen(name) {
   $('audio').pause();
-  ['start', 'quiz', 'result'].forEach((id) => ($(id).hidden = id !== name));
+  $('study-audio').pause();
+  ['start', 'study', 'quiz', 'result'].forEach((id) => ($(id).hidden = id !== name));
   $('error').textContent = '';
 }
 
@@ -247,6 +248,78 @@ $('start-form').onsubmit = (event) => {
     }
   });
 };
+$('study-begin').onclick = () => $('start-form').requestSubmit();
+$('study-back').onclick = () => {
+  if (!busy) screen('start');
+};
+$('open-study').onclick = () => run(async () => {
+  const selection = new FormData($('start-form'));
+  const query = new URLSearchParams({
+    level: selection.get('level'),
+    voice: selection.get('voice'),
+  });
+  const lesson = await api(
+    `/api/lessons/${encodeURIComponent(selection.get('lessonId'))}/study?${query}`,
+  );
+  $('study-title').textContent = lesson.title;
+  $('study-words').replaceChildren();
+  $('study-empty').hidden = lesson.words.length > 0;
+  $('study-table').hidden = lesson.words.length === 0;
+  const hasImages = lesson.words.some((word) => word.image);
+  const mixedLevels = new Set(lesson.words.map((word) => word.level)).size > 1;
+  $('study-image-heading').hidden = !hasImages;
+  $('study-level-hint').hidden = !mixedLevels;
+  for (const word of lesson.words) {
+    const row = document.createElement('tr');
+    row.classList.toggle('study-basic', mixedLevels && word.level === 1);
+    const picture = document.createElement('td');
+    if (word.image) {
+      const button = document.createElement('button');
+      button.type = 'button';
+      button.disabled = true;
+      button.className = 'study-picture';
+      const img = document.createElement('img');
+      img.src = word.image;
+      img.alt = word.translation;
+      img.onerror = () => {
+        img.replaceWith(document.createTextNode(word.translation));
+      };
+      button.append(img);
+      picture.append(button);
+    }
+    if (hasImages) row.append(picture);
+    for (const field of ['text', 'translation']) {
+      const cell = document.createElement('td');
+      cell.textContent = word[field];
+      if (field === 'text') cell.lang = 'ka';
+      row.append(cell);
+    }
+    const playback = document.createElement('td');
+    const speaker = document.createElement('button');
+    speaker.type = 'button';
+    speaker.textContent = '🔊';
+    speaker.setAttribute('aria-label', `Произнести: ${word.text}`);
+    speaker.onclick = () => run(async () => {
+      const audio = $('study-audio');
+      audio.pause();
+      const response = await fetch(word.audioUrl);
+      if (!response.ok)
+        throw new Error('Не удалось подготовить аудио. Попробуйте ещё раз.');
+      if (audioUrl) URL.revokeObjectURL(audioUrl);
+      audioUrl = URL.createObjectURL(await response.blob());
+      audio.src = audioUrl;
+      try {
+        await audio.play();
+      } catch {
+        throw new Error('Не удалось воспроизвести аудио. Попробуйте ещё раз.');
+      }
+    });
+    playback.append(speaker);
+    row.append(playback);
+    $('study-words').append(row);
+  }
+  screen('study');
+});
 $('replay').onclick = () =>
   run(async () => {
     if (!audioReady) await loadAudio();

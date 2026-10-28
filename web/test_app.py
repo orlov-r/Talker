@@ -25,6 +25,7 @@ from web.content import (
     load_catalog,
     questions,
     validate,
+    study_words,
 )
 
 
@@ -79,6 +80,49 @@ def wav_bytes(*args):
 
 
 class QuizTests(unittest.TestCase):
+    def test_study_projection_and_audio(self):
+        source = {"level": 2, "studyOnly": True, "description": "private note", "choices": [
+            {"text": f"word{i}", "translation": str(i), "speechText": f"spoken{i}"}
+            for i in range(4)
+        ]}
+        source["choices"][0]["image"] = "dog.jpg"
+        lesson = LESSONS["basics"]
+        lesson["sources"].append(source)
+        response = self.client.get("/api/lessons/basics/study?voice=rhvoice&level=hard")
+        self.assertEqual(response.status_code, 200)
+        words = response.json["words"]
+        self.assertEqual([w["level"] for w in words], [1] * 10 + [2] * 4)
+        self.assertEqual(words[-4]["image"], "/static/choices/dog.jpg")
+        self.assertNotIn("speechText", response.get_data(as_text=True))
+        self.assertNotIn("description", response.get_data(as_text=True))
+        audio = self.client.get(words[-4]["audioUrl"])
+        self.assertEqual(audio.status_code, 200)
+        self.assertEqual(audio.mimetype, "audio/wav")
+        self.assertEqual(self.calls[-1], ("spoken0", 120))
+        count = len(self.calls)
+        self.client.get(words[-4]["audioUrl"])
+        self.assertEqual(len(self.calls), count)
+        self.client.get(words[-4]["audioUrl"].replace("level=hard", "level=easy"))
+        self.assertEqual(self.calls[-1], ("spoken0", 80))
+        self.assertEqual(len(self.calls), count + 1)
+        self.assertEqual(self.client.get("/api/lessons/basics/study/999/audio").status_code, 404)
+        self.assertEqual(self.client.get("/api/lessons/basics/study?voice=bad").status_code, 400)
+        self.assertEqual(self.client.get("/api/lessons/unknown/study").status_code, 400)
+        self.assertEqual(self.client.get("/api/lessons/numbers/study").json["words"], [])
+
+    def test_study_audio_does_not_authorize_quiz_answer(self):
+        state = self.start(lesson="basics")
+        aid = state["attemptId"]
+        question = state["question"]
+        words = self.client.get("/api/lessons/basics/study?voice=rhvoice").json["words"]
+        for word in words:
+            self.assertEqual(self.client.get(word["audioUrl"]).status_code, 200)
+        answer = self.post(f"/api/attempts/{aid}/answers", {
+            "questionId": question["id"], "choiceId": question["choices"][0]["id"],
+        })
+        self.assertEqual(answer.status_code, 409)
+        self.assertEqual(self.app.extensions["attempts"][aid]["score"], 0)
+
     def test_quiz_shortcut_hints(self):
         html = self.client.get("/").get_data(as_text=True)
         self.assertRegex(
@@ -854,6 +898,9 @@ class ContentAndCacheTests(unittest.TestCase):
             mixed = load([{"question": "shared", "level": 1}, {"question": "shared"}])
             self.assertEqual(len(eligible_sources("easy", mixed)), 1)
             self.assertNotIn("level", second["sources"][0])
+            study = load([{"question": "shared", "studyOnly": True, "level": 1}])
+            self.assertEqual(available_levels(study), [])
+            self.assertEqual(len(study_words(study)), 4)
             self.assertEqual(
                 json.loads(question_path.read_text(encoding="utf-8")), source
             )
@@ -873,6 +920,44 @@ class ContentAndCacheTests(unittest.TestCase):
             for level in [0, -1, True, "1", 1.5, None]:
                 with self.subTest(level=level), self.assertRaises(ValueError):
                     load([{"question": "shared", "level": level}])
+
+    def test_inline_and_numeric_questions_and_study_only_sources(self):
+        with TemporaryDirectory() as folder:
+            path = Path(folder) / "lesson.json"
+            inline = {"choices": [{"text": str(i), "translation": str(i)} for i in range(4)]}
+
+            def load(sources):
+                path.write_text(json.dumps({"sources": sources}), encoding="utf-8")
+                return load_lesson(path)
+
+            lesson = load([{"question": inline, "level": 1},
+                           {"question": [0, 1, 1000, 3.05], "studyOnly": True, "level": 2}])
+            words = study_words(lesson)
+            self.assertEqual([w["translation"] for w in words[-4:]], ["0", "1", "1000", "3.05"])
+            self.assertEqual(words[-1]["text"], fractional_number_to_text(3, 5))
+            self.assertEqual(len(eligible_sources("hard", lesson)), 1)
+            for level in ("easy", "medium", "hard"):
+                self.assertTrue(all(q["correctText"] in {"0", "1", "2", "3"}
+                                    for q in questions(level, lesson)))
+            only_study = load([{"question": [1, 2, 3, 4], "studyOnly": True}])
+            self.assertEqual(available_levels(only_study), [])
+            mixed = load([
+                {"question": [1, 2, 3, 4], "studyOnly": True, "level": 1},
+                {"generator": "number"},
+            ])
+            self.assertEqual(eligible_sources("easy", mixed), [{"generator": "number"}])
+            for flag in (None, 0, 1, "true", [], {}):
+                with self.subTest(studyOnly=flag), self.assertRaises(ValueError):
+                    load([{"question": inline, "studyOnly": flag}])
+            normal = load([{"question": inline, "studyOnly": False}])
+            self.assertEqual(len(eligible_sources("easy", normal)), 1)
+            broken = load([{"question": [1, 2, 3, 4], "studyOnly": True}, {"generator": "number"}])
+            with patch.dict("web.content.GENERATORS", {"number": Mock(side_effect=ValueError)}):
+                with self.assertRaises(ValueError):
+                    questions("hard", broken)
+            for value in (True, "1", -1, 1001, 100.01, 1.001, float("nan"), float("inf")):
+                with self.subTest(value=value), self.assertRaises(ValueError):
+                    load([{"question": [1, 2, 3, value]}])
 
     def test_easy_filters_sources_and_higher_difficulties_include_all(self):
         first, *advanced = LESSONS["animals"]["sources"]
