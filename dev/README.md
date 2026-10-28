@@ -15,6 +15,8 @@ belong in `web/static/choices/`; prompts remain here. Follow the
 [image authoring instructions](../lessons/README.md#image-assets) for composition,
 dimensions, and encoding.
 
-[`image-sheets/city.json`](image-sheets/city.json) records the city illustration
-sheet prompts and row/column mapping. Original sheets are kept beside it;
+[`image-sheets/city.json`](image-sheets/city.json) and
+[`image-sheets/fruits-and-vegetables.json`](image-sheets/fruits-and-vegetables.json)
+record sheet prompts and row/column mappings for those vocabulary topics.
+Original sheets are kept beside their manifests;
 individual cropped JPGs are served from `web/static/choices/`.

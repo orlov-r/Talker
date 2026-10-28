@@ -4,43 +4,53 @@
   "choices": [
     {
       "text": "პომიდორი",
-      "translation": "Помидор"
+      "translation": "Помидор",
+      "image": "tomato.jpg"
     },
     {
       "text": "მანდარინი",
-      "translation": "Мандарин"
+      "translation": "Мандарин",
+      "image": "tangerine.jpg"
     },
     {
       "text": "ქლიავი",
-      "translation": "Слива"
+      "translation": "Слива",
+      "image": "plum.jpg"
     },
     {
       "text": "ბროწეული",
-      "translation": "Гранат"
+      "translation": "Гранат",
+      "image": "pomegranate.jpg"
     },
     {
       "text": "ხურმა",
-      "translation": "Хурма"
+      "translation": "Хурма",
+      "image": "persimmon.jpg"
     },
     {
       "text": "ალუბალი",
-      "translation": "Вишня"
+      "translation": "Вишня",
+      "image": "sour-cherry.jpg"
     },
     {
       "text": "გოგრა",
-      "translation": "Тыква"
+      "translation": "Тыква",
+      "image": "pumpkin.jpg"
     },
     {
       "text": "ბარდა",
-      "translation": "Горох"
+      "translation": "Горох",
+      "image": "peas.jpg"
     },
     {
       "text": "კომში",
-      "translation": "Айва"
+      "translation": "Айва",
+      "image": "quince.jpg"
     },
     {
       "text": "ჭარხალი",
-      "translation": "Свёкла"
+      "translation": "Свёкла",
+      "image": "beet.jpg"
     }
   ]
 }

@@ -107,8 +107,9 @@ style. Do not modify existing images without an explicit instruction.
 Prompts live separately in
 [`dev/image-prompts.json`](../dev/image-prompts.json); see
 [image authoring](../lessons/README.md#image-assets).
-City vocabulary uses individual pictures cropped from generation sheets; the
-original sheets and their layout remain private in `dev/image-sheets/`.
+City vocabulary and fruits and vegetables use individual pictures cropped from
+generation sheets; the original sheets and their layout remain private in
+`dev/image-sheets/`.
 
 ## Local setup
 

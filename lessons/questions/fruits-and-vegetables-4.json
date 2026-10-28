@@ -4,43 +4,53 @@
   "choices": [
     {
       "text": "ნესვი",
-      "translation": "Дыня"
+      "translation": "Дыня",
+      "image": "melon.jpg"
     },
     {
       "text": "კივი",
-      "translation": "Киви"
+      "translation": "Киви",
+      "image": "kiwi.jpg"
     },
     {
       "text": "ბოლოკი",
-      "translation": "Редис"
+      "translation": "Редис",
+      "image": "radish.jpg"
     },
     {
       "text": "გარგარი",
-      "translation": "Абрикос"
+      "translation": "Абрикос",
+      "image": "apricot.jpg"
     },
     {
       "text": "ანანასი",
-      "translation": "Ананас"
+      "translation": "Ананас",
+      "image": "pineapple.jpg"
     },
     {
       "text": "მოცვი",
-      "translation": "Черника/голубика"
+      "translation": "Черника/голубика",
+      "image": "blueberry.jpg"
     },
     {
       "text": "ჟოლო",
-      "translation": "Малина"
+      "translation": "Малина",
+      "image": "raspberry.jpg"
     },
     {
       "text": "მაყვალი",
-      "translation": "Ежевика"
+      "translation": "Ежевика",
+      "image": "blackberry.jpg"
     },
     {
       "text": "ისპანახი",
-      "translation": "Шпинат"
+      "translation": "Шпинат",
+      "image": "spinach.jpg"
     },
     {
       "text": "ყაბაყი",
-      "translation": "Кабачок"
+      "translation": "Кабачок",
+      "image": "zucchini.jpg"
     }
   ]
 }

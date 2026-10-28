@@ -18,7 +18,8 @@ Each lesson references four pools of ten consecutive entries in the supplied
 order. Only the first pool is explicitly marked `"level": 1`, so Easy uses the
 first ten words; Medium and Hard use all forty. These curated selections use
 recorded word-form frequency, with the ranking limits documented at the source.
-Animals and city vocabulary use pictures; the other topics use Russian text choices.
+Animals, city vocabulary, and fruits and vegetables use pictures; the other
+topics use Russian text choices.
 The additional everyday and grammar lessons use complete static pools at every
 difficulty, including Basics 2, personal pronouns, and question words. The
 possessive/oblique lesson keeps possessives and dative personal pronouns in
