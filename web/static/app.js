@@ -134,7 +134,13 @@ function feedback(value) {
       if (button.matches(':hover, :focus'))
         $('choice-text').textContent =
           choiceHint(button.dataset.choiceId);
-      if (button.dataset.choiceId !== value.selectedChoiceId) return;
+      if (button.dataset.choiceId !== value.selectedChoiceId) {
+        if (!value.isCorrect && value.correctChoiceIds.includes(button.dataset.choiceId)) {
+          button.classList.add('correct');
+          button.setAttribute('aria-label', `${button.dataset.label}: Правильный ответ`);
+        }
+        return;
+      }
       button.classList.add(value.isCorrect ? 'correct' : 'incorrect');
       const mark = document.createElement('span');
       mark.className = 'answer-mark';

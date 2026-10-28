@@ -574,6 +574,11 @@ class QuizTests(unittest.TestCase):
         )
         response = self.answer(state, wrong)
         self.assertEqual(response.json["selectedChoiceId"], wrong)
+        self.assertEqual(response.json["correctChoiceIds"], [
+            c["id"] for c in q["choices"]
+            if c["text"].strip() == q["correctText"]
+        ])
+        self.assertNotIn(wrong, response.json["correctChoiceIds"])
         self.assertEqual(
             self.client.get(f"/api/attempts/{state['attemptId']}").json["feedback"],
             response.json,

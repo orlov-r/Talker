@@ -64,6 +64,7 @@ The interface, level and lesson names, accessibility labels, and API error
 messages are in Russian. Georgian learning content and speech remain Georgian.
 Audio tries autoplay with manual playback/replay as a fallback. Choices lock after
 submission; the submitted button shows green with a tick or red with a cross.
+After a wrong answer, all correct choices also turn green, without a tick.
 The Georgian correct answer and its translation in parentheses stay visible until
 Next. Hovering or focusing a picture choice shows its Russian translation between
 Back and Next before answering. After answering, hovering, focusing, or tapping
@@ -230,7 +231,7 @@ The cookie contains only opaque owner and CSRF IDs, never answers or scores.
 | `GET /api/lessons/{id}/study/{index}/audio?voice=edge-eka&level=easy` | MP3 or fallback WAV for the indexed static word; invalid selection 400, unknown index 404, synthesis failure 502 |
 | `POST /api/attempts` | `{level, lessonId, voice?}` to question envelope, HTTP 201; voice is `edge-eka` (default), `edge-giorgi`, or `rhvoice` |
 | `GET /api/attempts/{id}` | Current question/feedback or completion envelope |
-| `POST /api/attempts/{id}/answers` | `{questionId, choiceId}` to `{isCorrect, correctAnswerText, selectedChoiceId, choiceTexts}` |
+| `POST /api/attempts/{id}/answers` | `{questionId, choiceId}` to `{isCorrect, correctAnswerText, selectedChoiceId, correctChoiceIds, choiceTexts}` |
 | `POST /api/attempts/{id}/next` | `{questionId}` to next/completion envelope |
 | `POST /api/attempts/{id}/precache` | `{questionId}` for the current question; warms next audio, returns empty HTTP 204 (also for the last question); stale/completed requests return 409 |
 | `GET /api/attempts/{id}/result` | Completed attempt envelope |
@@ -244,7 +245,9 @@ translation. IDs are temporary button identifiers, assigned by the server;
 private choices need no IDs. Scoring compares trimmed Georgian text, accepting
 every displayed choice with the correct text. Feedback includes `choiceTexts`, a
 map from the four displayed IDs to Georgian texts, only after answering;
-current-state recovery includes the same map. Future quiz questions, speech
+current-state recovery includes the same map. Feedback also includes
+`correctChoiceIds`, listing every choice accepted by server scoring, to highlight
+correct buttons after a wrong answer. Future quiz questions, speech
 overrides, and answer keys are not returned. Study endpoints intentionally
 expose static vocabulary without quiz markers, generator output, or author
 notes; audio accepts only server-resolved word indices, never arbitrary browser

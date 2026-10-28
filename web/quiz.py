@@ -49,6 +49,10 @@ def answer(a, question_id, choice_id):
             "isCorrect": correct,
             "correctAnswerText": q["correctAnswerText"],
             "selectedChoiceId": choice_id,
+            "correctChoiceIds": [
+                c["id"] for c in q["choices"]
+                if c["text"].strip() == q["correctText"]
+            ],
             "choiceTexts": {c["id"]: c["text"] for c in q["choices"]},
         }
     return a["feedback"]

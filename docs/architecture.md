@@ -134,7 +134,9 @@ Space/Enter advances after answering. Animal images use the style of Niko
 Pirosmani, saved as 512×512 JPGs at quality 75 and named after the English word.
 Private generation prompts live in `dev/image-prompts.json`. Feedback also
 includes the submitted choice ID so its green tick or red cross survives state
-recovery. Source rates remain future work. See [lesson
+recovery, and `correctChoiceIds` for every displayed choice with the correct text.
+After a wrong answer these correct buttons turn green without ticks.
+Source rates remain future work. See [lesson
 authoring](../lessons/README.md).
 
 ## Implemented web API and security
